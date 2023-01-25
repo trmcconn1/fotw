@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="flashcard">
+</Property><Property Name="Solution File" Value="C:\Users\trmcc\Documents\Visual Studio 2008\Projects\flashcard\flashcard.sln">
+</Property><Property Name="Date" Value="Saturday, January 22, 2022">
+</Property><Property Name="Time" Value="14:21 PM">
+</Property></Properties><Event ErrorLevel="1" Project="flashcard" Source="flashcard\flashcard.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="flashcard" Source="flashcard\flashcard.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="flashcard" Source="flashcard\flashcard.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="flashcard.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="flashcard.sln" Description="Converted">
+</Event></UpgradeLog>
