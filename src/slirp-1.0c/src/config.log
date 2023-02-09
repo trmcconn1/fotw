@@ -1,0 +1,22 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+/usr/bin/ld: cannot find -lsocket
+collect2: ld returned 1 exit status
+/usr/bin/ld: cannot find -lposix
+collect2: ld returned 1 exit status
+configure:1157:23: sys/filio.h: No such file or directory
+configure: In function `t':
+configure:1214: error: `not' undeclared (first use in this function)
+configure:1214: error: (Each undeclared identifier is reported only once
+configure:1214: error: for each function it appears in.)
+configure:1214: error: syntax error before "big"
+configure:1571: warning: conflicting types for built-in function 'strdup'
+configure:1571: warning: conflicting types for built-in function 'index'
+configure:1571: warning: conflicting types for built-in function 'bcmp'
+configure:1571: warning: conflicting types for built-in function 'memmove'
+configure: In function `t':
+configure:1580: error: `choke' undeclared (first use in this function)
+configure:1580: error: (Each undeclared identifier is reported only once
+configure:1580: error: for each function it appears in.)
+configure:1580: error: syntax error before "me"

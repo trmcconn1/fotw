@@ -1,0 +1,38 @@
+#A -1 in the number column represents an Auditorium.
+#S-.... in the usage column represents Standard.
+#G-... in the usage column represents Group.
+
+#Name     Bldg     Number         Seats       Exams      Usage
+C-100   Carn      100             28         14           Lab
+C-114	Carn       114            40          20           S-Class
+C-208	Carn       208            40          20           S-Class
+C-219    Carn       219            40          20           S-Class
+C-220    Carn       220            24          12           G-Class
+C-222    Carn       222            28          14           G-Class
+C-300    Carn       300            40          20           S-Class
+C-306    Carn       306            40          20           S-Class
+C-311    Carn       311            40          20           S-Class
+C-312    Carn       312            24          NA         Seminar
+R-312    Carn       312            24          NA         Meetings
+R-312    Carn       312            24          NA         Colloquim
+R-312    Carn       312            24          NA       "Conflict Exams"
+C-313    Carn       313            75         32           "Medium Lecture"
+C-316     Carn      316            40        20            S-Class
+H-113     Heroy    113           56        28            Exams
+Heroy     Heroy    AUD             191      95         "Large Lecture"   
+Gifford    HBC      AUD             398     199           Exams
+Kittredge  HBC     AUD             127       63           Exams
+C-102        HL        102          70        35            Exams
+C-105        HL        105          70        35            Exams
+C-107        HL        107          186      93            Exams
+H-114        HL        114          86        43            Exams
+C-205        HL        205          90        45            Exams
+C-207        HL        207         192       96            Exams
+C-214        HL        214         90         45            Exams
+Grant        Law-Sch   AUD         420       210          Exams
+C-132       Lyman       132     121        60           Exams
+Maxwell    Maxwell    AUD      240        120         Exams
+P-233        PB            233       20         NA        Seminar
+Stolkin       PB           AUD         300       150        Exams
+P-309		Peck	309	48  30  "Evening (UC) Classes"
+P-308	Peck	308	48  30 "Evening (UC) Classes"

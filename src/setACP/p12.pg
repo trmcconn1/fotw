@@ -1,0 +1,133 @@
+# Problem 12 of ACP test. All problems are multiple choice.
+# A problem on simplifying radicals. With probability 1/2 either
+# (a) The students are presented
+# with 3 possible tempting "simplifications" of sqrt(a^2 - b^2 x^2) (all wrong)
+# where a and b are small relatively prime natural numbers, and the
+# correct answer, which is that it does not simplify.
+#
+# or
+#
+# (b) The students are presented with possible simplifications of the
+# same expression w/o the square root.
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 12", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Generate the numbers that will be used in the problem:
+
+@AList = (2,4,7,8);  # The numbers in list A must be relatively prime
+@BList = (3,5,9);    # to every number in the B list.
+$i = random(0,3,1);
+$j = random(0,2,1);
+$a = $AList[$i];     # Random element of list A
+$b = $BList[$j];     # " " " " B
+$c = $a*$a;
+$d = $b*$b;
+
+# Choose one of two problem types: (answer simplifies or does not.)
+$type = random(0,1,1);
+
+if($type == 0){
+# The expression to be simplified is sqrt(a^2 - b^2x^2)
+# The choices will be (first is correct):
+#
+# (a) does not simplify
+# (b) is equal to (a-bx)(a+bx)
+# (c) is equal to a-bx
+# (d) is equal to a-bx^2
+
+# compute correct and incorrect answers to display (correct is first one)
+
+@ans = ("\text{Cannot be simplified.}", 
+"\text{Is equal to } ($a - $b x)($a + $b x).",
+"\text{Is equal to } $a - $b x.",
+"\text{Is equal to } $a - $b x^2.");
+
+$question =  "\sqrt{$c - ${d}x^2}"; 
+
+}
+else {
+
+# The expression to be simplified is a^2 - b^2x^2
+# The choices will be (first is correct):
+#
+# (a) is equal to (a-bx)(a+bx)
+# (b) is equal to (a-bx)^2
+# (c) is equal to (a-bx^2)^2
+# (d) does not simplify
+
+# compute correct and incorrect answers to display (correct is first one)
+
+@ans = ( "\text{Is equal to } ($a - $b x)($a + $b x).",
+"\text{Is equal to } ($a - $b x)^2.",
+"\text{Is equal to } ($a - $b x^2)^2.",
+"\text{cannot be factored.}");
+
+$question =  "$c - ${d}x^2"; 
+
+}
+
+# get a permutation of 0-3 to shuffle display
+@picks = myshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+\( $question \) 
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$PAR
+Enter your choice (A,B,C, or D.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

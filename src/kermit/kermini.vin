@@ -1,0 +1,42 @@
+secho MS-DOS Kermit initialization file...
+
+define _editor emacs                    ; EDLIN is the default editor.
+if not eq "\$(EDITOR)" "" -
+  define _editor \$(EDITOR)
+
+COMMENT - Macro definitions section...
+
+; DOS MORE command... (no "<" needed)
+def more if < argc 2 fatal {More what?},-
+run more < \%1
+
+; DOS REN(ame) command...
+def rename if < argc 2 fatal {Rename what?},-
+  if < argc 3 fatal {Rename \%1 to what?},-
+  run ren \%1 \%2
+
+; DOS COPY command...
+def copy if < argc 2 fatal {Copy what?},-
+  if < argc 3 fatal {Copy \%1 to what?},-
+  run copy \%1 \%2
+
+; EDIT command...
+def edit if = argc 2 assign _editfile \%1,-
+  if not def _editfile fatal {Edit what?},-
+  run \m(_editor) \m(_editfile)
+
+; Define a FATAL error macro.  Print message, go back to prompt.
+def fatal echo \%1, stop
+
+set file collision rename       ; Don't overwrite existing files
+set transfer character-set transparent ; For compatibility with old versions
+set attributes on               ; Use file-attribute packets
+set mode-line off
+set input timeout proceed       ; Allow IF SUCCESS/FAILURE to work
+set input echo on               ; Display port input on screen
+set input case ignore           ; Ignore alphabet case for input matching
+
+if exist c:\ker\mscustom.ini take c:\ker\mscustom.ini
+if exist d:\c\ker\mscustom.ini take d:\c\ker\mscustom.ini
+if equal \$(SYSTEM) LINUX set prompt MS-Kermit>
+

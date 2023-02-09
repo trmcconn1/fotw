@@ -1,0 +1,31 @@
+-----------------------------------------------------------------------------
+|                         Score   (Version 1.6)                             |
+-----------------------------------------------------------------------------
+Written by Terry McConnell (November 1997, Revised Fall 2000)
+Compiled under Gnu gcc 2.7.2
+Linux 2.2.16
+
+This is free software. It may be freely copied, modified,
+and distributed. The Author makes no representation concerning
+whether this program is free of bugs. The Author is not
+responsible for any loss of data or damage to equipment this
+program might cause. Use at your own risk.
+
+Please send bug reports to trmcconn@syr.edu
+The latest version of the program is available by anonymous
+ftp to barnyard.syr.edu in the pub/mcconnel/Linux directory
+and via the world wide web through
+http://barnyard.syr.edu/software.shtml
+Also see http://barnyard.syr.edu/run.shtml for links to other related
+running programs.
+
+-----------------------------------------------------------------------------
+
+To reach the Author:
+
+Terry McConnell                         ----
+2458 Swift Road              OR         215 Carnegie
+Lafayette, NY 14850                     Syracuse, NY 13244-1150
+(315)677-3510                           (315)443-1473
+trmcconn@syr.edu                        tmc@barnyard.syr.edu
+-----                                   Fax: (315)443-1475

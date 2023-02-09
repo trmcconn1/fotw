@@ -1,0 +1,20 @@
+                	   Ideas for future versions
+
+	- Make it easier to recompile all the programs for a different
+          alphabet. (See utils/mkrotor which is already so configurable.) 
+          This is probably a bit more difficult than just changing NCHARS and
+          START_CHAR because some programs care about things like whether the
+          alphabet size is even or odd.
+
+	- DOS/WINDOWS port ?
+
+	- A common library of statistical routines for analyzing output text.
+
+	- A "cracking" program. Link in one of the encrypt routines and
+          then implement a key search. It would be interesting to do this
+          in multiple threads: one thread could try, e.g., all passwords
+          from one of the standard cracker's libraries, while another is
+          searching all strings up to a given length. We could adaptively
+          home in on text that looks promising by passing a crude char
+          frequency test. (Note the cracking is not at all the same thing
+          as cryptanalysis. I don't want to get into cryptanalysis!) 

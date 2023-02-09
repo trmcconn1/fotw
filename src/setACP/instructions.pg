@@ -1,0 +1,30 @@
+# Instruction page for ACP test
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+BEGIN_TEXT
+REMEMBER: This is a $BBOLD placement $EBOLD exam. Because it is a placement
+exam, some the questions will be too difficult for you to answer. That's okay.
+If you come to a question you can't answer, don't guess. Just leave it blank
+and go on to the next question. Also remember that your placement is
+$BBOLD tentative. $EBOLD If, after discussing your placement with your
+advisor, it becomes clear that your placement is inappropriate, it will
+be changed. Specifically, if you are placed in algebra, you will be given
+a second chance to test out of algebra and move on to another mathematics
+course.
+$PAR
+$BBOLD Do not use a calculator. $EBOLD
+
+END_TEXT
+ENDDOCUMENT();

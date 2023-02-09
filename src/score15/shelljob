@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# one time job to combine the times from last 3 years
+
+
+for name in `cat list`
+do
+	pts04=0
+	pts03=0
+	pts02=0
+	if grep $name list.04  > /dev/null
+	then
+		pts04=`grep $name list.04 | cut -d' ' -f2`
+	fi
+	if grep $name list.03 > /dev/null
+	then
+		pts03=`grep $name list.03 | cut -d' ' -f2`
+	fi
+	if grep $name list.02 > /dev/null
+	then
+		pts02=`grep $name list.02 | cut -d' ' -f2`
+	fi
+		echo $name $pts04 $pts03 $pts02 >> foo
+done

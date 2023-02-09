@@ -1,0 +1,79 @@
+longroots(1)                                                       longroots(1) 
+
+NAME
+
+	longsqrt_standalone
+	longcurt_standalone
+	longsqrt.cgi	
+
+SYNOPSIS
+
+	longsqrt_standalone [ -h -v ] <radicand> <digits>
+
+	longcurt_standalong [ -hv --] <radicand> <digits>
+
+	longroot.cgi
+
+DESCRIPTION
+
+	Longsqrt_standalone prints the results of the by-hand calculation
+	of the square root of the radicand  with the given number
+	of digits in the decimal answer. Longcurt is similar, except that
+	the cube root is calculated. Longroot.cgi provides a cgi web
+	interface to these routines. 
+
+
+OPTIONS
+
+	-h: Print usage information and exit 
+
+	-v: Print version number and exit
+
+	--: Signal the end of options so that a negative radicand can
+	    be given.
+
+USAGE
+
+	The radicand is to be given in decimal format, i.e. in the form
+	[-][0..0][d...d][.d..d] where d...d denotes zero or more decimal
+	digits. A minus sign is only allowed by the cube root routine. 
+	Leading and trailing zeros are accepted, but ignored. The digits
+	argument must be a natural number in decimal format. There is
+	no limit on the length of these arguments ( and on the amount of
+	output produced ) except for any imposed by the operating 
+	environment. 
+
+	The two command line programs write their output to stdout and
+	error messages to stderr. The cgi script writes both to stdout. 
+
+	Longroot.cgi is normally run by the web server as a cgi (Common
+	Gateway Interface) script. It expects to find REQUEST_METHOD and
+	CONTENT_LENGTH defined in its environment. REQUEST_METHOD must
+	have the value POST, and the server must support the post
+	method. The value of CONTENT_LENGTH, if positive, is ignored. 	
+	The script then reads a string on stdin that encodes the
+	arguments in the format 
+
+		RADICAND=<decimal>&NDIGITS=<decimal>&ROOT=<[2,3]> 
+
+	This content is normally provided to the web server by a client
+	in response to <FORM> ... </FORM> tags in an html document sent
+	from the server. 
+
+	If there are no errors, the same output as would be produced
+	by the longsqrt_standalone (if ROOT=2) or by the longcurt_standalone
+	program (if ROOT=3) is printed to stdout. This output would then
+	by forwarded as a document by the server back to the same client
+	that submitted the POST request.  
+
+
+SEE ALSO
+
+AUTHOR
+	Terry R. McConnell
+	trmcconn@syr.edu
+	http://barnyard.syr.edu
+
+BUGS
+
+

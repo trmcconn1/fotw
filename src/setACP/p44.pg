@@ -1,0 +1,123 @@
+# Problem 44 of ACP test. 
+#
+# Projectile motion
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 44", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Returns a permutation of 0-4 as a list. Many problems on the second half
+# of the ACP test have 5 choices.
+
+sub mybigshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	my $d = random(0,4,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+
+	if( $d == 0 ){ return ( 4, $a,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 1 ){ return ( $a, 4,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 2 ){ return ( $a, $b, 4,  $c, 6 - $a - $b - $c); }
+	if( $d == 3 ){ return ( $a, $b, $c, 4,  6 - $a - $b - $c); }
+	if( $d == 4 ){ return ( $a, $b, $c, 6 - $a - $b - $c,  4); }
+
+}
+
+
+# Height of ball as a function of time is -at(t-2b) + c =  2abt - at^2 + c
+# Find the maximum height achieved. Run unique44.c to check that the
+# answers are unique
+
+# $a = random(2,4,1);
+$a = 16;
+@bs = (1,3,4,5);
+$i = random(0,3,1);
+$b = $bs[$i];
+@cs = (11,13,14,15,17,19,20);
+$i = random(0,6,1);
+$c = $cs[$i];
+$aa = $a*$a;
+$ab2 = 2*$a*$b;
+$cabb = $c + $a*$b*$b;
+$abb = $a*$b*$b;
+$abc2 = $c + $ab2;
+
+
+# Correct and incorrect answers to display. Correct is the first one:
+@ans = ($cabb,$c,$abb,$abc2,$b);
+ 
+ 
+
+
+# get a permutation of 0-4 to shuffle display
+@picks = mybigshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+$ansE = $ans[$picks[4]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+A stone thrown vertically has height \( = $ab2 t - $a t^2 + $c \) feet t
+seconds after it is thrown. The maximum height the stone achieves is:
+$PAR
+A)  $ansA  ft. 
+$BR
+B)  $ansB  ft. 
+$BR
+C)  $ansC  ft. 
+$BR
+D)  $ansD  ft. 
+$BR
+E)  $ansE  ft. 
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+$letter = "E" if $picks[4] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

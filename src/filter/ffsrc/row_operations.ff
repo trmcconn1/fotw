@@ -1,0 +1,32 @@
+%{
+/* row operations: perform various operations on numbers in a line
+	options  -sum : add the numbers in the row
+		 -avg : form the average
+		 -std : form the standard deviation
+*/
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+double cumsum=0;
+double count=0;
+double avg;
+double ss=0;   /* sum of squares */
+%}
+# default: just echo everything unchanged
+-_ /.|[\n]/ {ECHO;}
+# sum: print the sum of each row.
+-sum /\([0-9]+(\.[0-9]*)?\)/ {cumsum +=atof(\$0);printf("%s",\$0);}
+-sum /\([0-9]*\.[0-9]+\)/ {cumsum +=atof(\$0);printf("%s",\$0);}
+-sum /\([\n]\)/ {printf(" sum:%g\n",cumsum);cumsum=0;}
+# avg: print the average of each row
+-avg /\([0-9]+(\.[0-9]*)?\)/ {cumsum +=atof(\$0);count++;printf("%s",\$0);}
+-avg /\([0-9]*\.[0-9]+\)/ {cumsum +=atof(\$0);count++;printf("%s",\$0);}
+-avg /\([\n]\)/ {if(count>0)printf(" avg:%g\n",cumsum/count);
+		count =0;cumsum=0;}
+# std: print the standard deviation of each row.
+-std /\([0-9]+(\.[0-9]*)?\)/ {cumsum +=atof(\$0);count++;
+		ss += atof(\$0)*atof(\$0);printf("%s",\$0);}
+-std /\([0-9]*\.[0-9]+\)/ {cumsum +=atof(\$0);count++;
+		ss += atof(\$0)*atof(\$0);printf("%s",\$0);}
+-std /\([\n]\)/ {if(count>1)printf(" std:%g\n",sqrt((ss-(cumsum*cumsum)/
+count)/(count-1)));count=0;cumsum=0;ss=0;}

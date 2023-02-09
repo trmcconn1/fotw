@@ -1,0 +1,113 @@
+%{
+/* secs.ff: specification for time format  filter */
+/* In a form to be used by scorall programs */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int unsecs( float );
+char format[30];
+%}
+# default: convert hh:mm:sec.s to secs
+# case where a colon for hours is present
+-_ /[ 	]\([0-9]*\)\(:\)\([0-9][0-9]\)\(:\)\([0-5][0-9](\.[0-9]*)?\)[ 	\n]/  {printf(
+	" %.1f ",3600*atof(\$0)+60*atof(\$2)+atof(\$4));}
+# case where a colon for hours in not present, but a colon for minutes is
+-_ /[ 	]\([0-9]*\)\(:\)\([0-9][0-9](\.[0-9]*)?\)[ 	\n]/ {printf(" %.1f ",60*atof(\$0)+
+atof(\$2));}
+# case where no colons are present, but is not of form .digits 
+-_ /[ 	]\([0-9]+(\.[0-9]*)?\)[ 	\n]/ {printf(" %.1f ",atof(\$0));}
+# case of .digits
+-_ /[ 	]\(\.[0-9]+\)[ 	\n]/ {printf(" %.1f ",atof(\$0));}
+# option -i: convert backwards
+# inverse seconds: convert to hh:mm:ss.s with leading 00: minutes
+# there must be a decimal point 
+# Times at beginning of line:
+# case where a colon for hours is present
+-_ /^\([0-9]*\)\(:\)\([0-9][0-9]\)\(:\)\([0-5][0-9](\.[0-9]*)?\)[ 	\n]/  {printf(
+	" %.1f ",3600*atof(\$0)+60*atof(\$2)+atof(\$4));}
+# case where a colon for hours in not present, but a colon for minutes is
+-_ /^\([0-9]*\)\(:\)\([0-9][0-9](\.[0-9]*)?\)[ 	\n]/ {printf(" %.1f ",60*atof(\$0)+
+atof(\$2));}
+# case where no colons are present, but is not of form .digits 
+-_ /^\([0-9]+(\.[0-9]*)?\)[ 	\n]/ {printf(" %.1f ",atof(\$0));}
+# case of .digits
+-_ /^\(\.[0-9]+\)[ 	\n]/ {printf(" %.1f ",atof(\$0));}
+# option -i: convert backwards
+-i /\([0-9]+\.[0-9]+\)/ { unsecs(atof(\$0)); }
+# give specified precision output: -d p  where p = number of decimal point
+# case where a colon for hours is present
+-d /[ 	]\([0-9]*\)\(:\)\([0-9][0-9]\)\(:\)\([0-5][0-9](\.[0-9]*)?\)[ 	\n]/  {
+sprintf(format," %%.%df ",atoi(clvar));printf(
+	format,3600*atof(\$0)+60*atof(\$2)+atof(\$4));}
+# case where a colon for hours in not present, but a colon for minutes is
+-d /[ 	]\([0-9]*\)\(:\)\([0-9][0-9](\.[0-9]*)?\)[ 	\n]/ {
+sprintf(format," %%.%df ",atoi(clvar));
+printf(format,60*atof(\$0)+
+atof(\$2));}
+# case where no colons are present, but is not of form .digits 
+-d /[ 	]\([0-9]+(\.[0-9]*)?\)[ 	\n]/ {
+sprintf(format," %%.%df ",atoi(clvar));
+printf(format,atof(\$0));}
+# case of .digits
+-d /[ 	]\(\.[0-9]+\)[ 	\n]/ {
+sprintf(format," %%.%df ",atoi(clvar));
+printf(format,atof(\$0));}
+#
+# Times at beginning of line 
+-d /^\([0-9]*\)\(:\)\([0-9][0-9]\)\(:\)\([0-5][0-9](\.[0-9]*)?\)[ 	\n]/  {
+sprintf(format," %%.%df ",atoi(clvar));printf(
+	format,3600*atof(\$0)+60*atof(\$2)+atof(\$4));}
+# case where a colon for hours in not present, but a colon for minutes is
+-d /^\([0-9]*\)\(:\)\([0-9][0-9](\.[0-9]*)?\)[ 	\n]/ {
+sprintf(format," %%.%df ",atoi(clvar));
+printf(format,60*atof(\$0)+
+atof(\$2));}
+# case where no colons are present, but is not of form .digits 
+-d /^\([0-9]+(\.[0-9]*)?\)[ 	\n]/ {
+sprintf(format," %%.%df ",atoi(clvar));
+printf(format,atof(\$0));}
+# case of .digits
+-d /^\(\.[0-9]+\)[ 	\n]/ {
+sprintf(format," %%.%df ",atoi(clvar));
+printf(format,atof(\$0));}
+#
+%%
+
+int unsecs (float secs )
+{
+     int hh, mm;
+     float ss, temp;
+
+     hh = secs / 3600;
+     temp = secs - (float) hh*3600;
+     mm = temp / 60;
+     ss = secs - (float) hh*3600 - (float) mm*60;
+     if (hh == 0) {
+          if( mm == 0){
+			  printf("00:%.1f",ss);
+		       }
+          else  
+	  if ( ss < 10.0 )
+		printf("%d:0%.1f",mm,ss);
+	  else printf("%d:%.1f",mm,ss);
+          }
+	else {
+          if( mm == 0){
+			if (ss < 10.0) 
+				printf("%d:00:0%.1f",hh,ss); 
+			 else printf("%d:00:%.1f",hh,ss);
+		       }
+          else  
+	  if ( mm < 10 )
+		if ( ss < 10.0 )
+			printf("%d:0%d:0%.1f",hh,mm,ss);
+		else    printf("%d:0%d:%.1f",hh,mm,ss);
+	else 
+		if ( ss < 10.0) 
+			printf("%d:%d:0%.1f",hh,mm,ss);
+		else
+			printf("%d:%d:%.1f",hh,mm,ss);
+	 }
+     return 0;
+}

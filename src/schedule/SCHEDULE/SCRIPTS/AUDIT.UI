@@ -1,0 +1,46 @@
+# audit.ui:
+# Script for schedule program shell: give an academic year staffing audit
+#
+#              By Terry McConnell, June 1996
+#
+# This is designed to be invoked from the User Interface menu
+# Use the audit script from the command line
+
+# store current semester and loaded state
+if LOADED set HOLDLOAD $LOADED
+if SEM set HOLDSEM $SEM
+
+load -free
+
+# Two shell variables must be passed from the schedule program:
+# AUDIT_FLAGS  and AY.
+
+# load the fall semester data
+load -t -sem f$AY
+take data\sched.f$AY
+set ECHO OFF
+
+# load Spring semester without time slot info -- not needed for audit.
+# In DOS this is important in order to conserve memory.
+# Update rather than replace fall data already loaded.
+load -ut -sem s$AY
+take data\sched.s$AY
+set ECHO OFF
+
+# include totals column and handle load as dictated by choices above.
+echo Date: $DATE
+audit $AUDIT_FLAGS
+
+# clear audit cumulatives in case the user does later audits
+audit -c
+
+# clean up
+load -free
+if HOLDLOAD load -sem $HOLDLOAD
+if HOLDLOAD take data\sched.$HOLDLOAD
+if HOLDSEM set SEM $HOLDSEM
+set AUDIT_FLAGS
+set AY
+set HOLDLOAD
+set HOLDSEM
+end 

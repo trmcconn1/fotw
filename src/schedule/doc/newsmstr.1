@@ -1,0 +1,66 @@
+.TH NEWSMSTR 1
+.SH NAME
+Newsmtr \- Begins the process of creating the data files for a new semester.
+.SH SYNOPSIS
+.B newsmstr [ -q -b -wd <path>  -help -version ]
+
+.SH OPTIONS
+.TP
+.B \-q
+Run quietly. Don't provide long explanations and don't confirm each user
+response.
+.TP
+.B \-b
+Create a new schedule file only. This is useful for creating a "blank"
+template of a previous semester's schedule file.
+.TP
+.B -wd <path>
+Use path as the working directory rather than the one provided in the 
+schedule setup file.
+.TP
+.B \-help
+Print a brief usage message and exit.
+.TP 
+.B \-version
+Print the program version number and exit.
+.SH DESCRIPTION
+.I newsmstr
+creates a directory for the data files of a new semester, copies the data
+files from a previous semester, and edits them according to information
+provided by the user. The files created are ( relative to the working
+directory of the schedule program ): data/xxx, data/xxx/time, data/xxx/rooms,
+data/xxx/jobs, data/xxx/people, and data/sched.xxx, where xxx is a name
+for the new semester provided by the user. With the -b option only the last
+file is created. 
+
+The program begins by sourcing the user's schedule setup file ( see the
+manual page for the schedule program ) in order to find the working 
+directory and other information. The setup file is interpreted by the command
+shell of the schedule program. The program then conducts a dialog with the
+user. Among other things, the user provides the name of a semester to use
+as a "template" for the new semester. Data files from the template semester
+are copied as is, except for the time file which is updated for the new
+semester. The schedule file from the template semester is copied and all
+people, rooms, and times are replaced by a "missing data" designator (e.g.
+TBA) provided by the user. The dialog is quite verbose and should be
+self-explanatory. Using the -q option cuts down on some of the drivel.  
+
+Although the program attempts to do the initial setup of a new semester
+intelligently, all of the data files should be checked and edited if
+necessary. In particular, the program does not attempt to update time slot
+definitions which do not use the offset method. Instead it will copy these
+as comments and mark them prominently to draw the attention of the data
+maintainer.
+
+.SH SEE ALSO
+.I schedule(1)
+
+.SH AUTHOR
+.I Terry McConnell
+215 Carnegie
+Syracuse University
+Syracuse, NY 13244-1150
+trmcconn@syr.edu
+
+.SH BUGS
+There is no way to go back and undo the effect of an earlier step.

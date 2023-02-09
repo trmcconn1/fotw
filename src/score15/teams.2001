@@ -1,0 +1,21 @@
+*****************************************************************************
+* Teams for the SU noontime running league                                  *
+* 2000-2001 competition year.                                                 *
+*****************************************************************************
+*
+* Format:
+* <Team abbreviation> <"Full Team Name"> <"Name of Team Captain">
+*
+* Abbreviation must be 3 letters. Full name and captain's name must be 
+* enclosed in quotes.
+*
+hch  "Hanging Chads"  "Neal Coffey"
+psy  "Psychlones"  "Allen Drew and Ron Westbrooke"
+sst  "S.S.T"  "Sean Kelly and Stan More"
+wam  "W.B.A.M" "John Allen"
+pwm  "Power Macs" "Terry McConnell"
+una  "Unattached" "No Captain"
+
+* S.S.T stands for Sean and Stan on the Track
+* W.B.A.M stands for Win by any Means.
+

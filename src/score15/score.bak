@@ -1,0 +1,57 @@
+*******************************************************************************
+* Score.rc: User customizable settings                                        *
+* Lines starting with asterisk are comments                                   *
+*                          LINUX VERSION                                      *
+*******************************************************************************
+*
+* The competition year is the year in which the season ends.
+CompetitionYear 1996
+*
+*
+* File containing the current standings and individual results
+Scorall /home/mcconnel/src/score14/scorall
+*
+* File containing name, date of birth, sex, and team of each competitor.
+RosterFile /dosc/eddie/roster.asc
+*
+* File containing all results so far.
+ResultsFile /dosc/eddie/results.asc
+*
+* File containing 3-letter code, full name and captain's name for each team.
+TeamsFile /home/mcconnel/src/score14/teams.96
+*
+*
+* Name of a temporary scratch file. The j: drive is my ramdrive.
+TempFile /tmp/score14
+*
+* Printer Initialization String. This puts the printer in landscape mode with
+* CR -> CR + LF translation and 16.67 cpi font 
+* For the HP 500 using Courier 10 pt.
+* (The escape character is created by hitting <CTL><SHIFT>P
+* followed by the escape key in DOS Edit.)
+PrinterInitString &k2G&l1O(10U(s0p16.67h10V
+*
+* Printer Reset String. Restores printer to its default state.
+PrinterResetString E
+*
+*
+* This program has standards for 100m 200m 400m 800m 1500m 3k 5k 8k 10k
+* 15k mar 800r 1600r 3200r dmr. But not all of these events are done
+* each year. The next section allows you to exclude events and relays
+* which are not being done this competition year.
+* To add an additional event beyond the ones listed above requires
+* modifying the source code and recompiling. For more information on how
+* to do this see source.txt.
+*
+* Put the Name of each relay which is not being done this year on a 
+* separate line below
+*ExcludedRelay dmr
+ExcludedRelay 400r
+*ExcludedRelay 800r
+*
+* Put the name of each individual event which is not being done this year on
+* separate line below
+ExcludedEvent 8k
+*ExcludedEvent 100m
+ExcludedEvent mar
+

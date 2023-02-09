@@ -1,0 +1,33 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Resources for an Xterm running deadlin, the Unix edlin clone
+! By Terry R. McConnell
+!
+! Usage: xrdb -merge <this file> before launching the xterm that will run
+! deadlin
+! This one works for FreeBsd
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+xterm*VT100.Translations: #override <Key>   F3:  string("")\n\
+<Key>	F1: string("")\n\
+<Key>	F2: string("")\n\
+<Key>	F4: string("")\n\
+<Key>   F5: string("")\n\
+<Key>	F6: string("")\n\
+Ctrl<Key>A: string("A")\n\
+Ctrl<Key>W: string("W")\n\
+Ctrl<Key>R: string("R")\n\
+Ctrl<Key>L: string("L")\n\
+Ctrl<Key>T: string("T")\n\
+Ctrl<Key>U: string("U")\n\
+Ctrl<Key>E: string("E")\n\
+<Key>Home: string("7")\n\
+<Key>Up: string("8")\n\
+<Key>Prior: string("9")\n\
+<Key>Left: string("4")\n\
+<Key>KP_5: string("5")\n\
+<Key>Right: string("6")\n\
+<Key>End: string("1")\n\
+<Key>Down: string("2")\n\
+<Key>Next: string("3")\n\
+<Key>Insert: string("")\n\
+<Key>Delete: string("")\n\
+<Key>Alt_L: string("")

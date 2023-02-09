@@ -1,0 +1,172 @@
+# Problem 26 of ACP test. This is the first of the "second part" of the
+# traditional test. The first 25 questions were, properly speaking, the
+# "Algebra Competency Test", while the final 25 covered Precalculus and 
+# Calculus. 
+#
+# Problems 26-30 comprise the "Trigonometry" part of the test.
+#
+# An exercise in exact values of the sine function
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 26", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Returns a permutation of 0-4 as a list. Many problems on the second half
+# of the ACP test have 5 choices.
+
+sub mybigshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	my $d = random(0,4,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+
+	if( $d == 0 ){ return ( 4, $a,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 1 ){ return ( $a, 4,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 2 ){ return ( $a, $b, 4,  $c, 6 - $a - $b - $c); }
+	if( $d == 3 ){ return ( $a, $b, $c, 4,  6 - $a - $b - $c); }
+	if( $d == 4 ){ return ( $a, $b, $c, 6 - $a - $b - $c,  4); }
+
+}
+
+
+# Generate the numbers that will be used in the problem:
+
+# Tex representations of angles x for which sin(x) is exact
+@argList = ("\frac{\pi}6",
+"\frac{\pi}4",
+"\frac{\pi}3",
+"\frac{2\pi}3",
+"\frac{3\pi}4",
+"\frac{5\pi}6",
+"\frac{7\pi}6",
+"\frac{5\pi}4",
+"\frac{4\pi}3",
+"\frac{5\pi}3",
+"\frac{7\pi}4",
+"\frac{11\pi}6");
+
+# Corresponding exact values of sin(x), in TeX.
+@ansList = ("\frac12",
+"\frac{\sqrt{2}}2",
+"\frac{\sqrt{3}}2",
+"\frac{\sqrt{3}}2",
+"\frac{\sqrt{2}}2",
+"\frac12",
+"-\frac12",
+"-\frac{\sqrt{2}}2",
+"-\frac{\sqrt{3}}2",
+"-\frac{\sqrt{3}}2",
+"-\frac{\sqrt{2}}2",
+"-\frac12");
+
+# Corresponding numerical values
+
+@ansnList = (0.5, 0.707107,0.866025, 0.866025, 0.707107, 0.5,
+-0.5, -0.707107,-0.866025, -0.866025, -0.707107, -0.5);
+
+# Index of correct answer
+
+$i = random(0,11,1);
+
+# j,k,l,m: indices of other (incorrect) answers. We need to make these
+# all different, which we just do by brute force search 
+
+for ($j  = 0; $j < 12; $j++) {
+
+	last if( $ansnList[$j] != $ansnList[$i]); 
+
+}
+
+for ($k = 0; $k < 11; $k++) {
+	last if( ($ansnList[$k] != $ansnList[$i])
+		 && ($ansnList[$k] != $ansnList[$j]));
+}
+
+for ($l = 0; $l < 11; $l++) {
+	last if( ($ansnList[$l] != $ansnList[$i])
+		 && ($ansnList[$l] != $ansnList[$j])
+		 && ($ansnList[$l]!= $ansnList[$k]));
+}
+
+for ($m = 0; $m < 11; $m++) {
+	last if( ($ansnList[$m] != $ansnList[$i])
+		 && ($ansnList[$m] != $ansnList[$j])
+		 && ($ansnList[$m]!= $ansnList[$k])
+		 && ($ansnList[$m] != $ansnList[$l]));
+}
+
+# compute correct and incorrect answers to display (correct is first one)
+
+@ans = ($ansList[$i],$ansList[$j],$ansList[$k],$ansList[$l],$ansList[$m]);
+
+
+# get a permutation of 0-3 to shuffle display
+@picks = mybigshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+$ansE = $ans[$picks[4]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+The value of \( \sin( $argList[$i] ) \) is:
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$BR
+E) \( $ansE \)
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+$letter = "E" if $picks[4] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

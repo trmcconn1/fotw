@@ -1,0 +1,37 @@
+###############################################################################
+#   jobs.f97: definitions of possible jobs for current semester  
+#                              
+################################################################################
+# description of fields:
+# name: choose any reasonable short name for this job. MUST BE UNIQUE
+# type: This field can be used to tie a job to  particular types of people.
+#       For example, Faculty, or TA. Choose values for it that agree with
+#       the ones you will enter in the appointment type field of the 
+#       personnel data file. You may enter multiple types in this field
+#       by separating them by | with no space between.
+# start: Enter a start date for this job, or NA if it starts at the 
+#        beginning of the semester
+# end:  Enter an end date or NA if it ends at the end of semester 
+# load: Enter any integer or decimal value. The significance of the number is
+#       up to you -- it should be coordinated with the load value you enter
+#       into the personnel file. 
+
+#name		type	start	end	load	description
+Lecturer	Faculty	NA	NA	 6	"Teach a large Lecture"
+Plenary		Faculty NA	NA 	3	"Plenary lecture: 285-6"
+Teacher	        Faculty|TA1	NA	NA 6 "Teach a regular section"
+Balg_Teacher	Faculty|TA1|TA2  NA NA  6 "Teach a section of basic algebra"
+# TA1's are more experienced than TA2's
+Calc_Recit TA1	NA	NA	3	"Calculus Recitation"
+Recit_1		TA1|TA2	NA	NA	 3      "183 or 284 recitation"
+Recit_2	TA1|TA2	NA	NA   	 2      "121-122 recitation"
+# TA3's have not been cleared to teach. 
+Grader_1    	TA1|TA2|TA3	NA	NA	 6      "Grade 10 hours a week"
+Grader_2        TA1|TA2|TA3      NA      NA       3      "Grade 5 hours a week"
+Clinic_Coord 	TA1	NA  	NA       3      "Direct Calculus Clinic"
+183_Coord	TA1|TA2 NA	NA       3      "Calculator expert for \
+Mat 183 or 284"
+Heop_Tutor	TA1|TA2	NA	NA	0	"Hourly Heop 112 tutor"
+BAlgCoord	 TA1 	NA	NA	6	"Basic Algebra Coordinator"             
+CalcSub        TA1     NA      NA      3       "Calculus Substitute"
+Sysadmin	TA1|TA2 NA	NA	6 	"Computer Expert"

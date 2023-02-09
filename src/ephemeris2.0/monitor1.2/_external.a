@@ -1,0 +1,14 @@
+;  external.a: could be used to implement external commands in a stand-alone
+;  monitor, i.e., one that does not link to libc
+
+SECTION .data
+
+GLOBAL n_externals,external_names,external_entry_points,external_usage,external_help
+
+; these are just placeholders in the standalone version.
+n_externals: dd 0
+external_names: dd 0
+external_entry_points: dd 0
+external_usage: dd 0
+external_help: dd 0
+

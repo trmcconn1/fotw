@@ -1,0 +1,513 @@
+.TH EDLIN 1
+.SH NAME
+edlin \- A line editor 
+.SH SYNOPSIS
+.B edlin 
+[
+.B -B 
+] [
+.B -m 
+<bytes> ] [
+.B -T
+<n> ]
+.I file
+.br
+.SH OPTIONS
+.IR "\-B" "  Ignore the EOF character when reading a file."
+.br
+.IR "\-m" "  Limit available memory to bytes."
+.br
+.IR "\-T" "  Tabs are set every n spaces (default is 8.) This does not set
+tabs. It informs that program when tabs are set in an unusual way.
+.SH DESCRIPTION
+.I Edlin 
+is a lightly featured line editor for Un*x based upon the MS-DOS line-editor.
+It allows the user to create files or edit existing ones. Lines can include
+255 or fewer characters, not counting the newline character at the
+end of the line. (Lines are terminated by LF = ^J character rather than
+the CR-LF = ^M^J combination as they are in the DOS version).
+.I Edlin
+tries to read as much as possible of
+.I file
+into memory, stopping when 75% of available memory is exhausted. ( Here 
+.I file
+refers to a relative or absolute path to a file. )
+If the
+entire file fits in memory 
+.I edlin
+prints the message
+.B "End of input file."
+If the file does not exist
+.I edlin
+prints the message
+.B "New file."
+In either case
+.I edlin
+prints an asterisk (*) as a prompt, at which point the user may enter
+commands. (See below for descriptions of all available commands.) If an
+existing file is changed before being saved
+.I edlin
+creates a copy of the original file with the extension
+.B ".bak."
+A file having the extension
+.B ".bak"
+cannot be edited \- it must be renamed first. (A file extension is defined
+to be a sequence of 3 or fewer characters at the end of filename, preceeded
+by a ., which does not begin the filename.) If there is insufficient
+disk space to hold the entire file being edited it may happen that the
+user ends up with no .bak file and with a fragment of the edited file with
+a .$$$ extension. (Needless to say, this situation is to be avoided.)
+The working directory while
+.I edlin
+is running is the directory containing the file being edited.
+.I Edlin 
+cannot be used as an effective binary editor-- it will create many lines
+of maximal length which cannot be lengthened.
+
+.SS "Memory Management"
+Unix systems which support virtual memory provide essentially unlimited memory
+to applications; this would render the traditional 
+.B edlin 
+.B "Append Lines"
+and
+.B "Write Lines"
+commands pointless. The \-m option is provided so that the user can simulate
+the limited memory environment of early PCs. The number of bytes entered
+after \-m limits the amount of memory that can be dynamically allocated
+by
+.B edlin.
+Much of the allocated memory is not available for text. 
+.B Edlin
+maintains an internal array of pointers to lines which can contain up to
+65529 entries. This array is dynamically allocated at startup to keep down
+the size of the executable. On a machine with 32 bit pointers this already
+uses 262116 bytes. Approximately 3/4 of the remaining memory is available
+for text. If insufficient memory is requested to allow for the full array
+of line pointers then 
+.B edlin
+will choose a smaller array size which will still leave some room for text.
+If a non-default (512K) amount of memory is requested, an informative message
+will be printed at startup. Thus, e.g., the command line
+.br
+.B "edlin -m 700000 foo"
+.br
+will cause the following line to be printed at startup:
+.br
+Requested 700000 bytes, Available = 3/4 of 437630 bytes, MaxLines = 65529.
+
+
+.SS "Command Mode"
+Command mode is entered when 
+.I edlin
+is started. The prompt is a * at
+the left-hand margin of the screen. All commands have the form
+[
+.B range
+][
+.B number
+] [
+.B ?
+] 
+.B L
+[
+.B Search
+]^D[
+.B Replace 
+]
+where 
+.B L 
+is the command letter ( see below where each command letter is
+discussed.) Whitespace is ignored before the command letter. 
+The command letter must always be present except for the 
+.B Edit lines 
+command
+which consists of a single line reference. Command letters can be either
+upper or lower case -- only upper case is shown below.
+Multiple commands may be entered on the
+same line. They need not be delimited except as necessary to prevent 
+ambiguity: ; may be used as a separator and ^D may be used to delimit
+a 
+.B Replace 
+string. (These may optionally be used to delimit any commands. The following
+exceptions, however apply: ; is not treated as a delimiter when it
+follows the command letter in any form of the search or replace commands.)
+Intra-line editing (see below) is enabled in command mode.
+
+.IP "Field Descriptions"
+.RS
+
+.IP range:
+The general format of a range is 
+.B [n][,n][,n][,n] 
+where the
+possibilities vary among commands. The first 3 n's represent references to
+lines and
+the last represents a count. Valid references are ordinary decimal integers
+with optional +/- signs. The signs, if present, cause the reference to refer
+to a line relative to the current line number. The special symbols . and #
+refer, respectively, to the current line and the last line plus one.
+The count field
+may not be preceeded by a sign. 
+.IP number: 
+This field refers to a line number and obeys the same syntax as the
+line references in a range. If empty, the field refers to the current line
+plus one.
+
+.IP search: 
+The search field, if present, begins immediately after the command
+letter. All characters, except the delimiter ^D, are taken literally in a
+search field. The character ^D can be included in a search string by typing
+the sequence ^VD. 
+
+.IP replace: 
+The replace field begins immediately after the ^D following the
+command letter and continues until the next delimiter (not including ;).
+.RE
+
+.SS "Individual Commands"
+.RS
+.IP "Append Lines: "
+.B "[n]A "
+Appends n more lines to the memory image of the file being edited. 
+This command is only relevant when the file is too big to fit in memory at
+once. The lines added begin where the previous read of the file left off --
+i.e., the line following the last one appended or following the last line
+read at startup. If no n is specified then as many lines are appended
+as possible. No more lines are appended when available memory is 75%
+exhausted. This command may be used in conjunction with the 
+.B "Write Lines"
+command to edit a large file in successive chunks. The message
+.B "End of input file"
+is displayed when the last line of the file has been appended to memory.
+
+.IP "Copy Lines: "
+.B "[n][,n],n[,n]C "
+The range indicated by the first two parameters is copied to 
+a position just before the
+line number indicated by the 3rd (non-optional) parameter. This operation
+is repeated a number of times given by the 4th parameter, whose value 
+defaults to 1. The first two parameters each default to the current line if
+not given explicitly. The destination line may not lie within the range
+to be copied. The first line copied becomes the current line in its new
+location. The characters + and - are not allowed in the 4th parameter field.
+.IP "Delete Lines: "
+.B "[n][,n]D "
+The indicated range of lines is deleted, the following lines are renumbered,
+and the current line becomes the first line following the last deleted line,
+even if the deleted range included the last line in memory. If the first
+parameter is omitted it is taken to be the current line. If the second 
+parameter is omitted then only the line given by the first parameter is 
+deleted. If both parameters are omitted then only the current line is deleted.
+
+.IP "Edit Lines: "
+.B "[n]"
+ Allows the user to replace a particular line. 
+If 
+.B n 
+is empty then the
+line following the current line is referenced. The current contents of
+the referenced line are printed to the screen followed by the line number
+on a new line. The user may then enter the replacement text following
+the printed line number. Entering an empty replacement line cancels the
+operation -- the original line is left unchanged. After this operation,
+the referenced line, whether modified or not, becomes the current line.
+References to lines before the first line are taken to refer to the first
+line. References beyond the last line change the current line to the last
+line + 1, but are otherwise ignored.
+
+.IP "End Edit: "
+.B E 
+The contents of memory are written to disk under the name of the file
+being edited. If the name is the name of an existing file a copy of the
+original file is saved with the .bak extension.
+
+.IP "List lines command:"   
+.B [n][,n]L
+If no range is given 
+.B L
+lists the current line together with the 11 lines
+that preceed it and the 11 lines that follow. (If there aren't 11 lines
+before the current line then additional lines are listed after to make a
+total of 23.) 
+If both line numbers are
+given, 
+.B L 
+lists the given range of lines. If the second line number is 
+omitted, then 23 lines are listed starting with the given line. If the
+first line number is omitted, as indicated by a leading comma, then
+the display starts 11 lines before the current line and ends with the
+indicated line. ( In particular, the indicated line may be before the
+current line. If it is more than 11 lines before the current line the display
+is the same as if you omitted both parameters.) This command does not change
+the current line.  
+.IP "Move Lines Command: "
+.B "[n][,n],nM "
+Moves the range of lines indicated by the first two parameters before the
+line indicated by the 3rd parameter. The third parameter is not optional.
+If either of the first two parameters is omitted it defaults to the current
+line. The first line moved becomes the new current line. The range moved
+cannot overlap with the destination.
+
+.IP "Page Command:"
+.B [n][,n]P
+From the 
+.I "IBM REFERENCE:"
+.RS
+If the first 
+.B line
+parameter is omitted, it defaults to the current line plus one. If the
+second 
+.B line
+parameter is omitted, 23 lines are listed. The new current line becomes
+the last line displayed by the
+.B Page
+command and is marked with an asterisk. This command pages through the file
+displaying 23 lines at a time. It differs from the 
+.B "List Lines"
+command in that it changes the current line.
+.RE
+
+.IP "Quit Edit: "
+.B Q 
+Quits program without saving anything. (The user is asked to confirm this
+action.)
+
+.IP "Replace Text: "
+.B "[n][,n][?]R[search][^Dreplace]"
+The indicated range is searched for strings that match
+.B search.
+Any strings found are replaced by the 
+.B replace
+text, including multiple instances of
+.B search
+on a given line. The search for subsequent instances of 
+.B search
+begins at the end of the previous substitution. If no replacement text is
+provided then each instance of the search string is deleted. If neither
+.B search
+nor
+.B replace
+is provided, the strings provided in the most recent 
+.B R
+or
+.B S
+commands are used. The optional ? parameter causes
+.B edlin
+to ask the user to confirm each replacement before it is made. If the first
+range field is omitted the search begins with the line after the current
+line. If the second field is omitted the search ends with the last line
+in memory. If both fields are omitted the range is taken to be everything
+beyond the current line. The 
+.B search
+field begins immediately after the command letter and ends at the character
+before ^D (if provided) or before the next command delimiter. A 
+ ^D, ^J, or ^M  
+may be included in the search string by using the ^V escaping
+mechanism (see below). The 
+.B replace
+field begins immediately after the first ^D and extends to the next
+unescaped ^D.
+
+.IP "Search Text: "
+.B "[n][,n][?]S[search] "
+where the optional string
+.B search
+ends at the next unescaped ^D or newline. If empty,
+.B search
+is taken to be the most recently entered search string. The range and
+optional
+.B ?
+parameters are treated exactly as in the Replace Text command. The range is
+searched for the next occurrece of 
+.B search.
+If ? is given then the user is prompted at each occurence. A response of
+Y terminates the search, and any other response continues with the next
+occurence of
+.B search
+on the same or subsequent lines. 
+
+.IP "Transfer Text:"
+.B [n]Tfilename
+If the file of name
+.B filename
+is present in the current directory (the one containing the file originally
+being edited) it is opened and its contents inserted before the current line
+or before the line numbered
+.B n
+if the first parameter is present. The file is transfered until end of file
+is reached or until available memory is 75% full.
+
+.IP "Write Lines: "
+.B "[n]W "
+Write the first n lines from memory to a disk file. This command is only 
+relevant if the file being edited is too big to fit in memory. Written
+lines are removed from memory and the remaining lines are renumbered. If
+no n is given then lines are removed until the memory in use falls to below
+25% of the memory originally available. The first write creates a temporary
+file with extension .$$$. Subsequent writes append to this file. The 
+.B "End Edit "
+command makes a copy of the original file and removes the .$$$ extension.
+This command can be used together with the
+.B "Append Lines"
+command to edit a very large file in chunks that fit in memory.
+.RE
+.RE
+.SS "Intra-Line Editing"
+Line editing mode is entered when the user gives the input (I) command
+or when a line number is entered at the command prompt. While in input mode
+the user can manipulate the content of two buffers. The first contains the
+contents of the current line being entered and the other contains the
+previous line entered. Various special control
+characters allow the user to modify
+the contents of the current line using portions of the previous line. We
+describe the action of these control characters below. The DOS version of
+.I edlin 
+uses function keys for many of these functions. The original function
+key corresponding to each control character is given in parentheses. 
+
+At all times the program maintains a pair of special pointers. The
+current line pointer (CLP) points to the position in the current line buffer
+at which the next character entered will be placed (if not a control 
+character.) The previous line pointer (PLP) normally is moved along the previous
+line buffer in step with the CLP, but does not move when the program is in
+insert submode.
+
+When the user enters a carriage return the contents of the current line buffer
+become part of the memory image of the file being edited and the contents
+are copied to the previous line buffer. 
+
+.SS "Editing Characters"
+.RS
+.SS "^H (Backspace)"
+Erases the character before the cursor and moves the cursor
+back one space. Decrements the CLP and PLP.
+
+.SS "^I (Tab)"
+Reads a tab character as input and outputs tab character to terminal. 
+Thus it is treated like any ordinary character, but is worthy of mention here
+because its effect is widely misunderstood. The visual effect of the tab on the
+display depends on the terminal settings. In MSDOS, tab stops were always set
+at 8 character intervals and this behaviour could not be changed. (Of course,
+DOS applications were free to do what they wanted with a tab character. Here
+we refer to the behavior of the usual command shell.) In unix, tabs can be
+set using the tabs(1) program, but edlin assumes the default 8 character
+setting in its own interpretation of the tab character unless told otherwise
+with the -T option. In most unix terminals, tabs can even be set at 
+unequal intervals, but edlin cannot emulate this behavior.
+
+.SS "^E (Insert)" 
+Toggles insert sub\-mode. In insert sub\-mode each entered character
+advances the CLP but not the PLP.
+
+.SS "^P (^P)" 
+Begins sending a copy of every line entered to a temporary
+file. This is ended when the user strikes ^P a second time,
+at which point the temporary file is sent to the print
+spooling system. The temporary file is removed.
+
+.SS "^W (F1)"   
+Enters the character pointed to by the PLP into the current
+line and advances both CLP and PLP. Thus, the previous line
+can be recalled one character at a time.
+
+.SS "^L (F2)" 
+The program waits for the user to enter a search character.
+If the character entered is not present in the previous line
+from the PLP on, then nothing happens. Otherwise, the contents
+of the previous line from the PLP up to, but not including,
+the  first occurence of the searched character are entered 
+into the current line.
+
+.SS "^A (F3)"  
+The entire contents of the previous line from the PLP on
+are entered into the current line.
+
+.SS "^R (F4)" 
+The program waits for the user to enter a search character.
+If the character entered is not present in the previous line
+from the PLP on, then nothing happens. Otherwise, the PLP
+is advanced to the position of the first occurence of the
+search character. (Note: this does not change the current
+line. Thus, this key is normally used in conjuction with F3.)
+
+.SS  "^T (F5)" 
+Copies the current line buffer to the previous line buffer.
+(Other than entering a carriage return this is the only way
+the previous line buffer can be altered.) The line on the screen is
+ended with an @ character and a new line begun beneath it.
+
+.SS "^D (F6,^Z)"  
+Ends the current line and returns to command mode. (Only if 
+entered on an empty line. Otherwise D^ is entered on the
+current line.)
+
+.SS "^C (Ctl-Brk)"
+Returns to command mode cancelling the current line.
+
+.SS "^[ (Esc)" 
+Cancels the current line. Resets CLP to the beginning of
+the current line buffer. (The current line on the screen is terminated with
+a \\ character, and a new line is begun directly below it. Unlike ^T, this
+does not change the contents of the Previous Line Buffer. )
+
+.SS "^? (Del)"        
+Decrements the PLP. (^? stands for the -1 = 127 character.)
+
+.SS "^V (^V)"        
+Allows control characters (ascii codes < 32) to be
+entered into the current line. More precisely, if X
+is a capital letter of the alphabet, ^VX is entered
+as the control character ^X. Also escapes the
+special meaning of the carriage return character and 
+of ^V itself. (Thus, e.g., ^V^V^VB is entered as
+^V^B.) If ^Vx is entered where x is any other 
+character then ^V is ignored and x has its normal
+effect.
+
+.SS "^U (ALT)"   
+Allows entering extended characters from the number pad.
+If a number in the range 100-255 is entered using the number
+keys (ordinary or numberpad) and then ^U is entered again,
+the character corresponding to the number is entered into
+the current line. Thus, ^Uxyz^U becomes character number
+xyz. If anything else is entered between the ^U's then 
+nothing happens. The number 0 on the  number pad must be entered
+using the shift. Characters in the range 1-99 can also be entered
+but the end is marked by typing any character other than a digit or
+^U. This character then also becomes part of the input.
+.RE
+.PP
+.SH "SEE ALSO"
+.BR ed (1)
+.br
+.I "Disk Operating System Version 3.10 Reference"
+IBM (
+.B 1985
+)
+.br
+.I "Disk Operating System Version 3.10 User's Guide"
+IBM (
+.B 1985
+)
+.br
+.SH AUTHOR
+Terry R. McConnell 
+.br
+trmcconn@syr.edu
+.SH BUGS
+.br
+.RS
+An otherwise empty line field containing only a + or minus sign is taken to
+refer to the current line.
+.br
+The command delimter ; is not treated consistently: it does not function
+as a delimiter in the search or replace command. This does have the 
+advantage that ; can be treated like any other character in a search or
+replace string.
+.br
+The program assumes that tab stops are set at regular intervals.
+.br 
+If no characters are entered in a new file, the e command creates an
+empty file. (In the DOS version, edlin always puts a ^Z at the end of
+file, so an empty file cannot be created.)
+.RE

@@ -1,0 +1,1135 @@
+/* score15: score the noontime running league */
+
+/* The following Data files must be declared in score.rc:
+
+	RosterFile:   Information about all runners in the league
+	ResultsFile:  All results submitted so far.
+	TeamsFile:     Information about all teams in the league
+
+Must be in the search path (DOS) or home directory (Unix):
+	score.rc (Unix: .scorerc)     Global setup information
+*/
+
+/**********************************************************
+		HEADER
+*********************************************************/
+
+#define __CPLUSPLUS__
+
+#include "global12.h"
+#include "events12.h"
+#include "runner12.h"
+#include "team12.h"
+#include <ctype.h>
+#include <string.h>
+#include <time.h>
+#include <errno.h>
+#ifndef __MSDOS__
+#include<unistd.h>
+#endif
+
+#ifdef _BSD
+extern "C" int chdir(char *);
+extern "C" char *getwd(char *);
+#endif
+
+
+#ifdef __MSDOS__ 
+#include <windows.h>
+const char opsep = '/';
+char DriveLetter[3] = "";
+char StartUpDrive[_MAX_DRIVE];
+#define INFO  "                   SCORE 2.1 (Chicken Haven Software)\n\
+Menu Driven Program for managing and scoring the SU Noontime Running League.\n\
+Reads data from various files in the working directory.\n\
+ \n\
+Usage: score [/f <results,roster,teams> /y <year> /s <scorall> /filter /csv /q /help /? /v]\n\
+Setings are in score12.ini in startup directory. \n\
+ "
+#define USAGE "score [/f <results,roster,teams> /y <year> /s <scorall> /filter /csv /q /help /? /v]\n"
+
+#else
+const char opsep = '-';
+ #define INFO  "                   SCORE 2.1 (Chicken Haven Software)\n\
+Menu Driven Program for managing and scoring the SU Noontime Running League.\n\
+Reads data from various files in the working directory.\n\
+ \n\
+Usage: score [-f <results,roster,teams> -i -y <year> -s <scorall> -filter -q \n\
+		-help  -v]\n\
+Settings are in .scorerc in users home directory \n\
+ "
+
+#define USAGE "score [-f <results,roster,teams> -i -y <year> -s <scorall> -filter -q \n\
+		-help -v]\n"
+#endif
+
+#ifndef VERSION
+#define VERSION "2.1"                        
+#endif
+
+#define FATAL "Fatal Error. The \
+errlog in Working Dir may have more information.\n\
+Hit <RETURN> to return to the command line.\n"
+#define MAX_ARG_LEN 80  /* Max length of combined command line options */
+
+
+// INITIALIZED DATA
+
+
+/* states for results file parser */
+enum State {ROOT,DATED,DISTANCED,PERFORMANCED,RELAYED};
+const char *TypeNames[]={"Outside","Official","Informal"};
+int line = 1;        // line counter
+int RunnerCount = 0;     
+int number_teams = 0;
+int use_old_age = 0;      // flag to use old age calculation method.
+int exclusive_extremes = 0; // flag for either-or 100m, 15km (used in 95-96)
+Runner *LookFor ; // Used in searches        
+int found = 0;       // used in searches                                    
+int Error_Flag = 0;    // When to clear error window
+int SortFlag = 0; // 0: sort on name, 1: sort on total points
+int direction = 0;           // flag for sort direction: descending is default        
+double resolution = DEFAULT_RESOLUTION;
+int _filter = 0; // flag for filter mode
+int _csv = 0; // flag for csv option
+int either_10m_or_15k = 0; // flag to allow 10 miles in place of 15k
+int two_pt_old_age_min = 0;
+int either_mile_or_metric = 0; // flag to allow 1 mile in place 1500
+int either_100m_or_55m = 0;   // flag to allow 55m in place of 100m
+int either_8k_or_10k = 0;    // flag to allow 8k in place of 10k
+int enable_combined_dr = 0;  // flag to allow any of 10M, 15K, hmar, and mar
+// All three of the below currently set from score.ini by ManleyRelaySubstitutes
+int manleyor3200r = 0;
+int manleyor1600r = 0;
+int manleyor800r = 0;
+int legacy_table = 0; // flag to use pre WMA10 Standards 
+int ReserveLimit = 4; // Number of official runs before a runner counts for team
+                      // Default 4 is the pre-2012-13 value
+int enforce_official_minimum = 0;   // Setting this to 1 with EnforceOfficialMinimum
+                     // in score.ini causes rule change of 2012-13 - at most 
+                     // 4 outside times can count - to have effect
+// SUBROUTINES
+
+int find_opt(char *option_string);  // For command line args
+extern int mytrunc(double);
+extern int ParseResults(FILE *, 
+	char *Tokens[5], struct RUNINFO *, int *);       // Parses results file
+extern  int ParseTeamsFile(FILE *,Team *teams[], int *, int *);
+extern int ParseRosterFile(FILE *,Team *teams[], Runner *AllRunners[],
+	struct PERSON_INFO *, int *, int, int *);
+extern int ParseRcFile(FILE *, struct EXCLUDEDRELAYS *, struct EXCLUDED *,
+	int *, char *, char *, char *, char *, char *, char *, 
+		char *,char *, char *,char *);
+extern "C" void krqsort( void *v[],int , int ,
+ int (*)(void *,void *));    // Generic sort routine
+extern "C" void *binsearch(void *,void *v[],
+int, int (*) (void *, void *));  // Generic binary search
+int CompareNames(Runner *, Runner *);    // orderings used with
+int ComparePoints(Team *, Team *);   // sort and search routines
+int CompareTimes(Runner *First, Runner *Second); 
+void quit(int);
+int CompareTotalPoints(Runner *First, Runner *Second);
+int CompareIndPoints(Runner *First, Runner *Second); 
+int MySort(void *v[], int, int,int);
+extern "C" double atosecs( char *);   // convert time string
+extern  int AgeGroupNo(struct tm*,const struct tm*,const char *);
+extern int ScoreRelay(int,int,int,int,int,double,struct RelayNode *);
+extern int ScoreRelay(int,int,int,int,int,double);
+extern int scorall(fstream *);
+int ExcludedEventsHasMember(int );
+int ExcludedRelaysHasMember(int );
+int load();            // loads all data
+extern int spreadsheet(FILE *);
+extern int RunnerReport(char * name, fstream *out);
+
+#ifdef __MSDOS__
+extern int gui();
+#else
+extern int gui();
+#endif
+void myerror();
+
+// BCC Data
+
+int index_1500m;
+int index_mile;
+int index_100m;
+int index_200m;
+int index_400m;
+int index_800m;
+int index_8k;
+int index_5M;
+int index_10k;
+int index_15k;
+int index_10M;
+int index_55m;
+int index_hmar;
+int index_mar;
+int index_3xmanley;
+int index_2xmanley;
+int index_1xmanley;
+int index_dmr = 100;  // Just needs to be something that doesn't conflict
+                      // with any other event
+time_t now;
+
+char buffer[1024];
+char buffer2[1024];          //  buffers
+
+
+
+// Stuff used by ParseResults
+
+struct RUNINFO {
+	struct tm Date;           /* Of the run */
+	char ShortName[SHORTNAMELEN];       /* Of the runner */
+	char TimeString[15];      /* Time run in the event */
+	int EventNumber;         /* index into EventNames */
+	int RelayLegEventNumber;    
+	int type;   /* index into TypeNames */
+	char Leg1[20];
+	char Leg2[20];
+	char Leg3[20];     /* Short names of Relay Leg Runners */
+	char Leg4[20];
+	} rinfo;
+
+// Stuff used by ParseRosterFile
+
+struct PERSON_INFO{
+	char ShortName[20];
+	int month;
+	int day;     /* DOB */
+	int year;
+	char sex[2];
+	char teamname[SHORT_TEAM_NAME_LENGTH];
+	} pinfo;
+
+// Stuff read in from score.rc:
+struct EXCLUDED Excluded;
+
+struct EXCLUDEDRELAYS ExcludedRelays;
+
+int CompetitionYear;                                       
+char RosterFile[256];           // name of roster file  
+char ResultsFile[256];   // Buffers for names of files
+char TeamsFile[256];
+char CsvFile[256]="runs.csv";
+char Scorall[256];
+char WorkingDirectory[1024];
+char StartUpDirectory[1024];
+char TodaysDate[40];
+char TimeStamp[40];
+char PrinterInitString[80];
+char PrinterResetString[20];
+char PrinterNormalString[20];
+char TempFile[256];   // Path to a temporary file. Used for printout 
+
+// Used in the load module
+
+Runner *AllRunners[MAX_ROSTER];
+char *Legs[4]; // Pointers to relay leg names.
+int state; // of the parser
+Team *teams[NO_TEAMS];
+struct RunNode ARun;
+struct RelayNode *ARelay;
+struct RelayNode *RelayPtr;
+Runner *ARelayRunner[4];
+Runner *ARunner;
+char *Tokens[5];     // From Parsing Results File
+
+// Files and Streams
+FILE *results;     /* fd for results file */                                       
+FILE *roster;
+FILE *teamnames;
+FILE *rcfile;
+FILE *tempfile;
+FILE *errstream;
+FILE *csvfile;
+
+/************************************************************
+		 END OF HEADER
+************************************************************/
+
+
+int main(int argc, char **argv)
+{
+	int i;
+	int StartupDelay = 0; // 5/16/05: changed default to 0. Used to be 5
+	char *ptr; // Utility pointer
+	int c=-1;                /* numeric option code */
+	char *info = strdup(INFO);
+	char argstr[MAX_ARG_LEN];
+	fstream *out;
+
+      
+	 argstr[0] = opsep;
+	 argstr[1] = '\0';
+
+/* Record current directory so it can be restored */
+#ifndef __MSDOS__
+#ifdef _BSD
+	getwd(StartUpDirectory);
+#else
+    getcwd(StartUpDirectory,256);
+/* In Unix, we assume the rc-file is in the user's home directory. */
+	  strcpy(buffer,getenv("HOME"));
+	  strcat(buffer,"/.scorerc");
+	  if((rcfile = fopen(buffer,"r"))==NULL){
+		cout << FATAL << flush;
+		fgets(buffer,2,stdin);
+		fprintf(stderr,"Cannot open .scorerc. This file MUST be present in the home directory\n");
+		return 1;
+		}
+#endif 
+#else  /*  __MSDOS__ is defined */ 
+	 if(GetCurrentDirectory(_MAX_PATH,StartUpDirectory)== NULL){
+		fprintf(stderr,"_getcwd error\n");
+		exit(1);
+	 }
+	/* Get startup default drive so it can be restored */
+_splitpath(StartUpDirectory,StartUpDrive,buffer,buffer,buffer);
+	/* Open and read in Global Setup from rc file */
+_searchenv("score.ini","PATH",buffer);
+ 
+	  if((rcfile = fopen("score.ini","r"))==NULL){
+		cout << FATAL << flush;
+		gets(buffer);
+		fprintf(stderr,"Cannot open score.ini\n");
+		fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+		getchar();
+		return 1; 
+		}
+#endif
+
+
+	  if(ParseRcFile( rcfile,&ExcludedRelays,&Excluded,&CompetitionYear,
+		RosterFile,ResultsFile,TeamsFile,CsvFile,PrinterInitString,
+		PrinterResetString,TempFile,Scorall,WorkingDirectory,
+		PrinterNormalString) != 0){
+		cout << FATAL << flush;
+		fgets(buffer,2,stdin);
+		fprintf(stderr,"Parse Error in setup file\n");
+		fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+		getchar();
+		return 1;
+		}
+		fclose(rcfile);
+	
+
+/* Kludge for 1995-6: we need to score the 100m and 15k in a special way:
+	the higher of the two scores is used in the total score.
+	We compute the index of these two events and store it, rather
+	than building it in. This is good programming practice, no? 
+*/
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"100m")!=0)
+					;i++);
+	index_100m = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"200m")!=0)
+					;i++);
+	index_200m = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"400m")!=0)
+					;i++);
+	index_400m = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"800m")!=0)
+					;i++);
+	index_800m = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"55m")!=0)
+					;i++);
+	index_55m = i;
+for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"10k")!=0)
+					;i++);
+	index_10k = i;
+for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"8k")!=0)
+					;i++);
+	index_8k = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"5M")!=0)
+					;i++);
+	index_5M = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"15k")!=0)
+					;i++);
+	index_15k = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"10M")!=0)
+					;i++);
+	index_10M = i;
+
+	/* Same kludge, 2002-3 */
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"1500m")!=0)
+					;i++);
+	index_1500m = i;
+	for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"mile")!=0)
+					;i++);
+	index_mile = i;
+	/* and yet again for 2006-7: this time we allow any of the
+	15k, 10m, hmar, and mar to count as a single event */
+     for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"hmar")!=0)
+					;i++);
+	index_hmar = i; 
+
+	 for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"mar")!=0)
+					;i++);
+	index_mar = i;
+
+	 for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"772.881m")!=0)
+					;i++);
+	index_3xmanley = i;
+	  for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"515.254m")!=0)
+					;i++);
+	index_2xmanley = i;
+	  for(i=0;(i<NOEVENTS)&&(strcmp(EventNames[i],"257.627m")!=0)
+					;i++);
+	index_1xmanley = i;
+
+	/* Store Todays Date in it's own buffer */
+	now = time(NULL);
+	strftime(TodaysDate,40,"%d %B %Y",localtime(&now));
+	strftime(TimeStamp,40,"%I:%M:%S %p",localtime(&now));
+
+// PROCESS COMMAND LINE OPTIONS
+
+if(--argc > 0){  /* Anything on command line ? */
+		++argv;
+		while((argc > 0)&&((*argv[0]) == opsep)){
+			argstr[0]=opsep;
+			argstr[1]='\0';
+			strcat(argstr,++*argv); /* start building argstr*/
+			argc--;
+			while((argc>0)&&((*(argv+1))[0]==opsep)&&((*(argv+1))[1]!=opsep)){
+/* combine all options into a single string */
+				++argv;
+				argc--;
+				strcat(argstr,++*argv);
+			}
+			++argv;
+		       c = find_opt(argstr+1); /* look up code */
+		switch(c){
+
+			case -1: break;  /* default, e.g no options */
+			case 9: /* filter mode */
+				_filter = 1; 
+				break;
+
+			case 11: /* csv mode */
+				_csv = 1;
+				break;
+
+			case 0: printf("%s\n",info);
+				return 0;
+			case 4:  // /q followed by /f
+				StartupDelay = 0;
+			case 1:          /* /f parse and set filenames */
+				// glob up  command-line args up till the
+				// the next /  or end of args
+				buffer[0]='\0';
+				while((argc >0)&&((*argv)[0]!=opsep)){
+					strcat(buffer,*argv++);
+					argc--;
+					}
+				  if(buffer[0]=='\0'){
+					fprintf(stdout,USAGE);
+					return 1;
+					}
+				  if((ptr = strtok(buffer,","))!=NULL)
+				   strcpy(ResultsFile,ptr);
+				  else { 
+				   fprintf(stdout,USAGE);
+				   return 1;
+				  }
+				  if((ptr = strtok(NULL,","))!=NULL)
+				   strcpy(RosterFile,ptr);
+				  else {
+					fprintf(stdout,USAGE);
+					return 1;
+					}
+				  if((ptr = strtok(NULL,"\0"))!=NULL)
+				   strcpy(TeamsFile,ptr);
+				   else {
+					fprintf(stdout,USAGE);
+					return 1;
+				   }
+				  break;
+			case 2:   /* Give your version */
+				printf("Version %s\n",VERSION);
+				return 0;
+			case 3:
+				StartupDelay = 0;
+				break;
+			case 6:  // /q followed by /y
+				StartupDelay = 0;
+			case 5:  // The /y option
+				CompetitionYear = atoi(*argv++);
+				argc--;
+				break;
+			case 8:   // the /qs option
+				StartupDelay = 0;
+			case 7: strcpy(Scorall,*argv++);   // the /s option
+				argc--;
+				break;
+			case 10:  /* just dump info from rc file and exit */
+				fprintf(stdout,"CompetitionYear = %d\n",CompetitionYear);
+				fprintf(stdout,"WorkingDirectory = %s\n",WorkingDirectory);
+				fprintf(stdout,"RosterFile = %s\n",RosterFile);
+				fprintf(stdout,"ResultsFile = %s\n",ResultsFile);
+				fprintf(stdout,"TeamsFile = %s\n",TeamsFile);
+				fprintf(stdout,"CsvFile = %s\n",CsvFile);
+				fprintf(stdout,"Scorall = %s\n",Scorall);
+				fprintf(stdout,"TempFile = %s\n",TempFile);
+				fprintf(stdout,"Excluded Events: \n");
+				for(i=0;i<Excluded.number;i++)
+					fprintf(stdout,"%s\n",
+					  EventNames[Excluded.events[i]]);
+				fprintf(stdout,"Excluded Relays: \n");
+				for(i=0;i<ExcludedRelays.number;i++)
+					fprintf(stdout,"%s\n",
+					EventNames[ExcludedRelays.events[i]]);
+				return 0;
+			case -2: ;  /* barf (don't use in your code) */
+			default:
+				// should use stderr, but its redirected
+				fprintf(stdout,"%s: illegal option\n",argstr);
+				fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+				getchar();
+				return 1;
+			}  // end switch
+		}  // end while
+	}         // end if
+    
+// Set appropriate default drive (Dos only)
+#ifdef __MSDOS__
+// Let's see if the working directory path supplies a drive letter
+	//_splitpath(WorkingDirectory,DriveLetter,NULL,NULL,NULL);
+//	if(DriveLetter[0]!='\0')
+//		system(DriveLetter);
+	/* Else drive is the same as it was when pgm started */
+/* change to working directory */
+	if(SetCurrentDirectory(WorkingDirectory)==0){
+		fprintf(stderr,"Unable to cd to working directory");
+		fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+		getchar();
+	}
+	
+
+#else
+	if(chdir(WorkingDirectory)!=0){
+		fprintf(stderr,"Unable to cd to working directory %s. Errno = %d\n",WorkingDirectory,errno);
+		quit(1);
+	}
+#endif
+       errstream = fopen("errlog","w"); // send error messages to log
+					// during data load
+	   if(!errstream){
+		   fprintf(stderr,"Unable to open error log\n");
+		   fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+		   getchar();
+		   exit(1);
+	   }
+       fprintf(errstream,"Noontime Running League Scoring Program Version %s\n",
+		VERSION);
+       fprintf(errstream,"              By Terry McConnell\n\n");
+       fprintf(errstream,"Today is %s\n",TodaysDate);
+	   fprintf(errstream,"Time Stamp: %s\n",TimeStamp);
+	   fprintf(errstream,"Startup Directory: %s\n",StartUpDirectory);
+	   fprintf(errstream,"Working Directory:%s\n",WorkingDirectory);
+	   fprintf(errstream,"Reserve Limit = %d\n",ReserveLimit);
+       fprintf(errstream,"Any Load Error Messages Follow:\n");
+	// Initialize the table of standards
+	// This table is built by running the mkstnd12s program
+
+    if(legacy_table)InitLegacyTable();
+	else InitTable();
+	 
+// LOAD DATA
+
+	if(_csv){   
+       // print column headers. These must match field names in database
+		printf("Runner,Distance,Date,Type,Hours,Minutes,Seconds\n"); 
+	}
+	 if(load() == 1) {
+			   cout << FATAL << flush;
+			   fgets(buffer,2,stdin);
+			   fprintf(stderr,"Error in Data Load\n");
+			   fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+			   getchar();
+			   quit(1);
+	 }
+
+	fclose(errstream);
+    	if(_filter) quit(0); 
+		if(_csv) quit(0);
+
+	if(StartupDelay == 0) {     // Quick option - now the only option
+#ifdef __MSDOS__
+		system("type errlog ");
+		cout << "Creating new scorall as " << Scorall << endl;
+		fprintf(stderr,"Strike Enter to Continue > ");
+		getchar();
+#else
+		system("cat errlog | more");
+		fprintf(stderr,"Creating new scorall as %s\n",Scorall);
+		fprintf(stderr,"Strike Enter to Continue...  score12> ");
+		getchar();
+#endif
+
+		/* Small menu for actions */
+/* obsoleted 11/16/05 
+try_again:
+		cout << endl;
+		cout << "Create Scorall ? [yn]";
+		fgets(buffer,2,stdin);
+		if(buffer[0]=='n')quit(0);
+		if(buffer[0]!='y') goto try_again;	
+*/
+
+		out = new fstream(Scorall,ios::out);
+		if(out == NULL) {
+			cout << FATAL << " Unable to open for write: " << Scorall << endl;
+			fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+			getchar();
+			quit(1);
+		}
+		scorall(out);
+
+		fprintf(stderr,"Creating Results Spreadsheet as %s\n",CsvFile);
+		fprintf(stderr,"Strike Enter to Proceed score12> ");
+		getchar();
+		csvfile = fopen(CsvFile,"w");
+		if(!csvfile){
+			fprintf(stderr,"Unable to open spreadsheet file %s\n",CsvFile);
+			fprintf(stderr,"Strike Enter to Exit (Go Figure!)> ");
+			getchar();
+		}
+		spreadsheet(csvfile);
+		fclose(csvfile);
+		quit(0);
+	}
+#if 0  //obsoleted DOS stuff 
+       //fclose(errstream);
+/* Copy errlog to tempfile and open it for read */
+          if(TempFile[0] == '\0') {
+		cout << FATAL << flush;
+		 fprintf(stderr,"No Temp File: Check score.ini entry\n");
+                fgets(buffer,2,stdin);
+                quit(1);
+	  }
+#ifdef __MSDOS__
+	  sprintf(buffer,"copy errlog %s", TempFile);
+	  system(buffer);
+#else
+
+	fstream in("errlog",ios::in);
+	fstream temp_out(TempFile,ios::out);
+	while((i=in.get())!=EOF) temp_out << i;
+	//while((i=in.get())!=EOF)temp_out.put((int)i);
+	in.close();
+	temp_out.close();
+
+//	  sprintf(buffer,"cp errlog %s", TempFile);
+#endif
+//	  system(buffer);
+#endif //obsoleted section
+#if 0 // more obsoleted stuff
+#ifdef __MSDOS__
+          if((tempfile = fopen(TempFile,"r"))== NULL){
+		cout << FATAL << flush;
+		fprintf(stderr,"Unable to open %s\n",TempFile);
+                gets(buffer);
+              quit(1);
+	  }
+         
+#endif
+#endif //obsoleted section
+
+ // go to user interface
+
+	  if(1){
+		fprintf(stderr,"Gui is no longer supported\n");
+	  }
+
+ // Clean up	
+	  quit(0);
+	  return 0; /* Not needed, but prevents compiler warning */
+}
+
+
+/***************************************************************************
+	 LOAD DATA SECTION: parse and load data on teams, runners, runs
+***************************************************************************/
+
+int load()
+{
+	int i,j,k,count;
+
+	/* Open and read in the team names */
+	
+	 if((teamnames = fopen(TeamsFile,"r"))== NULL){
+		fprintf(errstream,"Unable to open teams file %s\n",TeamsFile);
+		fprintf(errstream,"Hit Return> ");
+		getchar();
+		quit(1);
+		}
+
+	 if(ParseTeamsFile(teamnames, teams, &line, &number_teams) != 0){
+		fprintf(errstream,"Exiting on error parsing teams file\n");
+		fprintf(errstream,"Hit Return> ");
+		getchar();
+		quit(1);
+	 }
+		fclose(teamnames);
+	/* Open the roster for reading in the team data */
+
+	if((roster = fopen(RosterFile,"r"))==NULL){
+		fprintf(errstream,"Cannot open  roster file %s\n",RosterFile);
+		fprintf(errstream,"Hit Return> ");
+		getchar();
+		quit(1);
+		}
+
+	line = 1;
+	if(ParseRosterFile(roster, teams, 
+		AllRunners, &pinfo,&line, number_teams,&RunnerCount)){
+			fprintf(errstream,"Fatal error processing roster file\n");
+			fprintf(errstream,"Hit Return> ");
+			getchar();
+	}  /* most errors do not cause abort */
+
+	fclose(roster);
+
+	// Roster is now in core as AllRunners
+	// Sort the roster
+	krqsort((void **)AllRunners,0,RunnerCount-1,
+		(int (*)(void *,void *))CompareNames);
+
+
+	/* open results file */
+	if((results = fopen(ResultsFile,"r"))==NULL){
+		fprintf(errstream,"cannot open results file %s\n",ResultsFile);
+		fprintf(errstream,"Hit Return> ");
+		getchar();
+		quit(1);
+	}
+
+	// Parse the Results file
+
+	/* allocate memory for tokens */
+	for(i=0;i<5;i++){
+	Tokens[i] = (char *)malloc(20);
+	assert(Tokens[i] != NULL);
+	}
+	line = 0;
+	while((state = ParseResults(results,Tokens,&rinfo,&line))!= -1){
+		if( state == PERFORMANCED){
+                        if(rinfo.EventNumber != -1){    // -1 is returned for
+                                                // the incredibly stupid
+                                                // special event added in
+                                                // fall 96
+                         ARun.type = rinfo.type;
+                         ARun.distance = rinfo.EventNumber;
+                         ARun.time = atosecs(rinfo.TimeString);
+                         ARun.date = rinfo.Date;
+                        }
+			char tempbuf[1]="";
+			Runner *LookFor = new Runner(rinfo.ShortName,tempbuf,tempbuf,0,0,0,tempbuf);
+			Runner *BRunner = (Runner *)binsearch((void *)LookFor,
+			(void **)AllRunners,RunnerCount,
+			(int (*)(void *,void *))CompareNames);
+			delete LookFor;
+			if ( BRunner != NULL ){
+                         if(rinfo.EventNumber != -1){      // See above
+                          BRunner->AddRun(&ARun);
+						  if(_csv){ // Dump each performance in excel csv format for import into an access
+							        // data base: shortname, distance name, date , type , hrs, mins, secs
+							  int i; 
+							  int hrs,mins;
+							  double secs;
+							  char text_buf[256];
+							 
+							  printf("%s,",BRunner->GetName());
+							  i = ARun.distance;
+							  printf("%s,",EventNames[i]);
+							  strftime(text_buf,256,"%m/%d/%Y",&(rinfo.Date));
+							  printf("%s,",text_buf);
+							  switch(ARun.type){
+								  case official:
+									  printf("regular,");
+									  break;
+								  case informal:
+									  printf("informal,");
+									  break;
+								  case outside:
+									  printf("outside,");
+							  }
+							  i = (int)ARun.time;
+							  hrs = i / 3600;
+							  i %= 3600;
+							  mins = i / 60;
+							  secs = ARun.time - ((double)hrs*3600.0) - ((double)mins*60.);
+							  printf("%d,%d,%.2f\n",hrs,mins,secs);
+						  }
+/* If we are running in filter mode,  tack on 
+   the score for this event */
+			  if(_filter){
+				double temp;
+				double pts;
+				int ag,age;
+				struct tm* Dob;
+
+				/* Sigh. To handle the new rule of 2007, we need to calculate the age
+		because we need to ensure that those 85 and older get a minimum of 2 points
+		per event */
+			Dob = BRunner->GetDob();
+			if((Dob->tm_mon < ARun.date.tm_mon)||((Dob->tm_mon==ARun.date.tm_mon)&&(Dob->tm_mday
+		<= ARun.date.tm_mday)))
+                        age = ARun.date.tm_year - Dob->tm_year;
+        else age = ARun.date.tm_year  - Dob->tm_year - 1;
+
+				ag = AgeGroupNo(BRunner->GetDob(),&(ARun.date), BRunner->GetSex());
+				pts = (20.0*(table[ag][ARun.distance]/ARun.time) - 10.0)/resolution;
+				temp = (double)mytrunc(pts);
+				if(age < 85)
+				temp = (temp < 1/resolution ? 1/resolution : temp)*resolution;	
+				else
+				temp = (temp < 2/resolution ? 2/resolution : temp)*resolution;	
+#ifdef _BSD
+				printf(" =%.1g",temp);
+#else
+				printf(" =%g",temp);
+#endif
+			  }
+			 }
+                         else BRunner->AddSpecial();      
+			}
+			else {
+				fprintf(errstream,"%s is not in the roster\n",rinfo.ShortName);
+				fprintf(errstream,"%s, line %d\n",ResultsFile,line);
+			}
+			}
+// Code to handle state == RELAYED
+if( state == RELAYED){
+			int errflag = 0;
+			k = NO_TEAMS + 1;
+			char *Legs[4];
+			Legs[0]=rinfo.Leg1;
+			Legs[1]=rinfo.Leg2;
+			Legs[2]=rinfo.Leg3;
+			Legs[3]=rinfo.Leg4;
+			ARelay = new RelayNode;
+			ARelay->type = rinfo.type;
+			ARelay->distance = rinfo.EventNumber;
+			ARelay->LegDistance = rinfo.RelayLegEventNumber;
+			ARelay->time = atosecs(rinfo.TimeString);
+			ARelay->date = rinfo.Date;
+			int old_k = -1;
+			for(i=0;i<4;i++){
+				char tempbuf[1]="";
+				LookFor = new Runner(Legs[i],tempbuf,tempbuf,0,0,0,tempbuf);
+				ARelayRunner[i] = (Runner *)binsearch((void *)LookFor,
+				(void **)AllRunners,RunnerCount,
+				(int (*)(void *,void *))CompareNames);
+				delete LookFor;
+				if(ARelayRunner[i]==NULL){
+					errflag =1;
+					fprintf(errstream,"%s is not in roster\n",Legs[i]);
+					fprintf(errstream,"%s, line %d\n",ResultsFile,line);
+					break;
+				}
+				for( j =0;j<NO_TEAMS;j++)
+					if(strcmp(teams[j]->GetShortName(),
+								ARelayRunner[i]->GetTeamName())==0){
+								k=j;
+								if((old_k!=-1)&&(k!=old_k))
+									errflag = 1;
+								old_k = k;
+								break;
+								 }
+								// k should now have team index
+
+				ARelay->Legs[i]=ARelayRunner[i]->GetName();
+			 ARelay->Dobs[i]=ARelayRunner[i]->GetDob();
+		ARelay->Sexes[i]= ARelayRunner[i]->GetSex();
+				}
+				if((errflag ==0)&&(k!=(NO_TEAMS+1))){
+				RelayPtr = (teams[k]->AddRelay(ARelay));
+			for(i=0;i<4;i++)
+					ARelayRunner[i]->AddRelay(RelayPtr);
+			if(_filter){
+				double temp;
+				temp = (double)ARelayRunner[0]->GetRelayPoints(
+					ARelayRunner[0]->GetRelayNumber()-1);
+				temp = (temp < 1/resolution ? 1/resolution : temp)*resolution;	
+#ifdef _BSD
+				printf(" =%.1g",temp);
+#else
+				printf(" =%g",temp);
+#endif
+			}
+				}
+				else fprintf(errstream,"%s %s %s %s  on different or invalid team\n",
+					rinfo.Leg1,rinfo.Leg2,rinfo.Leg3,rinfo.Leg4);
+			}
+	 if(_filter)printf("\n");
+	 }
+
+	 // Check and set compliance of runners with the <= 4 outside runs rule (enacted 2012-13 season)
+	 if(enforce_official_minimum){
+		 int sprintcnt, distcnt,ldcnt,mdcnt;
+	 for(i=0;i<RunnerCount;i++){
+		 count=0;
+		 for(j=0;j<NOEVENTS-NORELAYS;j++)
+			 if((AllRunners[i]->BestRuns[j]!=0)&&(AllRunners[i]->BestRuns[j]->type==outside)){
+		  if(either_8k_or_10k){
+		    if((j==index_8k)&&(AllRunners[i]->best_8k_is_10k))continue;
+		    if((j==index_10k)&&(AllRunners[i]->best_10k_is_8k))continue;
+		    if((j==index_10k)&&!(AllRunners[i]->best_8k_is_10k))continue;
+		    if((j==index_8k)&&!(AllRunners[i]->best_10k_is_8k))continue;
+		  }
+		  if(enable_combined_dr){
+		    if((j==index_15k)&&(AllRunners[i]->best_15k_is_10M))continue;
+		    if((j==index_15k)&&(AllRunners[i]->best_15k_is_hmar))continue;
+		    if((j==index_15k)&&(AllRunners[i]->best_15k_is_mar))continue;
+		    if((j==index_hmar)&&!(AllRunners[i]->best_15k_is_hmar))continue;
+		    if((j==index_10M)&&!(AllRunners[i]->best_15k_is_10M))continue;
+		    if((j==index_mar)&&!(AllRunners[i]->best_15k_is_mar))continue;
+		  }
+		  if(either_mile_or_metric){
+		    if((j==index_1500m)&&(AllRunners[i]->best_1500m_is_mile))continue;
+		    if((j==index_mile)&&!(AllRunners[i]->best_1500m_is_mile))continue;
+		    
+		  }
+		  if(either_100m_or_55m){
+		    if((j==index_55m)&&!(AllRunners[i]->best_100m_is_55m))continue;
+		    if((j==index_100m)&&(AllRunners[i]->best_100m_is_55m))continue;
+		  }
+	/* If no exemptions above apply, count it against the total */
+				 count++;
+			 }
+		 if((count > 4))    // Change 4 to whatever if rules change
+			 AllRunners[i]->compliant=0;
+	 }
+	 }
+// Compute the team totals
+	for(i=0;i<number_teams;i++)
+	teams[i]->SetPoints();
+
+// Sort the teams by total points scored
+	krqsort((void **)teams,0,number_teams-1,
+		(int (*)(void *,void *))ComparePoints);
+/*************************************************************************
+       END DATA LOAD SECTION
+*************************************************************************/
+return 0;
+}
+
+/* CompareNames: Returns -1 0 or 1 according as the name of
+	the first runner is before, the same, or after that of the
+	second, in the following ordering:
+
+	inamea < jnameb iff nameai < namebj in alphabetic order
+	where i and j are the first initials
+
+	Used to sort runners by name
+
+*/
+int CompareNames(Runner *First, Runner *Second)
+{
+	char *first,*second;
+	first = First->GetName();
+	second = Second->GetName();
+	if(direction == 0) {
+	if(strcmp(first,second)==0)
+		return 0;
+	if (strcmp(first+1,second+1) == 0)
+		return ( *first < *second ? -1 : 1 );
+	return strcmp(first+1,second+1);
+	}
+	if(strcmp(first,second)==0)
+		return 0;
+	if (strcmp(first+1,second+1) == 0)
+		return ( *first < *second ? 1 : -1 );
+	return strcmp(second+1,first+1);
+}
+
+// Compare individuals by points for the current event.
+// Contrast with ComparePoints which compares TEAMS by points
+
+int CompareIndPoints(Runner *First, Runner *Second)
+{
+	double first,second;
+	first = First->GetPoints(rinfo.EventNumber);
+	second = Second->GetPoints(rinfo.EventNumber);
+	if ( (first  == -11.0)&&(second == -11.0) ) return CompareNames(First,Second);
+	if ( direction == 1){
+		if(second == -11.0) return 1;      // hasn't run event
+		if(first == -11.0) return -1;
+		if(first == second) return CompareNames(First,Second);
+		if(first < second ) return -1;
+		return 1;
+	}
+	if(first == -11.0) return 1;
+	if(second == -11.0)return -1;
+	if(second == first) return CompareNames(First,Second);
+	if(second < first ) return -1;
+	return 1;
+}
+
+// Compare individuals by total points 
+// Contrast with ComparePoints which compares TEAMS by points
+
+int CompareTotalPoints(Runner *First, Runner *Second)
+{
+	int first,second;
+	first = First->GetTotalPoints();
+	second = Second->GetTotalPoints();
+	if ( (first  == 0)&&(second == 0) ) return CompareNames(First,Second);
+	if ( direction == 0){
+		if(second == 0) return 1;      // hasn't run event
+		if(first == 0) return -1;
+		if(first == second) return CompareNames(First,Second);
+		if(first < second ) return -1;
+		return 1;
+	}
+	if(first == 0) return 1;
+	if(second == 0)return -1;
+	if(second == first) return CompareNames(First,Second);
+	if(second < first ) return -1;
+	return 1;
+}
+
+
+// CompareTimes: return -1,0,1 according as the first runner has run
+//  faster,the same as, or slower than the second in the given event
+//  if the direction flag is 0. Reverse roles of runners if the flag is not 0
+//  Ties are broken by alpabetic order
+
+int CompareTimes(Runner *First, Runner *Second)
+{
+	double first,second;
+	first = First->GetTime(rinfo.EventNumber);
+	second = Second->GetTime(rinfo.EventNumber);
+	if ( first + second == 0.0 ) return CompareNames(First,Second);
+	if ( direction == 0){
+		if(second == 0.0) return -1;      // hasn't run event
+		if(first == 0.0) return 1;
+		if(first == second) return CompareNames(First,Second);
+		if(first < second ) return -1;
+		return 1;
+	}
+	if(first == 0.0) return -1;
+	if(second == 0.0)return 1;
+	if(second == first) return CompareNames(First,Second);
+	if(second < first ) return -1;
+	return 1;
+
+}
+/* ComparePoints: Return -1,0,1 according as the First team
+		has scored fewer, than same as, or more points than
+		the Second team.
+
+		Used to sort teams by their point totals
+*/
+
+int ComparePoints(Team *First, Team *Second)
+{
+	int first,second;
+
+	first = First->GetPoints();
+	second = Second->GetPoints();
+	if(first == second){ // use reserve points as secondary criterion 
+		first = First->GetReservePoints();
+		second = Second->GetReservePoints();
+		if(first == second)return 0;
+		if(first < second) return -1;
+		return 1;
+	}
+	if(first < second) return -1;
+	return 1;
+}
+
+/*  find_opt: return a unique small integer for each possible option string */
+/*  There should be a case in the switch statement in main to handle each. */
+/*  -2 reserved for arg not found -1 reserved for no options */
+
+int find_opt(char *word)
+{
+	if(strcmp(word,"help")==0)return 0;
+	if(strcmp(word,"filter")==0)return 9;
+	if(strcmp(word,"csv")==0)return 11;
+	if(strcmp(word,"?")==0)return 0;
+	if(strcmp(word,"f")==0)return 1;
+	if(strcmp(word,"v")==0)return 2;
+	if(strcmp(word,"q")==0)return 3;
+	if(strcmp(word,"qf")==0)return 4;
+	if(strcmp(word,"y")==0)return 5;
+	if(strcmp(word,"qy")==0)return 6;
+	if(strcmp(word,"s")==0) return 7;
+	if(strcmp(word,"qs")==0) return 8;
+	if(strcmp(word,"i")==0) return 10;
+/* arg not found */
+	return -2;
+}
+
+
+// Called when there is an error
+void myerror()                             
+{
+	Error_Flag = 1;
+	return;
+}
+/*
+int MySort(void **array, int left, int right, int flag)
+{
+	switch(flag) {
+	case BYLASTNAME:
+		 krqsort((void **)array,left,right,
+			(int (*)(void *,void *))CompareNames);
+		 return 0;
+	case BYTOTALPOINTS:
+		 krqsort((void **)array,left,right,
+			(int (*)(void *,void *))CompareTotalPoints);
+		 return 0;
+		
+	case BYEVENTPOINTS:        
+		 krqsort((void **)array,left,right,
+			(int (*)(void *,void *))CompareIndPoints);
+		 return 0;
+	case BYTIMES:
+		 krqsort((void **)array,left,right,
+			(int (*)(void *,void *))CompareTimes);
+		 return 0;
+	}
+	return 0;
+}
+*/
+	
+int ExcludedEventsHasMember(int i) {
+	int j;
+	for(j=0;j<Excluded.number;j++)
+		if(Excluded.events[j]==i)
+			return 1;
+	return 0;
+}
+/* Return 1 when relay event is excluded */
+
+int ExcludedRelaysHasMember(int i) {
+	int j;
+	for(j=0;j<ExcludedRelays.number;j++)
+		if(ExcludedRelays.events[j]==i)
+			return 1;
+	return 0;
+}
+
+void quit(int value){
+
+//	 fclose(results);
+//	 fclose(tempfile);
+#ifdef __MSDOS__
+	  system(StartUpDrive);  // restore Drive letter
+	  strcpy(buffer,"cd ");
+	  strcat(buffer,StartUpDirectory);
+	  system(buffer);      // restore startup directory
+	  system("cls");
+#else
+//	  chdir(StartUpDirectory);
+//	  system("clear");
+//	  system("echo \"\n\n\"");  // Assuming echo is sysv  
+#endif
+	  exit(value);
+}
+

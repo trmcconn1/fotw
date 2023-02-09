@@ -1,0 +1,56 @@
+
+[ Bug: this needs to be finished ]
+
+Issues involved in the port (32 bit Linux, Nasm -> 16 bit Masm)
+
+1) 32 bit registers are replaced with 16 bit registers, and 16 bit registers
+need to be replaced by 8 bit registers. Thus, every eax must change to ax,
+and every dx to dl, etc. This is easy to do in every source file using
+search and replace.
+
+2) A more pernicious consequence of word size is that size of pointers must be
+attended to whenever one cleans up after a call, or advances a pointer. 
+Thus, 
+
+push eax
+push ebx
+call foo
+add esp,8
+
+becomes
+
+push ax
+push bx
+call foo
+add esp,4
+
+Similarly, to access the first passed argument on the stack, mov eax,[ebp+4]
+becomes mov ax,[bp+2].  And often, foo[esi+4] must be replaced by 
+foo[si + 2]. You will never find all of these, and there will be crashes. 
+
+3) Masm syntax is different than nasm syntax. There are simple things, like
+GLOBAL becomes PUBLIC, and EXTERNAL becomes EXTRN (go figure), and tricky
+issues involving addressing modes. Here, in no particular order, are some
+of the things that tripped me up:
+
+(a) Masm wants to know the size of external symbols. Thus, one must say
+EXTRN foo:BYTE and EXTRN myfunct:NEAR
+
+(b) Masm's addressing modes are notoriously baffling and inconsistent, while
+nasm's are simple, and somewhat ineffective. Generally, in Masm, if you use
+the name of a symbol, you are referencing the contents of the memory that
+symbol labels. In nasm, symbols ALWAYS refer to an address unless you
+use brackets ([]). If you want to move the contents of the memory labeled by
+symbol foo to ax, in nasm you say mov ax,[foo], while in Masm you say
+mov ax,foo.  The latter seems simpler and more natural to me (kudos to Masm),
+but pointers (and pointers to pointers) are easier to handle in nasm than
+masm. For example, suppose you pass a pointer to an array of pointers as the
+second argument up the stack, and you want to move the first pointer in the
+array into ax.  (Think: argv[0]). [ etc ]
+
+(c) Syntax to reserve memory is different
+
+4) That big ugly segmentation thing.
+
+5) The notorious NL vs CR-NL thing. 
+

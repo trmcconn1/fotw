@@ -1,0 +1,133 @@
+		Xplore: A text mode filesystem browser
+     			    Version .04
+			by Terry R. McConnell
+
+Where do you want to go today?
+
+
+Contents
+========
+
+1. Introduction
+2. Compilation
+3. Installation
+4. Distribution contents
+5. Special comments for Minix <-- MINIX USERS PLEASE READ 
+6. Disclaimer
+7. Author
+
+1. Introduction
+
+Xplore is a basic filesystem browser for Unix systems. It is built using
+the curses library and runs in text mode. In normal operation, the program
+presents the user with a two paned display showing all subdirectories
+of the starting directory in the left pane, and all files and subdirectories
+in the right pane. The user can navigate to new directories by choosing
+subdirectories in the left pane, and can select files in the right pane.
+Selected files are then executed if they are executable. Otherwise, if
+the user has associated an application with the selected file's extension,
+the application is started with the selected file as an argument. If there
+is no associated application, the file is opened in an editor.
+
+As of version .03 the browser also supports a forward/back mechanism.
+As of version .04 the browser supports multiple selection and browsing
+for arguments of executables.
+
+It's sort of a poor man's explorer.
+
+For details on operation, consult the included man page.
+
+It should be noted that the browser itself is implemented in a self-contained
+source file (browse.c, also browse.h). It could easily be used as a
+"widget" in some other application. See the source file browse.c, which is
+intended to be reasonably self-documenting.
+
+Notably missing from xplore is any facility for manipulating the filesystem
+directly. For example, you can't highlight a bunch of files in the right
+window and delete them all. (You have to 'shell out' to accomplish such 
+dangerous things.) I will resist the temptation to turn xplore into 
+another shell. 
+
+2. Compilation 
+
+Edit the makefile and say "make xplore". Wasn't that easy? Note that if
+you have ncurses available, you should use it. In particular, define NCURSES
+in CFLAGS. Define LPR if your print program is not lpr. Define NO_STRDUP
+if your library doesn't have strdup -- an included implementation will get
+used instead. Define MORE if your more program is in a funny place or if
+you want to use something else (less, e.g) in place of it.  
+
+Other macros definable from the makefile, with defaults noted:
+
+MAX_HISTORY (50) Maximum number of concurrent items in history list.
+ARG_MAX (256)    Maximum number of command line arguments for external pgms.
+MAX_PATH (256)   Maximum length of a single path. The OS may place its own
+                 limit on this.
+MAXLINE (256)    Longest length of a line of text. Used only in processing
+                 .xplorerc.
+MAX_NAME (1024)  Controls how much space is allocated for the top pane
+                 buffer. Mainly, this limits the longest command line
+                 string that can be built. There is no guarantee that the OS
+                 will actually allow strings of this length. 
+_DEBUG (no value)Enables whatever debugging code is included at present.
+
+3. Installation
+
+Insert the cdrom and click on setup.exe ... er, no. Wrong platform. 
+But, it's almost that simple. Move the executable (xplore) somewhere on
+your path, and install the man page (xplore.1) in a standard place, if you
+wish. Finally, copy the included xplorerc to $HOME/.xplorec and
+edit it to taste. That's it.
+
+4. Distribution contents
+
+-README: This file.
+-CHANGES: Keeps track of changes from one version to the next (in theory.)
+-Source code: .c's, .h's, and makefile.
+-xplore.1: A unix-style man page (standard nroff -man compatible.)
+-xplorerc: Sample configuration file.
+
+5. Special comments for Minix
+
+The minix distribution of this package contains a prebuilt minix 
+exectutable (minix 2.0.0+, i386). Unfortunately, the minix curses library
+doesn't support colors, so you'll have to be content with the clunky
+(well, clunkier) appearance of the boxed windows. (With colors, the
+windows are not outlined and it looks much better.) An alternative would
+be to try to port ncurses to minix. Strangely, the minix curses manpage
+mentions a color setting routine (setcolor), but it does not appear to
+exist after all.
+
+A second problem with standard minix is the lack of hashbang capability.
+Shell scripts are parsed by /bin/sh no matter what the hashbang line says,
+so you can only execute scripts written for /bin/sh (which is pretty 
+weak) from the browser. You can launch specific scripts using psuedofiles.
+For example, do something like
+
+*NIFTY_ACTION  /usr/bin/ash /path_to_ash_script
+
+to make the given ash script run when you choose *NIFTY_ACTION in the
+browser. Alternatively, you could just replace /bin/sh with ash. (You
+still better call it /bin/sh, though.) Of course, replacing the system
+shell might have unforseen consequences, so be careful doing this.
+
+A final problem with minix is that there is no way to get rid of the
+cursor -- short of constantly parking the cursor somewhere out of the way,
+something I'm not willing to bother with. The problem is that the
+curses library routine curs_set (not set_curs as the man page says) uses
+the vi etc family of termcap capabilities, and the minix terminal lacks
+these. Solution: hack your kernel to implement these capabilities, write
+a new termcap, or get used to the annoying and confusing cursor. 
+
+6. Disclaimer
+
+This software is offered "as is" in the hope that it will be useful. The
+author is not responsible for any damage to your system, your person, or
+your psyche caused by use and misuse of this software.  
+
+7. Author
+
+Terry R. McConnell
+2458 Swift Road
+Lafayette, NY 13084
+trmcconn@syr.edu

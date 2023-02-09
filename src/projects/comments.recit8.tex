@@ -1,0 +1,76 @@
+{\bf Comments on recitation 8 work.}
+\vskip 1 in
+
+Hoo boy... I feel a tirade coming on.
+\vskip .1 in
+Problem 1. Estimates of accuracy ranged from 40\% to 100\% which seems 
+reasonable, but the work was rather sloppily done. I seriously doubt whether
+any of you could look at your own work a year from now and have any idea
+what the numbers mean. When you present data, always state clearly exactly
+what was measured and what units of measurement were used. I managed to
+figure out (I think) that in the expression $\frac{\Delta S}{S}$ the
+${\Delta S}$ represents the largest minus the smallest measure of distance
+and that the $S$ in the denominator represents the smallest measured
+distance. Nobody tried to explain why these choices were made. 
+
+\vskip .1 in
+One difficulty with this problem is that the quantity being measured, human
+reaction time, is actually a random variable with a certain probability
+distribution, rather than a deterministic quantity. Accordingly, a proper
+error analyis really belongs to the subject of {\it Statistics.} On
+statistical grounds it could be argued that a better estimate of error
+is given by the standard deviation of the measurements, but the largest
+minus smallest does provide a (conservative) upper bound to the standard
+deviation, and one which is easily computed. 
+
+\vskip .1 in
+Concerning significant digits: If I measure the length of my thumb with a
+dime-store ruler and report the answer as 3.078321 inches, you should laugh
+at me because there is no way my answer could be that accurate. When a
+scientist reports results of a measurement to the outside world, the
+number of significant digits is intended to convey information about the
+accuracy of the measurement. (The number of significant digits is one plus
+the number of digits dispayed to the right of the decimal when a number is
+expressed in scientific notation: 3.07 and 3.00 have 3 significant digits,
+.0003 has one. ) It is reasonable to retain several additional digits during
+calculations so that round-off errors do not accumulate, but the final
+answer should always be rounded to an appropriate number of significant
+digits. Question: How do I know how many significant digits are appropriate
+in a result ? Answer: I do an error analysis like the one you did. If there
+is a 10\% or more relative error, I have no right to claim more than one
+significant digit.
+
+\vskip .1 in
+It is curious that you all seemed to understand the
+relationship
+$$
+	\frac{dT}{T} = \frac12\frac{dS}{S} 
+$$
+and yet many of you couldn't do problem 3 on the test. 
+\vskip 1 in
+Problem 2. Students often remember the simple one variable chain rule
+$$
+\frac{df}{dx} = \frac{df}{dy}\frac{dy}{dx},
+$$
+where $y$ is a function of $x$, by imagining that the factor $dy$ on the
+right-hand side can be ``cancelled''. Indeed, this mnemonic quality is often
+touted as one of the strengths of the Leibniz system of notation. 
+Unfortunately, the Leibniz system can also be misleading, as this example
+shows. (Cancellation of the $\partial x$ symbols leads to the incorrect
+value 1 rather than -1.) All of you wrote down the equation for the
+differential
+$$
+dF = \frac{\partial F}{\partial x}dx +  \frac{\partial F}{\partial z}dz = 0
+$$
+and then ``solved'' for the ratio $\frac{\partial z}{\partial x},$ thus falling
+into precisely the kind of trap this example is intended to warn against. 
+It is important to realize that in the above equation the symbols $dx$ and
+$dz$ represent arbitrary changes in the independent variables: their
+ratio has no particular significance. The proper solution is to
+write the following, in which z represents the (implicitly defined) function
+of x and y that results from solving the equation of state:
+$$ 
+ \frac{\partial F}{\partial x} +  \frac{\partial F}{\partial z}\frac{\partial z}{\partial x} = 0.
+$$
+
+\bye

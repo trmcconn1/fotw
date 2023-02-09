@@ -1,0 +1,4 @@
+Planned changes for .04 --> .05:
+
+1) Beef up the line editor so that it handles cursor movement and
+insertion

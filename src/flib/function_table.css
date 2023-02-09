@@ -1,0 +1,40 @@
+/* function_table.css: xml style sheet for a table of function values */
+
+function_table {
+        font-family: Palatino;
+        background-color: gray;
+}
+
+cell {
+	display: inline;
+        width: 1in;
+        text-align: center;
+        background-color: white;
+        border: thin solid gray;
+}
+
+header {
+        margin-top: .25in;
+        display: block;
+        font-weight: bold;
+        color: red;
+        
+}
+
+
+title {
+        font-family: Verdana;
+        padding: 10% 10%;
+        text-align: center
+	display: block;
+        font-size 18pt;
+        font-weight: bold;
+        background-color: white;
+        margin-color: white;
+}
+
+row {
+        display: block;
+}       
+
+

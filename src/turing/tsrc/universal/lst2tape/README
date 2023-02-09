@@ -1,0 +1,37 @@
+lst2tape converts the output of turing -c -l to an initial tape for the
+universal turing machine. It is suitable to be used only for programs whose
+alphabet contains only two characters. Since all programs in the logic
+collection have this property, lst2tape could be used to set up an initial
+tape for simulating any of the programs there on the universal machine. 
+
+Example: suppose we want to simulate the multiplication machine (mult.t)
+operating on 2 and 3 (i.e., the computation of 2x3) on the universal machine.
+First run turing with the -l option to generate a listing of the compiled
+program, and capture the output in a file called foo:
+
+turing -c -l mult.t > foo
+
+Next, use lst2tape to convert the contents of foo into the code segment
+part of an initial tape:
+
+lst2tape < foo > bar
+
+The file bar now contains one long string ending with * (the character the
+universal machine uses to mark the end of the code segment of its tape.)
+You must add the data portion of the tape yourself. Thus, in our example
+you would append -1|-||B|||| to the contents of bar. Now make a turing
+souce file called, e.g., test.t as follows:
+
+# test.t: multiply 2x3 the long way
+
+.include global.t
+.tape [contents of bar here]
+.include universal.t
+
+
+Now run test.t with turing test.t.
+
+To build lst2tape in the first place, just do make all in this directory.
+
+
+

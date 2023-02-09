@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+echo "FUD"
+INCLUDE="-I/home/dtz/8BIT/68K/CPM1.3 -I/home/dtz/8BIT/68K/CPM1.3/DISK4"
+CPP="cpp -E -nostdinc  -DCPM68 $INCLUDE "
+#CPP="cpp -E -nostdinc -DDTZDEBUG -DCPM68 $INCLUDE "
+CC="/home/dtz/8BIT/68K/cc68k/FromBro/c68src.unx/cc68 -cpm68k -int=16 -opt=no "
+mkdir build
+for i in cpm main parse readline strpbrk strstr strtok
+do
+ $CPP $i.c > build/_$i.c
+ $CC build/_$i.c > build/$i.s
+done

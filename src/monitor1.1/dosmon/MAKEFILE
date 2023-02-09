@@ -1,0 +1,78 @@
+##############################################################################
+# Makefile for monitor (DOS 16 bit version) An academic exercise admittedly.
+# Target monitor produces a small model .exe whose external commands can be
+# implemented in external.c. 
+#
+#          By Terry McConnell, Chicken Haven Software (2018)
+#
+# Adapted from my Linux version written in NASM syntax
+##############################################################################
+VERSION = "1.1"
+PROG_NAME = monitor
+#
+# Edit other settings in macros.a
+############## DOS 16 bit #####################
+CC = bcc
+CFLAGS = -ms 
+AS_FLAGS =    
+LIBS = 
+AS = masm
+LD = tlink
+LDFLAGS = 
+##########################################
+
+############# One should not have to edit below this line #####################
+
+OBJECTS = main.o monitor.o lib.o internal.o external.o  
+
+.c.o:
+	$(CC) -c -DVERSION=$(VERSION) $(CFLAGS) $<
+.asm.o:
+	$(AS) $(AS_FLAGS) $<,,,,
+
+# Build monitor to be called from main, with external commands implemented
+# in external.c. This build uses the small model. If a larger model is used
+# it may be necessary to change references to symbols defined in the .asm
+# files to FAR pointers. If other compilers are used it may be necessary
+# to adapt segments and group names in the assembly code to be compatible
+# with the compiler. We assume C calling convention, so compiler here means
+# C compiler. If you port this to pascal, of course, other things may need
+# to change.
+
+monitor: $(OBJECTS) macros.asm 
+	tlink   @&&|
+	/P /Tde /s /n +
+	C:\BC45\LIB\c0s.obj+
+	monitor.obj+
+	main.obj+
+	internal.obj+
+	external.obj+
+	lib.obj,+
+	$(PROG_NAME),,+
+	C:\BC45\LIB\CS.lib,,
+|
+
+all: monitor 
+
+clean:
+	del *.obj
+	del *.lst
+	del *.crf
+	del *.map
+	
+
+distclean:
+	del *.obj
+	del *.lst
+	del *.crf
+	del *.map
+	del monitor.exe
+	del bootmon.com
+
+# Invoke a batch file to create a zip archive. Distrib.bat has
+# hard-wired names depending on the version and may need to be updated.
+# This will produce a zip archive that lives in c:\src
+
+distribution: distclean
+	distrib.bat
+

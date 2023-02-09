@@ -1,0 +1,89 @@
+README for THUE 1.0
+
+This package includes C language source code for two programs, thue, and
+matches, a unix-style makefile, and various other files of interest described
+below. To build the package, edit the makefile to conform to your own setup
+and then say make all. The resulting executables can then be copied to an
+appropriate place by hand, or by using the install target. 
+
+Define the macro USEMYKMP to use the author's own implementation of strstr (see
+the kmp.c file) in place of the library routine. This has no particular 
+advantage, but kmp.c may be of interest for study. 
+
+Also included is the file thuemorse.txt containing 64K of the Thue-Morse 
+sequence to play with, and the file squarefree.txt containing 64K of the
+squarefree word on 3 letters. Both have newline characters interpolated every
+80 characters for enhanced readability.
+
+In addition, there is a pdf file containing some background on the Thue-Morse 
+and related sequences, including complete solutions of some relevant 
+exercises from Lothaire's textbook Combinatorics on Words.
+
+thue is a command line program that generates prefixes of the Thue-Morse 
+sequence. It can also generate prefixes of the square-free sequence on 3
+letters abc constructed by Axel Thue. Usage information for thue is as
+follows:
+
+thue [-hvdtcrlxi] [-u a b ] [-o filename] n: Print n digits of the Thue-Morse
+sequence followed by newline
+-h: print this helpful message and exit
+-v: print version number and exit
+-d: turn on debug mode
+-t: run experimental (test) code and exit (may do nothing)
+-u: use the following two characters in place of digits 0 and 1
+-c: print bitwise complement
+-r: print output in reverse order
+-o: print to filename rather than stdout
+-l: print a newline character after every 80 characters
+-x: print square free sequence on letters a,b,c instead (-c, -u ignored)
+-i: print some reference information about the sequence and exit
+
+For example, the file thuemorse.txt was created using the command line
+
+thue -l -u a b -o thuemorse.txt 65536
+
+(The -u a b option creates a sequence using the alphabet {a,b} rather than 
+the default {0,1}.) 
+
+The file squarefree.txt was created using the command line
+
+thue -l -x -o squarefree.txt 65536
+
+matches is a program that can be used to demonstrate properties of the 
+Thue-Morse sequence and related sequences. It is essentially just
+a convenient front end to the strstr routine. Usage information:
+
+matches [-hvVdnx] [-i k] l: analyze stdin for matching substrings of length l
+-h: print this helpful information and exit
+-v: print version number and exit
+-V: more verbose output
+-d: turn on debug mode
+-n: ignore newlines in input
+-x: run experimental code and exit (may do nothing)
+-i: look for matches of intimacy k or more only 
+(intimacy = amount of overlap, 0 is a square)
+
+As an example, let us demonstrate the fact that squarefree.txt contains no
+squares:
+
+matches -n -i 0 5 < squarefree.txt
+
+Read 65536 characters
+Found 65516 matches of length 5
+Found 0 matches of intimacy i > -1
+
+This shows that squarefree.txt contains no strings of the form xx where x has
+length 5. Similar results are obtained if 5 is replaced by any other length.
+(The -n option ignores the newline characters at the end of each line that
+were put there by the thue routine.)
+
+On other hand, the Thue-Morse sequence contains many squares:
+
+thue -n -i 0 3 < thuemorse.txt
+Read 65536 characters
+Found 65528 matches of length 3
+Found 5460 matches of intimacy i > -1
+i bar = 0.000000, (avg intimacy)
+
+The average intinacy of matches of intimacy greater than -1 is exactly 0 
+(i.e., only squares are present) since there are no overlapping matches. 

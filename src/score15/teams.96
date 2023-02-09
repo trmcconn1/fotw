@@ -1,0 +1,17 @@
+*****************************************************************************
+* Teams for the SU noontime running league                                  *
+* 1994-95 competition year.                                                 *
+*****************************************************************************
+*
+* Format:
+* <Team abbreviation> <"Full Team Name"> <"Name of Team Captain">
+*
+* Abbreviation must be 3 letters. Full name and captain's name must be 
+* enclosed in quotes.
+*
+una  "Unnattached" "No Captain"
+rat  "Rocket Ass Track Club" "Rick Cleary"
+jff  "Just For Fun"  "Kevin Reynolds"
+utc  "The Untouchables" "Phil Griffin"
+rrn  "The Roadrunners" "John Condon"
+hbr  "The Hills Brothers" "Larry Abrahamson and Dick Coleman"

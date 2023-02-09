@@ -1,0 +1,119 @@
+Return-Path: aswNS@hamp.hampshire.edu
+Date: Fri, 23 Jan 1998 00:16:27 -0500 (EST)
+X-Sender: aswNS@hamp
+Reply-To: awoodhull@hampshire.edu
+To: terry r mcconnell <mcconnel@CYBER2.SERVTECH.COM>
+Subject: Mintools bug?
+
+Hi Terry,
+
+I haven't fully tested the mintools package yet, but I ran into a problem
+fairly early on. Sometimes I get very bizarre results with m2ls. 
+
+Here is my Minix root as seen by Minix ls -l:
+
+total 31
+drwxr-xr-x  2 bin      operator      480 Nov 27 16:28 bin
+-rw-r--r--  1 bin      operator    20052 Oct  1  1996 boot
+drwxr-xr-x  2 root     operator     2736 Nov 27 20:03 dev
+drwxrwxrwx  2 root     operator      576 Dec 11 19:31 etc
+drwxrwxrwx  2 root     operator       32 Feb 22  1997 fd0
+drwxrwxrwx  2 root     operator       32 Feb 22  1997 fd1
+drwxrwxrwx  2 root     operator      112 Nov 27 19:59 minix
+drwxrwxrwx  2 root     operator       32 Sep 19 23:23 mnt
+drwxrwxrwx  2 root     operator      112 Dec 16 21:27 tmp
+drwxrwxr-x 16 root     operator      304 Nov 26 11:17 usr
+
+And here it is as seen by mintools m2ls -l:
+
+total 13
+drwxrwxrwx  11 2        2              208 Jan 22 18:21 .
+drwxrwxrwx  11 2        2              208 Jan 22 18:21 ..
+drwxr-xr-x   2 2        0              480 Nov 27 11:28 bin
+-rw-r--r--   1 2        0            20052 Oct 01  1996 boot
+-r-s----wt 11649 43886    17729    188743706 Aug 16  1984 core
+drwxr-xr-x   2 0        0             2736 Nov 27 15:03 dev
+-r-s----wt 11649 43886    17729    188743706 Aug 16  1984 etc
+drwxrwxrwx   2 0        0               32 Feb 22 10:02 fd0
+drwxrwxrwx   2 0        0               32 Feb 22 10:02 fd1
+drwxrwxrwx   2 0        0              112 Nov 27 14:59 minix
+drwxrwxrwx   2 0        0               32 Sep 19 19:23 mnt
+drwxrwxrwx   2 0        0              112 Dec 16 16:27 tmp
+drwxr-xr-x   3 0        0               48 Nov 25 19:02 usr
+
+The core entry is a deleted file. Etc is, of course, a directory. I see
+the exact same meaningless entries for mode, owner, group, size and date
+for between 10% and 20% of the entries in a larger directory, as well.
+At least some of these files are real undeleted files. The file names seem
+correct even when the other data is nonsense.
+
+It's pretty late at night, I'm not in shape for pursuing this further
+right now. Tomorrow I'll play some more and see if I can figure out where
+the garbage comes from. 
+
+For whatever it is worth, here is what m2super -a shows me:
+
+Minix V2 Filesystem hd4a: (disk  0x80, partition index 5)
+
+Starting sector of filesystem = 1721665
+Partition size = 0 bytes = 0 blocks = 0 sectors
+
+Relevant fields in super-block (decimal,unless noted):
+s_ninodes        = 480   Usable number of inodes on minor device
+s_nzones         = 0     Total device size, including bitmaps etc
+s_imap_blocks    = 1     # of blocks used by inode bit map
+s_zmap_blocks    = 1     # of blocks used by zone bit map
+s_firstdatazone  = 34    # of first data zone
+s_log_zone_size  = 0     log2 of blocks/zone 
+s_max_size       = 67378176      maximum file size on this device 
+s_magic          = 2468  (Hex) magic number to recognize super-blocks 
+s_zones          = 1440  number of zones (replaces s_nzones in V2) 
+------------------
+
+Minix V2 Filesystem hd4b: (disk  0x80, partition index 6)
+
+Starting sector of filesystem = 1724545
+Partition size = 0 bytes = 0 blocks = 0 sectors
+
+Relevant fields in super-block (decimal,unless noted):
+s_ninodes        = 480   Usable number of inodes on minor device
+s_nzones         = 0     Total device size, including bitmaps etc
+s_imap_blocks    = 1     # of blocks used by inode bit map
+s_zmap_blocks    = 1     # of blocks used by zone bit map
+s_firstdatazone  = 34    # of first data zone
+s_log_zone_size  = 0     log2 of blocks/zone 
+s_max_size       = 67378176      maximum file size on this device 
+s_magic          = 2468  (Hex) magic number to recognize super-blocks 
+s_zones          = 1440  number of zones (replaces s_nzones in V2) 
+------------------
+
+Minix V2 Filesystem hd4c: (disk  0x80, partition index 7)
+
+Starting sector of filesystem = 1727425
+Partition size = 0 bytes = 0 blocks = 0 sectors
+
+Relevant fields in super-block (decimal,unless noted):
+s_ninodes        = 24672         Usable number of inodes on minor device
+s_nzones         = 0     Total device size, including bitmaps etc
+s_imap_blocks    = 4     # of blocks used by inode bit map
+s_zmap_blocks    = 25    # of blocks used by zone bit map
+s_firstdatazone  = 1573  # of first data zone
+s_log_zone_size  = 0     log2 of blocks/zone 
+s_max_size       = 67378176      maximum file size on this device 
+s_magic          = 2468  (Hex) magic number to recognize super-blocks 
+s_zones          = 197279        number of zones (replaces s_nzones in V2) 
+------------------
+
+I think this is correct, except for the 0,0,0 partition size. My hd4 is a
+1.1G disk.
+
+Sorry to report bad news. I am not complaining, I'm really glad you took
+this on. I hope I can help you figure out what the problems are. 
+
+Al
++----------------------------------+
+| Albert S. Woodhull               |
+| Hampshire College, Amherst, MA   |
+| awoodhull@hampshire.edu          |
+| http://minix1.hampshire.edu/asw/ |
++----------------------------------+

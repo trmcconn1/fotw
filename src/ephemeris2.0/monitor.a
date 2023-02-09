@@ -1,0 +1,926 @@
+; monitor: very basic, generic command interpreter
+; Implemented in nasm syntax
+
+%include "macros.a"
+
+SECTION .text
+	GLOBAL monitor,newline,environment,envc,data,enddata,rcscript,linebuf1
+	GLOBAL copy_env
+	EXTERN my_strlen,my_strcpy,my_strcmp,mygetenv,my_strstr,my_atoi
+	EXTERN _set,set_name,set_usage,set_help
+	EXTERN _exec,exec_name,exec_usage,set_help
+	EXTERN _help,help_name,help_usage,help_help
+	EXTERN _echo,echo_name,echo_usage,echo_help
+	EXTERN cd_name
+	EXTERN _status,status_name,status_usage,status_help
+	EXTERN shift_name,shift_usage,shift_help
+	EXTERN n_externals,external_names,external_entry_points
+	EXTERN exit_name,exit_usage,exit_help
+	EXTERN _read,read_name,read_usage,read_help
+	EXTERN _print_i,if_name,goto_name
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;   Program Entry Point (Standalone Version)                            ;
+;   Called from Main    (stdlib Version)                                ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+monitor:
+
+;
+; set up stack frame to access arguments and envp
+	push ebp                 ; save base pointer 
+	mov eax,esp
+	mov ebp,eax              ; point ebp at top of stack
+	
+; save arguments passed on stack. Right now  stack frame is so:
+;
+;                      null word
+;                      env pointers (one 32 bit word each)
+;                      null word 
+;                      argument pointers (one word each)
+;                      argc  
+;`                     return address
+;                      saved ebp  <--- esp
+;
+	mov eax,  [ebp + 8]   ; store argc
+	mov [argc], eax
+	mov eax,  [ebp + 12]   ; store argv	
+	mov [argv], eax
+	mov esi,16                  ; offset on stack of next arg ptr
+
+cnt_args_loop:                      ; see how many args before the null ptr
+
+	mov eax,  [ebp + esi]       ; store next ptr in eax
+	cmp eax,0                   ; is it NULL?
+	jz cnt_args_done            ; yes, found end of argv
+	add esi,4                   ; no, increase count by 4 bytes
+	jmp cnt_args_loop           ; and restart loop
+	
+cnt_args_done:
+
+	add esi,4                   ; skip over the null pointer
+	lea eax, [ebp+esi]          ; store char **envp
+	mov [envp], eax
+
+	mov edi,0                   ; initialize counter
+	mov DWORD [environment + edi], 0x00  ; initialize with zero pointer
+
+	mov eax,data                ; Initialize end of data 
+	mov [enddata],eax           ; to start of data area
+
+	mov al,[copy_env]           ; see whether the user wants
+	cmp al,0x00                 ; us to start with a copy of OS env
+	je zero_env_loop            ; No, so skip next part
+
+	mov DWORD [envc],0x00       ; zero count of env strings
+
+cpy_env_loop:			    ; store environment pointers 
+
+	mov eax, DWORD [ebp + esi]  ; check for null pointer on stack
+	cmp eax,0                   ; that signals end of environment
+	je copy_env_done            ; string pointers: quit loop if found
+
+	push DWORD [ebp + esi]      ; next env string ptr as source
+	push DWORD [enddata]        ; end of data area as destination
+	call my_strcpy                ; and copy env string to data area
+	add esp,8                   ; clean stack from copy call
+	mov ebx, [enddata]          ; set next env string ptr
+	mov DWORD [environment + edi], ebx 
+	cmp eax,0x00                ; check for zero length string
+	je copy_env_done            ; quit loop if found
+	add edi,4                   ; index of next env ptr for copied env
+	add esi,4                   ; offset on stack of next env string to copy
+	add [enddata],eax           ; point to where next string will go
+	inc DWORD [envc]            ; increase count of env strings
+	jmp cpy_env_loop            ; back to start of copy loop
+
+zero_env_loop:                      
+
+	; Make sure remaining env pointers are NULL. Not sure this is needed
+        ; (not needed if .bss is zeroed, but can we rely on this?)
+	
+	add edi,4                   ; point at next slot
+	cmp edi, 4*ENV_SIZ          ; have we filled up the array
+	jae copy_env_done           ; 
+	mov DWORD [environment + edi], 0x00  ; initialize with zero pointer
+	jmp zero_env_loop
+ 
+	
+copy_env_done:
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; New 1.2 code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; set $0,$1, ... to the contents of strings passed
+; as arguments to monitor
+; 
+;
+; build an argv for _set. We will use linebuf3 as the 
+; array char *argv[] for set and expandbuf to hold the temporary
+; strings that represent 0,1, ...names in $0, ....
+
+	push esi
+	push ecx
+	push eax               ; save registers
+
+	xor ecx,ecx;           ; zero out arg counter
+	xor esi,esi;           ; zero out pointer index
+	mov eax,expandbuf      ; fetch address of expandbuf
+	mov [linebuf3],eax     ; point set argv[0] at it
+	add esi,12              ; stack frame start of argv is +8
+	mov eax,[ebp+esi]      ; fetch pointer to argv[0]
+	mov [linebuf3+4],eax   ; point set argv[1] at it
+	xor eax,eax            ; prepare to properly terminate 
+	mov [expandbuf+1],al   ; null string terminator for argnumber
+
+
+store_monitor_args:
+
+	mov al,48              ; 48 + digit  = digit char
+	add al,cl              ; create digit char
+	mov [expandbuf],al     ; store digit char
+			       ; expandbuf has name string for set
+	push linebuf3          ; char **argv for set      
+	mov eax,0x2            ; argc = 2 for set	
+	push eax               ; int argc      
+	call _set              ; call set command (internal.a)
+	add esp,8              ; clean up from call
+	cmp ecx,0x9            ; see if we need to continue
+	jae store_monitor_args_done
+	inc ecx                ; increase counter
+	mov eax,[argc]         ; load number of args
+	cmp ecx,eax            ; have we set them all?
+	jae store_monitor_args_done
+	add esi,4              ; move along to next arg
+	mov eax,[ebp+esi]      ; fetch address of next monitor arg
+	mov [linebuf3+4],eax   ; point set argv[1] at it
+	jmp store_monitor_args  ; restart loop to set next arg env var
+
+store_monitor_args_done:
+
+	pop eax                ; restore value saved earlier
+	pop ecx
+	pop esi
+
+; END OF NEW 1.2 CODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+; When monitor starts up it will read commands from a "startup script". These
+; commands are copied into memory from a file named on the command line in
+; the non-standalone version of monitor.   
+; If source = 0 then monitor reads from the terminal
+
+mov dword [source],rcscript        ; point input source to rcscript memory 
+mov dword [source_now],rcscript    ; source_now is moved as source is read
+
+; start of main loop: display the prompt
+
+_main_loop:
+
+	mov eax,[source]         ; don't give prompt if input is read 
+	cmp eax,0x00             ; from memory, as this is non-interactive use
+	jne skip_prompt
+
+	PRINT_CHAR 0xA
+	PRINT_STRING prompt
+
+skip_prompt:
+
+; While the user is dazzled by the prompt, zero out the line buffers
+; BUG: is this really needed?
+
+	mov al,0x00              ; null char to move in al
+	mov ecx,BUF_SIZ          ; initialize counter
+	mov edi,linebuf1         ; point at start of linebuf1
+rep     stosb                    ; copy al to [edi]
+	mov ecx,BUF_SIZ          ; repeat for linebuf2
+	mov edi,linebuf2
+rep     stosb
+	mov ecx,BUF_SIZ
+	mov edi,lineargs
+rep	stosb	
+
+ 
+
+; read a line from terminal or from memory
+
+	mov eax,[source]         ; source for read into eax
+	cmp eax,0x00             ; if it is zero, then
+	je read_terminal         ; read from terminal
+
+	push linebuf1            ; otherwise call read_mem routine (below)
+	call read_mem            ; to read from memory
+	add esp,4	         ; clean up from call
+	jmp read_terminal_done
+
+read_terminal:
+	READ_LINE linebuf1       ; read from canonical mode terminal
+
+read_terminal_done:
+
+	cmp eax,0x00             ; actual bytes read returned in eax
+	jne properly_terminate   
+	
+; 0 bytes read signals EOF (^D). When read from a script, returns control to
+; the terminal; if read from terminal, quits the program
+
+	mov eax,[source]
+	cmp eax,0x00
+	jne stay_in_game
+	mov ecx,1     ; return 1
+	jmp _exit
+
+stay_in_game:
+
+	mov DWORD [source],0x00  ; signal that input will now be from terminal
+	jmp _main_loop
+
+properly_terminate:
+; properly terminate string read into linebuf1
+	mov esi,eax              ; number of bytes read in esi
+	mov [linebuf1 + esi], BYTE 0x00
+
+; see if the first character is a # (comment character)    
+	mov al,[linebuf1]
+	cmp al,COMMENT_CHAR      ; 0x23 is # sign
+	je _main_loop            ; skip line since it is a comment
+
+; see if the first character is : (colon character) since then this
+; line is a label and should be skipped
+	cmp al,0x3A              ; 0x3A is : sign
+	je _main_loop
+
+; Figure out the first word on the line (in linebuf1)
+	mov esi,0x00             ; initialize index
+
+first_arg_loop:
+
+	mov al,[linebuf1 + esi] ; See if current char value is > 20H
+	cmp al,20H              ; i.e. not whitespace
+	jbe first_arg_found     ; first whitespace so end of arg found
+	inc esi                 ; not whitespace, so go to next char
+	jmp first_arg_loop  
+
+first_arg_found:
+
+	; Properly terminate first argument by inserting null char in buffer
+	mov al,0x00
+	mov [linebuf1 + esi], al 
+	inc esi 
+
+; Make a processed copy of cmd_tail in linebuf2. The processing takes care
+; of variable expansion/escaping and separates each resulting arg by a
+; null character in linebuf2
+
+	xor edi,edi             ; Zero destination index. Source is ongoing
+	xor ecx,ecx             ; Prepare to use ecx as escape flag
+	xor edx,edx             ; Prepare to use edx as whitespace flag
+	xor ebx,ebx             ; Prepare to use ebx as comment flag
+
+expand_line:    
+
+	mov al,[linebuf1 + esi] ; next char of cmd_tail
+	cmp al,0x00             ; is it null ?
+	je line_expand_done     ; all done if so
+	cmp al,0xA              ; is it a NL ?
+	jne not_newline         ; no, so do not-NL stuff
+	xor ebx,ebx             ; it's a new line, cancel pending comment
+	cmp ecx,0x01            ; is there a pending escape?
+	je add_to_linebuf       ; yes, there is, so continuation line
+	jmp line_expand_done    ; all done if not escaped newline char
+
+not_newline:
+
+ 	cmp ebx,0x00
+	jne comment
+	cmp ecx, 0x01           ; Is there a pending escape?
+	je line_expand_copy_char; Yes, so just copy character literally
+	cmp al,COMMENT_CHAR     ; Is it the # sign ?
+	jne no_comment
+	mov ebx,0x01            ; turn on comment flag
+	jmp comment
+
+no_comment:
+
+	cmp al,ESCAPE_CHAR      ; See if the new char is the escape char
+	jne escape_jumparound   ; It is not, so skip over next steps
+	mov ecx, 0x01           ; it is escape char, so mark escape flag
+	inc esi                 ; increase copy index to skip copying char 
+	jmp expand_line         ; and fetch next char
+
+comment:
+	inc esi
+	jmp expand_line
+
+escape_jumparound:
+
+	cmp al,0x20             ; Is the current char whitespace?
+	ja not_ws;              ; not whitespace
+				; now it must be whitepace
+	cmp edx,0x01            ; Was the previous char whitespace?
+        jne new_ws		; No, so mark and copy a null in its stead
+	inc esi                 ; yes, so skip copy fetch
+	jmp expand_line         ; next char
+	
+new_ws:
+	mov edx,0x01            ; mark that it was whitespace
+	mov al,0x00             ; and replace it with a null in the copy
+	jmp line_expand_copy_char
+
+not_ws:
+	xor edx,edx             ; flag as not whitespace
+
+	cmp al,VARIABLE_CHAR   ; Is it the $ char ?
+	je substitution        ; If so, jump to code that substitutes env var
+
+line_expand_copy_char:
+
+	mov [linebuf2 + edi],al ; copy current char to linebuf2
+	xor ecx,ecx             ; cancel any pending escape
+	inc esi                 ; increment indices 
+	inc edi                 ; and
+	jmp expand_line         ; back to start of copy loop
+
+substitution:                   ; copy value of env var instead of name
+	
+	push edi                ; save edi on stack
+	xor edi,edi             ; so we can use as a local index into name
+
+subs_var_name_loop:             ; put everything from here to next ws into
+		                ; expandbuf as env string name
+
+	inc esi                 ; get past the $
+	mov al,[linebuf1 + esi] ; next char from input buffer 
+	cmp al,0x20             ; is it white space ?
+	jbe subs_var_name_fnd   ; if so complete name now in expandbuf
+	mov [expandbuf + edi],al; else add char to expandbuf
+	inc edi                 ; increment index for next char
+	jmp subs_var_name_loop
+
+subs_var_name_fnd:
+	mov BYTE [expandbuf + edi], 0x00  ; properly terminate name string
+	pop edi                           ; done using edi
+	push esi                          ; save esi on stack
+	push ebx                          ; save ebx - comment flag
+				          ; since mygetenv will trash it
+	push expandbuf                    ; prepare for call
+	call mygetenv                     ; see if name=foo is in env
+	add esp,4                         ; clean up from call
+	cmp eax,0x00                      ; null returned if not found
+	je subs_not_found                 ; so copy nothing
+	mov ebx,eax                       ; else save address of foo 
+	xor esi,esi                       ; prepare counter for copy of foo
+
+subs_copy_value:           ; copy value of environment string into output
+
+	mov al,[ebx + esi] ; fetch next char of bar
+	cmp al,0x00        ; if it is null we have reached the end
+	je subs_done
+	mov [linebuf2 + edi],al           ; else copy new byte into position
+	inc esi                           ; increment both counters 
+	inc edi
+	jmp subs_copy_value               ; and restart copy loop
+
+subs_done:
+	pop ebx
+	pop esi
+	jmp new_ws
+
+subs_not_found:
+	pop ebx
+	pop esi                           ; restore index into input string
+	inc esi
+	jmp expand_line
+
+add_to_linebuf:                 ; escaped newline, so get more input from user
+	xor ecx,ecx             ; cancel escape that got us here
+	mov BYTE [linebuf2+edi],0xA  ; copy literal newline to destination
+	inc edi                 ; increment indices
+	inc esi
+	lea eax,[linebuf1+esi]  ; store pointer to where new input goes
+	mov [my_ptr],eax
+	mov eax,[source]
+	cmp eax,0x00
+	je add_from_terminal
+	push DWORD [my_ptr]
+	call read_mem
+	add esp,4
+	jmp add_read_done
+
+add_from_terminal:
+
+	READ_LINE [my_ptr]      ; returns with number of bytes read in eax
+
+add_read_done:
+
+	mov [linebuf1 + esi + eax], BYTE 0x00 ; properly terminate string 
+	jmp expand_line
+	
+
+line_expand_done:
+	mov BYTE [linebuf2 + edi],0x00  ; make sure we properly terminate
+
+; set pointers in lineargs array to null terminated strings in linebuf2
+; the address of lineargs is passed to commands, both internal and external,
+; as char **argv
+
+	mov esi,0x00
+	mov edi,0x00
+	mov ecx,0x00
+
+find_all_args:
+
+	mov al,[linebuf2 + esi]     ; next char into al
+	cmp al,0x00                 ; if it is null, then we are
+	je all_args_found           ; at end of buffer: no more args
+	lea ebx,[linebuf2 + esi]    ; set current char address as ptr to 
+	mov [lineargs + edi], ebx   ; next line argument. Use ebx to save
+                                    ; char in al
+
+plow_through:                       ; plow through the next arg 
+
+	inc esi                     ; increment index
+	mov al,[linebuf2 + esi]     ; next char into al
+	cmp al,0x00	            ; is it null? 
+	je next_arg_found           ; yes, so branch to properly end new arg
+	jmp plow_through            ; back to beginning of plow through loop
+
+next_arg_found:
+
+	inc ecx                     ; increment arg count
+	add edi,4                   ; increment pointer index
+	inc esi                     ; and char counter
+	jmp find_all_args           ; and back to loop start for remaining args
+
+all_args_found:
+	mov WORD [lineargs + edi + 4],0x00    ; store last arg with null
+	mov WORD [lineargs + edi + 8],0x00    ; and a second null
+	mov BYTE [linebuf2 + esi],0x00    ; mark end of args in linebuf2
+	mov [nargs],ecx             ; record how many args were found
+	 
+; Fall through blocks of code, one for each internal function. 
+; Match arg0 against the name of each
+; function. If a match, call the command implemented in internal.a and start
+; new loop. If no match, print a helpful message and start a new prompt loop
+
+
+	mov eax,[source]
+	cmp eax,0x00
+	je skip_keywords            ; skip over programming keywords when
+	                            ; used interactively (source = 0). 
+	push if_name                ; see whether this is an if construct
+	push linebuf1               ; by calling strcmp with the name "if"
+	call my_strcmp              ; and argv[0]
+	add esp,8                   ; clean up from call
+	cmp eax,0                   ; do the comparison
+	jne goto_section            ; not an if construct, so ...
+	push DWORD [lineargs]       ; foo, in if foo bar
+	call mygetenv               ; see if foo=* in env
+	add esp,4                   ; clean up from call
+	cmp eax,0x00                ; if not, then restart the main loop
+	je _main_loop      
+	push eax                    ; value bar if foo=bar in env
+	push DWORD [lineargs+4]     ; bar in if foo bar 
+	call my_strcmp
+	add esp,8
+	cmp eax,0x00
+	jne _main_loop      
+	push DWORD [lineargs + 8]   ; belch in if foo bar belch
+	push linebuf1               ; where to copy belch as new argv[0]
+	call my_strcpy              ; do the copy
+	add esp,8                   ; clean up from copy call
+	mov ecx,[nargs]             ; reduce number of args by 3
+	sub ecx,3                   ; we drop if foo bar 
+	mov [nargs],ecx        
+	xor esi,esi                 ; initialize index for shift args loop
+
+shift_args:  ; move belch ... into position as if that had been the command
+
+	cmp ecx,0x00               ; all args counted ?
+	jbe goto_section           ; yes, so continue on to look for belch
+	mov eax,[lineargs + 8 + esi + 4] ; next arg to get moved
+	mov [lineargs + esi],eax
+	dec ecx
+	add esi,4
+	jmp shift_args
+	
+goto_section:
+
+	push goto_name              ; see whether this is a goto construct
+	push linebuf1               ; by calling strcmp with the name "goto"
+	call my_strcmp              ; and argv[0]
+	add esp,8                   ; clean up from call
+	cmp eax,0                   ; do the comparison
+	jne skip_keywords           ; not an if construct, so ...
+	push DWORD [lineargs]       ; copy goto label (sans colon) to buffer 
+	push linebuf1+1             ; (the colon is prefixed below)          
+	call my_strcpy              ; do the call
+	add esp,8                   ; clean up from call
+	mov BYTE [linebuf1],0x3A    ; colon character on front of buffer
+	push linebuf1               ; push label after goto as arg for
+	push DWORD [source]         ; strstr. Also push script start
+	call my_strstr              ; search for label in script
+	add esp,8                   ; clean up from call
+	cmp eax,0x00                ; if not found do nothing
+	je skip_keywords
+	mov [source_now],eax        ; else branch by switching next read
+	jmp _main_loop              ; to label location
+	
+skip_keywords:
+
+;;;; set section  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	push set_name            ; stack args to my_strcmp
+	push linebuf1
+	call my_strcmp           ; call string compare routine
+	add esp,8                ; clean up from call
+	cmp eax,0                ; is arg0 equal to name of set command? 
+	jne read_section         ; if not, go on to check for next command
+	push lineargs            ; char **argv      
+	push DWORD [nargs]       ; int argc      
+	call _set                ; call set command (internal.a)
+	add esp,8                ; clean up from call
+	jmp _main_loop           ; return to beginning of main loop
+
+;;;;; read section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+read_section:
+
+	push read_name           ; stack args to my_strcmp 
+	push linebuf1
+	call my_strcmp           ; call string compare routine
+	add esp,8
+	cmp eax,0                ; is arg0 equal to name of read command?
+	jne help_section         ; no, so go on to check for next command
+	push DWORD [lineargs]    ; stack one (and only) char *arg for read
+	call _read               ; make the call
+	add esp,4                ; clean up from call
+	jmp _main_loop           ; return to beginning of main loop
+
+;;;;; help section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+help_section:  
+
+	push help_name           ; stack args to help
+	push linebuf1
+	call my_strcmp           ; call string compare routine
+	add esp,8                ; clean up from call
+	cmp eax,0                ; is arg0 equal to name of help command? 
+	jne cd_section         ; if not, go on to check for next command
+	push lineargs            ; argv      
+	push DWORD [nargs]       ; argc      
+	call _help               ; call help command (internal.a)
+	add esp,8                ; clean up from call
+	jmp _main_loop           ; return to beginning of main loop
+
+cd_section:
+
+	push cd_name           ; stack args to help
+	push linebuf1
+	call my_strcmp           ; call string compare routine
+	add esp,8                ; clean up from call
+	cmp eax,0                ; is arg0 equal to name of help command? 
+	jne exec_section         ; if not, go on to check for next command
+	mov ebx, [lineargs]      ; linux wants path string ptr in ebx      
+	mov eax, 0x0c            ; select sys_chdir call
+	int 80h
+	jmp _main_loop           ; return to beginning of main loop
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; exec command is implemented inline here 
+; linux version
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+exec_section:
+
+; fork a new process to execute the program with filename/path
+; given. Parent waits for program to finish and then reverts to the
+; main loop. Child is overlaid by the exec'ing process and does
+; not normally return (on error continuation it reports error code
+; 2 to monitor caller and the process dies.) 
+
+	push exec_name           ; call string compare routine
+	push linebuf1            ; to see if this really is the exec
+	call my_strcmp           ; command
+	add esp,8                ; clean up from call
+	cmp eax,0                ; is arg0 equal to name of exec command?
+	jne shift_section        ; no, so look for next command
+
+;  fork so the monitor can continue after invoked command exits
+
+	mov ebx,linebuf3         ; junk area pointer for pt_regs
+	mov eax,0x2              ; fork is call number 2
+	int 0x80                 ; os service interrupt
+	cmp eax,0x00             ; are we the child? 
+	je action_child            ; if so, we need to do something
+
+; we are parent: wait 
+
+	mov ecx,linebuf3         ; junk area for status pointer
+	mov edx,0x00             ; options = 0
+	mov ebx,eax              ; pid of child to wait for
+	mov eax,0x07             ; wait_pid sys call selector
+	int 0x80                 ; hurry up and wait already
+	jmp _main_loop           ; return to beginning of main loop
+
+action_child:
+
+; invoke execve system call with file name pointer in ebx
+
+	mov esi,linebuf3         ; junk area for pt_regs
+	mov ebx,[lineargs]       ; argv[0] into ebx  (name of file to exec)
+	mov ecx,lineargs         ; store argv for execve
+	mov edx,environment      ; store envp for call 
+	mov eax,11               ; select execve system call
+	int 0x80                 ; do system call 
+	                         ; does not return on success, but returns
+                                 ; -1 on failure	
+				 ; so if we got to here the proper thing
+			         ; to do is exit with an error code
+	mov ecx,2                ; 2 will do for now
+	jmp _exit
+
+;;;;;;; shift section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; this internal command is implemented in line here
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+shift_section: 
+	push shift_name          ; call string compare routine
+	push linebuf1
+	call my_strcmp
+	add esp,8                ; clean up from call
+	cmp eax,0                ; is arg0 equal to name of shift command?
+	jne echo_section         ; no, so look at next command
+
+;copy current args to linebuf1, and jump back into main loop at point
+;just after getting user input- remember to set esi to 0 for that jump
+
+	xor esi,esi              ; initialize copy index	
+
+copy_args_back_loop:
+	
+	mov al,[linebuf2 + esi]  ; next char from source
+	jnz nonzero_last_char    ; we detect two nulls in a row by seeing
+                                 ; if the zero flag is still set from the
+                                 ; previous loop interation. This is delicate
+                                 ; because many instructions (not mov or jmp)
+                                 ; affect the zero flag (inc does!)
+	cmp al,0x00              ; if flag already set then a second null
+	jz copy_args_back_done   ; means we are done
+
+nonzero_last_char:               ; the last char was not a null
+
+	inc esi                  ; increment index
+	cmp al,0x00              ; Are we at end of an arg?
+	jnz copy_char_back
+	mov al,0x20              ; replace null with space char
+
+copy_char_back:
+
+	mov BYTE [linebuf1 + esi - 1], al ; copy char to line buf 1	
+	jmp copy_args_back_loop           ; and restart copy loop
+
+copy_args_back_done:
+
+	mov BYTE [linebuf1+esi],0x00 ; properly terminate linebuf1
+	xor esi,esi                  ; prepare for rentry to main loop	
+	jmp first_arg_loop           ; rejoin main loop after user input
+
+;;;;;;; echo section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+echo_section:
+
+	push echo_name           ; stack args to set
+	push linebuf1            
+	call my_strcmp           ; call string compare routine
+	add esp,8                ; clean up from call
+	cmp eax,0                ; is arg0 equal to name of help command? 
+	jne status_section       ; if not, go on to check for next command
+	push DWORD lineargs      ; char **argv      
+	push DWORD [nargs]       ; argc      
+	call _echo               ; call echo command (internal.a)
+	add esp,8                ; clean up from call
+	jmp _main_loop           ; return to beginning of main loop
+
+;;;;;; status section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+status_section:
+
+	push status_name         ; stack args to set
+	push linebuf1            
+	call my_strcmp           ; call string compare routine
+	add esp,8                ; clean up from call
+	cmp eax,0                ; is arg0 equal to name of status command? 
+	jne exit_section     ; if not, go on to check for next command
+	call _status             ; call status command (internal.a)
+	jmp _main_loop           ; return to beginning of main loop
+
+exit_section:                    ; exit command is implemented right here
+	                         ; not in external.a like other commands
+	push exit_name           ; but first see if "exit" is the command
+	push linebuf1  
+	call my_strcmp
+	add esp,8
+	cmp eax,0
+	jne external_section     ; nope, must be an external command
+				 ; 
+	mov eax,[nargs]          ; was exit typed with a return value given?
+	cmp eax,0                ; 
+	ja  exit_with_arg        ; yes, so go to section to handle that
+	                         ; no, so set 
+	mov ecx,0                ; default return value from monitor
+	jmp _exit                ; and go to last rites routine
+
+exit_with_arg:    
+				 ; call my_atoi to translate string to
+				 ; number for return
+	
+	mov ebx,[lineargs]       ; our (exit's) own argv 
+	push (ebx)               ; push *argv on stack (pointer to string)
+	call my_atoi             ; convert string to integer
+	add esp,4                ; clean up from call
+	mov ecx,eax              ; move converted integer to ecx for return
+	jmp _exit                ; and go to last rites routine
+
+;;;;;; external commands section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+external_section:
+
+; Search  through names of external commands (implemented in external.c) 
+
+	mov esi, 0x00            ; initialize index
+	mov ecx, 0x00            ; initialize counter
+	
+external_search:
+
+	cmp ecx,[n_externals]    ; have we reached end of externals array?
+	jae scripts_section      ; yes, so go to next section
+	push DWORD [external_names + esi] ; load name of next external cmd
+	push linebuf1            ; and use strcmp to see if it agrees with
+	call my_strcmp           ; the user's first argument
+	add esp,8                ; clean up from call
+	cmp eax,0                ; Have we found a match?
+	je found_external        ; so branch to code that makes the call
+	add esi,4                ; no, so increment pointer index and
+	inc ecx;
+ 	jmp external_search      ; and look at name of next external command
+
+found_external:                  ; actually call the matching external command
+	push environment         ; push its char **envp
+	push lineargs            ; push its char **argv
+	push DWORD [nargs]       ; push its int argc
+	call [external_entry_points + esi] ; call entry point of command
+	add esp,12               ; clean up from call
+	jmp _main_loop           ; and restart main prompt loop`
+
+scripts_section:    ; if all else fails, see if the command is a script
+                    ; i.e., there is an env variable by this name
+
+	push linebuf1
+	call mygetenv 
+	add esp,4
+	cmp eax,0x00
+	je not_found_section
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; New 1.2 code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; set $0,$1, ... to the contents of strings passed as
+; arguments in lineargs so they can accessed from
+; the script
+;
+; build an argv for _set. We will use linebuf3 as the 
+; array char *argv[] for set and expandbuf to hold the temporary
+; strings that represent 0,1, ...names in $0, ....
+
+	push esi;
+	push ecx;
+	push eax;              ; save for later
+	xor ecx,ecx;           ; zero out arg counter
+	xor esi,esi;           ; zero out pointer index
+	mov eax,expandbuf      ; fetch address of expandbuf
+	mov [linebuf3],eax     ; point set argv[0] at it
+	mov eax,linebuf1       ; fetch address of zeroth script arg
+	mov [linebuf3+4],eax   ; point set argv[1] at it
+	xor eax,eax            ; prepare to properly terminate 
+	mov [expandbuf+1],al   ; null string terminator for argnumber
+
+build_script_args:
+
+	mov al,48              ; 48 + digit  = digit char
+	add al,cl              ; create digit char
+	mov [expandbuf],al     ; store digit char
+			       ; expandbuf has name string for set
+	push linebuf3          ; char **argv for set      
+	mov eax,0x2            ; argc = 2 for set	
+	push eax               ; int argc      
+	call _set              ; call set command (internal.a)
+	add esp,8              ; clean up from call
+	cmp ecx,0x9            ; see if we need to continue
+	jae build_script_args_done
+	mov eax,[nargs]        ; load number of args
+	cmp ecx,eax            ; have we set them all?
+	jae build_script_args_done
+	mov eax,[lineargs+esi] ; fetch of address of next script arg
+	mov [linebuf3+4],eax   ; point set argv[1] at it
+	inc ecx                ; increase counter
+	add esi,4              ; move along to next arg
+	jmp build_script_args  ; restart loop to set next arg env var
+
+build_script_args_done:
+
+	pop eax                ; restore value saved earlier
+	pop ecx
+	pop esi
+
+; END OF NEW 1.2 CODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	mov [source],eax
+	mov [source_now],eax
+	jmp _main_loop
+
+not_found_section:
+
+	mov eax,[source]         ; in non-interactive use we do not print
+	cmp eax,0x00             ; the helpful message
+	jne _main_loop  
+	PRINT_STRING msg0        ; default action: print helpful message
+	jmp _main_loop           ; return to beginning of main loop
+
+_exit:
+				; the monitor returns a value through ecx
+	pop ebp
+	ret  
+
+	; below is obsolete in linux versions
+	; Terminate program with appropriate system call
+	TERMINATE 0
+	; code: for documentation only
+	;mov eax,1	         ; exit system call
+	;mov ebx,0                ; exit with error code 0
+	;int 0x80                 ; system call interrupt
+
+;  Auxiliary routine
+;  read bytes from source_now pointer and copy to string ptr arg,
+;  up to and including first NEW_LINE. Return number of bytes read
+;  in eax, and position source_now for next read
+
+read_mem: 
+	push edx            ; save reg
+	mov edx,[esp + 8]   ; save char *arg       
+	push ebx 
+	push esi            ; save all regs
+	xor esi,esi         ; initialize char counter
+	mov ebx,[source_now]
+
+read_mem_copy_loop:
+
+	mov al,[ebx + esi] ; copy next byte from source
+	cmp al,0x00           ; Is it a null ?
+	je read_mem_nl        ; Yes, so branch to prepare to return
+	mov [edx + esi],al    ; copy char to output buffer
+	inc esi               ; increment counter
+	cmp al,0xA            ; Was it a newline ?
+	je read_mem_nl        ; Yes, so branch to prepare to return
+	jmp read_mem_copy_loop; otherwise continue copy loop
+
+read_mem_nl:
+
+	add ebx,esi          ; position pointer
+	mov [source_now],ebx     ; for next read
+	mov eax,esi          ; return number of chars copied in eax
+	pop esi              ; restore regs used
+	pop ebx
+	pop edx
+	ret	
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;; End of Code ;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;; Initialized Data ;;;;;;;;;;;;;;;;;;;;;;;
+SECTION .data
+
+	prompt: db PROMPT_STRING,0
+	promptlen: equ $-prompt
+	newline: db `\n`     ; space used by PRINT_CHAR (not always NL)
+	msg0: db 'Enter help for a list of commands, ^D to exit',`\n\n`,0
+	copy_env:    db 0           ; -e flag set
+	source:      dd 0           ; =0 for stdin, memory reference else
+	source_now:  dd 0           ; moved as source is read
+;;;;;;;;;;;;;;;;;;;;;;;;; End of Initialized Data ;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;; Uninitialized Data ;;;;;;;;;;;;;;;;;;;;;
+SECTION .bss
+	rcscript:    resb   SCRIPT_SIZ    ; space for start up script 
+	argc:        resd 1               ; 32 bit int for argc
+	argv:        resd 1         ; pointer to first argument pointer
+	envp:        resd 1         ; pointer to environment pointers 
+	envc:        resd 1         ; number of env strings
+	nargs:       resd 1         ; number of args on line from user  
+	enddata:     resd 1         ; pointer to start of free data area
+	my_ptr:      resd 1         ; pointer to whatever
+	expandbuf:   resb BUF_SIZ
+	linebuf1:    resb BUF_SIZ   ; buffer area to read into
+	linebuf2:    resb BUF_SIZ   ; storage for parsed command line
+	linebuf3:    resb BUF_SIZ   ; extra storage for whatever
+	lineargs:    resd BUF_SIZ   ; pointers to parsed line strings
+	environment: resd ENV_SIZ   ; environment pointer storage
+	data:  resb 0xFFFF          ; From here to stack start is data area
+

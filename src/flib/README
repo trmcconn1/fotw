@@ -1,0 +1,159 @@
+		        Special Function Library (flib)
+			    by Terry R. McConnell
+
+Contents
+--------
+1. Introduction
+2. Rationale
+3. Building
+4. Installation
+5. Disclaimer
+6. Author
+7. Bugs
+
+1. Introduction
+---------------
+
+	This is both a suite of programs and a library for calculating
+special functions. The library functions are intended to be linked to
+user programs, whereas the programs are to be used for generating
+tables of values for each type of special function supported. At this time
+we only support real variable calculations and a few special functions, 
+although we intend to add more as time goes on, ambition willing.
+
+	The focus is on accuracy, not speed. Thus, each function is called
+with an argument called t_error, and the result is gauranteed(?) to be accurate
+to within +/- derror. For example, the call 
+
+	y = confluent2(.2,2,.5,.00001);
+
+should store in y the value of the confluent hypergeometric function of the
+second kind having a = .2, c = 2, and x = .5, with at least the first 4 decimals
+correct. The argument is called t_error, for truncation error, because it
+represents the error incurred by stopping the approximation method after
+finitely many steps. (It is often the error term in a series or an error
+bound on a numerical integration.) Depending on the number of digits of
+floating point precision available on the platform, it might be impossible
+to gaurantee that the returned result is accurate to within the desired
+error, due to accumulation of roundoff error. When the routine determines that
+this is so, it is required to report as much on the error channel.
+(More precisely, it reports when it cannot ensure accuracy to 95% confidence
+or better.)
+
+
+	In general, the library routines do not do any sanity checks on their
+arguments. It is up to the caller to provide good values!
+
+	Each standalone program accepts a -h argument which prints usage
+information. Normally, by specifying the values of various parameters and
+their ranges, the program would then produce a table of values for the given
+special function in a reasonable plain text format. The program can also
+produce output with html markup which can then be rendered with a stylesheet
+named function_table.css. An example of such a stylesheet is included and
+seems to work reasonably well under IE 6.0. For better results, the user may
+wish to draft his own stylesheet. 
+
+	Each standalone program also accepts a -i argument which causes it
+to enter an interactive mode in which the user is prompted for relevant
+arguments and parameters at the command line. This output is sent to stderr
+so that the subsequent tabular output can be collected in a file using
+redirection. Thus, to produce a table of values for the gamma and digamma
+functions, one might give the command gamma -i > gamma.table and then
+answer the questions that follow. The table will be stored in a file named
+gamma.table. The command gamma -i -xml > gamma.table will result in a marked
+up table. 
+
+	Building the package builds all the standalone programs as well as
+a library named flib.a which will be found in the lib directory, if the
+build succeeds. The standalone programs are linked against this library. It
+could be moved elsewhere and used by the user in his own programs also.
+
+2. Rationale
+------------
+
+	This is an exercise, motivated by a desire to learn more about some of
+the classical special functions. (Have you ever felt inadequate when you 
+broke into a cold sweat at the mention of confluent hypergeometric 
+functions?) Part of the exercise is to think about how to ensure accuracy
+to a given number of decimals. Thus, each library routine accepts an
+argument named derror, and the program is supposed to gaurantee that the
+answer is correct to within +/- derror. The standalone programs allow derror
+to be given on the command line or during interaction. 
+
+	A second motivation is to learn about doing floating point 
+computations. A mathematician ought to know how to compute, oughtn't he? At
+first, floating point computation seems simple, but the way is filled with
+many pitfalls. Consider, for example, the problem of computing sin(x), a 
+well known function that has a rapidly converging power series that is even
+alternating (which makes error analysis easy.) To compute sin(2), or even 
+sin(10), presents no trouble by just summing the series. But what about 
+sin(200)? Try to do this by summing the series and you will get garbage 
+because of loss of precision. The problem of how to format tables
+allowing for various levels of precision so that they always look nice is
+also quite tricky.
+
+	Given the availability of such powerful (and probably correct) tools
+as Maple and Mathematica for doing the same work, one must admit this project
+is a serious example of `reinventing the wheel'. Nevertheless, it is an 
+instructive wheel to reinvent. (See Disclaimer below.)
+
+Building
+--------
+
+	Edit the Makefile, if necessary, and then give the command 
+
+	make all
+
+	(or replace make with a unix compatible make program.) This will
+build all of the standalone programs in this directory, and will recursively
+run make in the lib directory. (The programs in this directory statically
+link with the library lib/flib.a.) The latter Makefile uses the unix ar
+program, so it might need to be editted for the use of another library building
+tool.
+
+Installation
+------------
+
+	Move the executibles anywhere you please. Make sure their permissions
+are properly set. 
+
+	If you plan to use the library, move the file lib/libf.a whereever
+you please. Beware that the name libf is short and might well conflict the
+name of some other library on your system. If so, you will need to rename it,
+or manage the library search path in a way that suits your needs. 
+
+Disclaimer
+-----------
+
+	As mentioned above, this is amatuer (ish?) work done in the form of
+a programming exercise. If anybody finds it useful, they are welcome to
+use this code in any way they see fit. I don't gaurantee anything
+about the quality or correctness of these calculations. If you want to be
+sure, go through the code yourself and check/correct it.
+
+	Don't base space shots or anything safety or mission critical on
+results generated by this software without checking/correcting it yourself! 
+
+	I'd appreciate feedback, especially anything that leads to fixing
+mistakes.
+
+Author
+------------
+
+Terry R. McConnell
+2458 Swift Road
+Lafayette, NY 13084
+trmcconn@syr.edu
+http://barnyard.syr.edu/~tmc
+
+Bugs
+------
+
+	There is no documentation other than source files and -h :-(
+
+	We don't support C99 or other extensions of standard C. (yet?)
+
+   	The algorithms are not sophisticated. They are based on formulas
+	(usually infinite series) found in any text on special functions.	
+
+	We haven't bothered to position the ascii table titles carefully.

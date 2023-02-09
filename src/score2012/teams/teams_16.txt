@@ -1,0 +1,20 @@
+*****************************************************************************
+* Teams for the SU noontime running league                                  *
+* 2015-2016 competition year.                                                 *
+*****************************************************************************
+*
+* Format:
+* <Team abbreviation> <"Full Team Name"> <"Name of Team Captain">
+*
+* Abbreviation must be 3 letters. Full name and captain's name must be 
+* enclosed in quotes.
+*
+una "Unattached" "None"
+* example entry from a previous year
+thw "The Heavy Waitz" "Don Hughes and Tim Riccardi"
+kbb "Killer Bees" "Bob Nicholson and Bob Mozo"
+tcs "2 Crazy & Stupid 2 Stop" "Tracy Cromp and Sam Sampere"
+kns "Kicking & Screaming" "Mickey Piscitelli and Rachel May"
+
+
+

@@ -1,0 +1,328 @@
+                    Monitor 1.0, by Terry R. McConnell
+
+Contents
+----------
+1. Introduction
+2. Command Details
+3. Script Flow Keywords
+4. External Command API
+5. Scripting API
+6. Command Line Processing
+7. Building the Package
+
+----------------------------------------------------------------------------
+
+1. Introduction
+
+Monitor is a very minimally featured command processor written in nasm 
+assembly language. It presents the user with a prompt on the terminal and
+then interprets what the user types as a command, together with arguments. 
+Commands are of three types: internal commands, which are built into monitor
+itself, external commands, which may be implemented by the user in a file
+named external.c, and scripts, which are commands that can be created on
+the fly. (Scripts are really just environment variables whose values can
+be interpreted as lists of monitor commands.)  
+
+Monitor is intended to provide a generic command line user interface for 
+larger applications. The commands provided by the user in external.c give
+access to features of the application.  
+
+The usage line for monitor is
+
+Shell> monitor [ rcfile ]
+
+The optional rcfile is a list of monitor commands that are processed at
+startup. (This feature is not available in the standalone version.) An example
+rc file is provided with the source. 
+
+In its bare form, Monitor has only 7 internal commands: set, help, echo, shift, 
+status, read, exit. In addition, one external command, info, is provided in the 
+generic external.c to illustrate the API. Monitor breaks user input into 
+words separated by whitespace (space or tab characters.) The newline character
+initiates a read of user input and thus provides the command separator. This
+assumes the user's terminal is set to behave like the unix terminal in canonical
+mode. (The special meaning of whitespace and newline can be cancelled using
+an escape character. See the section on processing of command line arguments
+below for more details.) 
+
+If the first word on a line matches the name of an internal or external command,
+then that command is run with the remaining words of the line as
+arguments. Otherwise, a helpful message is printed and the prompt returns.
+
+------------------------------------------------------------------------------
+
+2. Command Details
+
+-----------------------------
+set - manage the environment
+-----------------------------
+
+Usage: set [FOO] [BAR]
+
+With no arguments set lists all current environment strings. (At startup, 
+monitor makes its own copy of all environment strings provided by the OS.)  
+With one argument, set searches for an environment string
+of the form FOO=BAR amd removes it from the environment, if found. 
+
+With two arguments, set creates a new environment string FOO=BAR if there is
+no current FOO= environment string, otherwise it replaces that string with
+FOO=BAR.
+
+Monitor cannot change the OS environment, only its own copy of it.  
+
+-------------------------------------------------
+help - give information about available commands
+-------------------------------------------------
+
+Usage: help [name]
+
+With no arguments, help lists the names of all available commands, internal and
+external, and scripts. 
+
+With one argument, help gives usage information and a description of what the
+named command does. (These are to be provided in external.c for external
+commands. For scripts, the entire text of the script is printed.)  
+
+----------------------------------------------------
+status - give information about program memory usage
+----------------------------------------------------
+
+Usage: status    (Status takes no arguments.)
+
+What status actually does will probably change with program versions and not
+be described here. It is mainly of debugging interest.
+
+------------------------------------
+echo - print a message on the screen
+------------------------------------
+
+Usage: echo [stuff ...]
+
+Echo prints all of its arguments to the terminal, followed by a newline 
+character. Unless extra space characters are imbedded in arguments using the
+escape character the line printed will be single spaced. 
+
+-----------------------
+shift - reparse command 
+-----------------------
+
+Usage: shift [args ...]
+
+Shift attempts to run the command line that results when args are 
+processed by escaping and variable substitution. Thus, for example
+
+Monitor>shift help $CMD 
+
+would execute help shift if CMD=shift is currently in the environment. This
+allows for some exotic scripting possibilities that are almost never needed. 
+
+------------------------------------
+read - get a line of input from user
+------------------------------------
+
+Usage: read name  
+
+Read prints a message on the terminal that prompts the user to provide a 
+line of input. The entire content of that lane, less the newline at the end,
+is stored as the value of an environment variable having the given name. (The
+variable is created if it does not already exist, otherwise its value is
+changed.) 
+
+--------------------------------------------------
+info - print information about the Monitor program
+--------------------------------------------------
+
+Usage: info
+
+Prints a line of information about me and the program, but is really just
+a place holder in the code that shows the pattern for implementing external
+command. By the default, it is monitor's only external command.
+
+-----------------------------------
+exit - immediately exit the program 
+-----------------------------------
+
+Usage: exit
+
+Exit does exactly what it says. Zero is always returned to the program that
+executed monitor.
+
+-----------------------------------------------------------------------------
+
+3. Script Flow Keywords
+
+Two additional command names are reserved as flow control keywords: if, and
+goto. These are only recognized when input to monitor is not from the 
+terminal, i.e., they are only useful in scripts. Together, they provide 
+the minimal scripting capability needed to implement basic interactive menus.
+(See the example provided in the generic startup script, monitor.rc.)
+
+------------------------------------
+if - conditionally execute a command
+------------------------------------
+
+Usage:  if foo bar name [args ...]
+
+If foo=bar in the environment, the name is run with any arguments provided. 
+Otherwise the line has no effect.
+
+------------------------------------------------
+goto - branch to a label somewhere in the script
+------------------------------------------------
+
+Usage: goto label
+
+Control is passed to the first occurrence of :label, when it occurs at
+the beginning of a line. If there is no such occurrence in the script, then
+the line has no effect. (Labels are ignored, other than serving as targets
+for goto statements. Indeed, everything that might follow the label on a 
+goto line is treated as a comment. Backwards jumps are allowed.)  
+
+------------------------------------------------------------------------------
+
+4. External Command API
+
+The entry points of external commands are called by monitor the same way main
+is called by the C runtime. If the user provides an external command
+named do_it, its prototype in external.c must be
+
+int do_it(int argc, char **argv, char **envp)
+
+If the user then types at the monitor prompt
+
+Monitor> do_it A B C
+
+then monitor calls do_it with argc = 4, argv equal to an array of 4 pointers
+to the strings "do_it", "A", "B", "C", and envp equal to a pointer to an array
+of pointers to the monitor environment strings. 
+
+At present, Monitor doesn't do anything with the return value. 
+
+-------------------------------------------------------------------------------
+
+5. Scripting API
+
+Scripts are just values of environment variables that can be run by giving the
+name of the environment variable on the monitor command line. Thus, for
+example:
+
+Monitor> set foo echo\ boo\ hoo\ hoo
+
+will create the environment string foo=echo boo hoo hoo
+
+Then:
+
+Monitor> foo
+boo hoo hoo
+
+The set command expects at most two arguments, and thus all whitespace must
+be escaped when a script is defined. Scripts can be defined over multiple lines
+by escaping the newline at the end of each line. Indeed, it is good monitor
+form to begin every script with a comment. Thus,
+
+Monitor> set foo \#\ foo:\ wail\ a\ little\
+echo\ boo\ hoo\ hoo
+
+will create the environment string foo=# foo: wail a little
+echo boo hoo hoo
+
+Running foo has the same effect as before, but the comment provides 
+documentation through the help command. More importantly, help recoginzes 
+an environment variable as being a script by whether or not the value begins
+with #. The second version of sript foo would be listed by the help command,
+while the first version would not. 
+
+Monitor assumes that any enviroment variable name typed at the prompt is the
+name of and, and it will attempt to run the value of the variable, regardless
+of its contents. Thus, one should avoid typing names of environment variables
+that are not scripts at the prompt. 
+
+---------------------------------------------------------------------------- 
+
+6. Command Line Processing
+
+Lines which begin with # are treated as comments and ignored. Content after
+a # which is not escaped is ignored until the end of the line.
+
+The part of the command line that follows the command name is subject to 
+processing that allows for substitution of values of environment strings. Any
+string of non-whitespace characters that begins with $ is replaced by the
+value of the corresponding environment variable, or by nothing if there is
+no such environment variable. Thus, for example
+
+Monitor>echo $FOO
+
+produces the output BAR if FOO=BAR is in the environment. 
+
+The \ character removes any special meaning of any character that follows it.
+Thus
+
+Monitor>echo $FOO is \$FOO and \\$BAR
+
+produces the output: BAR is $FOO and \
+
+assuming BAR is not set in the environment. Whitespace (i.e., any ascii
+character whose code is 0x20 or less) separates arguments on command lines, but
+an escaped whitespace character is incorporated as part of an argument. 
+
+The newline character at the end of line can also be escaped. This incorporates
+the newline character into the current command line argument. The cursor
+moves to the next line and monitor waits for further user input, which is
+treated as if there had been no newline.
+Thus,
+
+Monitor> set FOO BAR\
+FLY
+
+will cause environment variable FOO to have the value BAR^JFLY.   
+
+If the escape character preceeds a character that has no special meaning to
+monitor, it is simply ignored. (Though \\ will introduce a \ into the 
+current argument that does not change the meaning of the character that follows
+it.) 
+
+One should be aware that terminal settings may affect what input is actually
+transmitted to monitor.  For example, for the Unix terminal in canonical mode,
+the sequence ^V^J will insert the newline character (^J) on a line without
+completing a read of the terminal. (^V may have to be changed here to the LNEXT 
+character if is has been changed from its default value.) On such systems,
+this provides a second way to continue a line of input.  
+
+To keep things simple, monitor lacks the capability to escape groups of 
+characters at once. Thus, it does not at present use characters like " and '
+for quoting, as does the Unix Bourne shell. 
+
+-----------------------------------------------------------------------------
+
+7. Building the Package
+
+Edit the Makefile for your system and say make all. If all goes well, that
+will create an executable named monitor, which can then be moved whereever
+the user wants. As it stands, the assembly language used in all .a extension
+files is compatible with nasm, the Netwide Assembler, running on a 32 bit intel
+platform. If you have nasm installed on a typical 2012-ish Linux system it 
+may well build out of the box. The executable is 32 bit elf format. 
+
+Hopefully, the source code is well enough documented to allow easy ports
+to other systems, assemblers, and executable formats. All Linux system calls
+are isolated in macros in the file macros.a, so any port to a different OS 
+would require suitable versions of those macros. 
+
+As it stands, monitor can be built in one of two configurations. make monitor,
+or make all will build the version of monitor described so far. The other
+option is to say make standalone. This will produce a version that should
+operate exactly the same, only without any external commands. The difference
+is that standalone is not linked against the standard C-library (as is the 
+normal version) and does use the C start up mechanism. Accordingly, it has
+no main routine. The entry point is simply the label monitor:
+
+External commands could be implemented in assembler. To indicate this 
+possiblility, the standalone build assembles a file called _external.a, but
+this files does nothing. At present, the standalone version does not allow
+for a start up script on the command line.
+
+----------------------------------------------------------------------------
+Terry R. McConnell
+trmcconn@syr.edu
+http://barnyard.syr.edu/~mcconnel
+

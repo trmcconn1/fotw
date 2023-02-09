@@ -1,0 +1,48 @@
+ #############################################################################
+# DOS Makefile for Schedule Program by Terry McConnell                    #
+############################################################################
+.SUFFIXES : .c .obj
+
+OBJS = main.obj shell.obj ui.obj calendar.obj load.obj  \
+ compare.obj qsort.obj schedcmd.obj shelldb.obj  audit.obj  roomchrt.obj\
+ menu.obj scroll.obj edit.obj actions.obj 
+CFLAGS = -mh  -I..\..\Include  
+CC = bcc
+
+.c.obj: 
+	 $(CC) $(CFLAGS) -c $<
+.cpp.obj:
+        $(CC) $(CFLAGS) -c $<
+.asm.obj:
+        TASM /ml $<
+
+schedule : $(OBJS)
+	 tlink   @&&|
+  /Tde /c /d /Gm +
+C:\BC45\LIB\c0h.obj+
+main.obj+
+shell.obj+
+ui.obj+
+calendar.obj+
+load.obj+
+compare.obj+
+qsort.obj+
+shelldb.obj+
+schedcmd.obj+
+audit.obj+
+roomchrt.obj+
+menu.obj+
+scroll.obj+
+edit.obj+
+actions.obj
+$<,$*
+C:\BC45\LIB\fp87.lib+
+C:\BC45\LIB\mathh.lib+
+C:\BC45\LIB\ch.lib
+
+|
+
+clean:
+	del *.obj
+
+

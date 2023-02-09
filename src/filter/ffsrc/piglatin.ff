@@ -1,0 +1,10 @@
+%{
+/* Pig latin filter */
+#include <stdio.h>
+#include <stdlib.h>
+%}
+# Default is to do pig latin
+-_	/\([^ 	aeiouAEIOU]\)\([a-zA-Z]+\)/ {printf("%s",\$1);
+ printf("-%say",\$0);}
+-_	/\([aeiouAEIOU][a-zA-Z]*\)/  {printf("%s",\$0);}
+%%

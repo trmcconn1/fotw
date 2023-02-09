@@ -1,0 +1,95 @@
+Feb 16-17, 1997:
+
+Upgraded version 1.1 to version 1.2 by incorporating my new generic
+gui interface, which allows editing of the open file. The open file is
+now read into an internal buffer and edited there. Scrolling has been much
+improved by using the bios scroll services (new file scroll.asm.) A save
+action has been added to the file menu and the load action has been moved
+to the action menu.
+
+The generic interface should be entirely self-contained in the file
+menu.cpp. I.e., if improvements are made to the interface it should be
+possible to just copy the new interface file and its header file into place.
+(Well, you might have to edit the initialize and menu item calls if their
+declarations differ from the generic ones. )
+All customization of the interface should be done via the actions.cpp and
+actions.h files.
+
+Feb18: Installed newest version of gui. (Fixed problems with clobbering
+files when n is picked from dirty file quit dialog, problems with Cap
+letters being interpreted as cursor movements in insert mode, and improved
+performance of status bar.)
+
+Feb 19: Fixed a subtle memory leak: The assign command was setting a
+shell variable called ASSIGNMENT, which was not being unset (hence freed)
+during a  load -free. This left an unreclaimed block of memory right in
+the middle of the heap, effectively bringing the heap chain to a screeching
+halt.
+
+Feb 20. DumpCurrentPage now only redraws from the cursor position down,
+and no longer clears screen, to cut down on flicker.
+
+Feb. 20. Restore drive letter and WD in main using system calls rather
+than by invoking command.com. Clear screen in the shell menu choice by
+creating and clearing a full screen window. These changes are necessary
+because when fully loaded there is insufficient memory to run things from
+command.com.
+
+Added a last argument to Status(...) which allows us to force a redraw of
+the status line. Use this when returning to gui from external programs to
+restore the status bar.
+
+March 5: Increase size of MAX_SLOT_LIST to 100 (75 too small)
+
+March 6: We were opening FILE *devnull in the roomchart when it was
+already open. This corrupts the heap for some reason.
+
+March 7. Two minor changes to menu.cpp -- see the changes for gengui/gui.cpp
+ Changes made during upgrade 1.0->1.1
+
+ 1.)Changed the definition of struct SlotList  so that the list
+ of timeslots, the name, and the description are now dynamically allocated
+ at runtime, thus saving about 70K of memory. This required rewriting the
+ creatslotlist routine, changing numerous structure references, and writing
+ a new routine in load.c to free a slotlist struct.
+
+ 2.) The index numbers that are displayed by dtimes, djobs, etc are now
+ what you must type in order to see a given datum (rather than off by 1.)
+
+ 3.) Now we dynamically allocate the name field of a TimeSlot. This is
+ only used by Holiday timeslots, so statically allocating 20 bytes for
+ each slot's name was very wasteful. As a bonus, there is now no limit
+ on the length of Holiday's name. A semester's worth of data now takes
+ about 80K, and with the schedule it comes to a total of about 130K. 
+
+ 4.) Added a people choice to the View menu to allow the user to display
+ ranges of people data.
+
+ 5.) Changed the dpeople printout to make it suitable to be distributed
+ to people.
+
+ 6.) Put version number in title.
+
+ 7.) Updated version number everywhere it appears (main.c, info.txt).
+
+ 8.) Added a set menu entry to set the MissingData entry. Fixed bug in
+ set command that kept MissingData from actually getting changed.
+
+ 9.) Added a LOADED shell variable that tells whether a semester is loaded.
+    Changed status bar to tell us the loaded state.
+
+10.) Edited all scripts so that they now save and restore semester and loaded
+states.
+
+3/8: Added code to fatal routine to clear the screen by printing many blank
+lines. Added code in schedcmd.c (course command) to exit with a fatal
+error if subclasses have been issued with no matching subclass end. There
+is no reason to continue in this situation because load -free will no longer
+
+3/8: Added a "wrong" choice to the people dialogue to list only those
+people whose assigned loads do not match their actual loads.
+
+3/8: Added an unload choice to the actions dialogue. (really, just for
+completeness -- there does not appear to be a need for it.)
+be able to free the heap.     
+

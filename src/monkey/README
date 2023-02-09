@@ -1,0 +1,71 @@
+-------------------------------------------------------------------------------
+		    MONKEY 1.0: Random text generator
+		           By Terry McConnell
+-------------------------------------------------------------------------------
+
+This is the source code for a program named "monkey" and for a utility used
+in building it called "mkmatrix". The monkey program when invoked with
+no arguments will print on stdout 1000 characters chosen at random according
+to the frequency distribution of characters in some sample text. (The purpose
+of mkmatrix, in fact, is to analyze the sample text and create a library of
+frequency distributions which gets compiled into the monkey program. The
+default source of text is /usr/dict/words, but any text file can be used.
+See the included man page for mkmatrix for more information.) Thus, this
+program simulates a somewhat educated monkey typing randomly at a keyboard.
+When invoked as monkey -d n, the probability distribution of each generated
+character is the conditional distribution based upon the most recently 
+generated n characters. ( n can take any value from 1 up the the DEPTH
+defined in the makefile. In turn, depth can be specified up to a maximum of 
+4.) There are other command line options understood by monkey. See its
+included man page in the doc directory for more information.
+
+This program was inspired by the entertaining article: W.R. Bennett, Jr.,
+"How Artificial is Intelligence?", Amer. Scientist, 65(1977), 694-702.
+
+What is remarkable is not only how quickly the text approaches intelligibility
+with increasing d, but also how the output subtly reflects characteristics
+of the sample text. For example, Bennett used the works of Shakespeare as
+sample text, and the results are decidedly Shakespearean!
+
+-------------------------------------------------------------------------------
+To build a monkey: 
+
+Edit the following entries in makefile:
+
+DEPTH: If this value is n, each random character's distribution depends
+upon the last n characters. This cannot be larger than MAXDEPTH declared
+in global.h. (Note: If this value is taken to be 4, the largest allowed,
+the build process may be quite long, and some compilers may be unable to
+handle the size of the resulting library source files -- the largest is
+over 500K. I found on my NeXT station with 24 megabytes of ram that I
+needed to increase the tcsh stacksize limit in order for gcc to compile all
+the library source files. )
+
+MATOPTS: These are the options to be passed to mkmatrix. See its man page for 
+more information.
+
+DICT: The document to scan to generate transition probabilities. (This is 
+the input file for mkmatrix. Default is /usr/dict/words.)
+
+Then type make monkey.
+
+-------------------------------------------------------------------------------
+To install:
+
+Move the executable named monkey somewhere on your search path. Copy the
+included man pages, doc/monkey.1 and doc/mkmatrix.1 somewhere on your
+MANPATH.
+
+-------------------------------------------------------------------------------
+
+This is free software. Feel free to improve it. If you want to send me
+a check, I won't send it back :-)
+
+Terry McConnell
+Mathematics Department
+215 Carnegie
+Syracuse University
+Syracuse, NY 13244-1150
+(315)443-1491
+trmcconn@syr.edu
+http://barnyard.syr.edu/~tmc

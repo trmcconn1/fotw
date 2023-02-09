@@ -1,0 +1,42 @@
+I will provide a zip archive, longroot.zip, containing the following files:
+
+- longsqrt.c:   C source code for square root algorithm.
+- longcurt.c:   C source code for cube root algorithm. 
+- longroot.htm: html format documentation for the programs.
+- Possibly some additional source files and header files.
+- Console mode windows XP executables longsqrt.exe and longcurt.exe
+- Linux executables longsqrt and longcurt
+- Unix style Makefile
+
+The package will compile without warnings under both gcc 2.96 and Microsoft
+Visual C++ version 2002.
+
+The executables run in console mode and accept two parameters (and possibly
+certain options) on their command lines: The radicand and a natural number
+indicating the number of significant digits in the desired result. They
+will print to their stdout text that gives a "prettyprint" rendering of
+the by-hand calculation. For example, given input 2.0 and 3 the
+longsqrt program would output
+
+            1. 4  1
+           ___________________________
+          /
+       \/   2.00 00
+            1
+            -------
+	    1 00
+    24        96            
+     -      ____
+	       4 00
+   281
+     -         2 81
+            -------
+
+or something similar. The cube root output would be similar, but with zeros
+grouped in threes, and more complex estimate work down the right column. 
+
+Both programs would use dynamic memory management so as to insure that they
+would (in principle) work to arbitrary precision. No postprocessing will
+be done on the output -- it is assumed that the display can handle the
+number of columns produced.
+

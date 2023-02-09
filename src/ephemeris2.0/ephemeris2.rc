@@ -1,0 +1,8 @@
+# Default startup file
+# Normally this would be moved to ~/.ephemeris2.rc
+# (in the user's home directory) 
+echo Answer help at prompt for list of commands
+echo help <command> gives more information about a command
+# edit as needed
+set RCFILE ./ephemeris2.rc
+

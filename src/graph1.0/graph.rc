@@ -1,0 +1,55 @@
+# Start up commands for graph program
+echo Graph 1.0 by Terry R. McConnell
+readdefs example.def euler.def
+set clone \#\ copy\ graph\ under\ new\ name\
+echo\ Graph\ number?\
+read\ GRAPH_NUMBER\
+echo\ New\ Name?\
+read\ NEW_NAME\
+savedef\ \$GRAPH_NUMBER\ /tmp/foo\
+rename\ \$GRAPH_NUMBER\ \$NEW_NAME\
+readdefs\ /tmp/foo
+
+
+# save command line 
+set argv[0] $0
+set 0
+set argv[1] $1
+set 1
+set argv[2] $2
+set 2
+set argv[3] $3
+set 3
+set argv[4] $4
+set 4
+set argv[5] $5
+set 5
+set argv[6] $6
+set 6
+set argv[7] $7
+set 7
+set argv[8] $8
+set 8
+set argv[9] $9
+set 9
+
+# define some useful scripts
+
+set test \#test:\ run\ experimental\ code\
+if\ 1\ \$1\ echo\ test\ with\ an\ arg
+
+set SHELL /bin/sh
+set VI /usr/bin/vi
+
+set vi \#vi\ file\ run\ the\ vi\ editor\ on\ file\
+exec\ /usr/bin/vi\ \$1
+
+set sh \#sh\ run\ /bin/sh\
+exec\ /bin/sh
+
+set ls \#ls\ dir:\ run\ /bin/ls\ with\ arg\
+exec\ /bin/ls\ \$1
+
+help   # display list of available commands at startup
+
+graphinfo

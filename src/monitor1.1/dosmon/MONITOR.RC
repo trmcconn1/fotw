@@ -1,0 +1,29 @@
+# This is a sample start up file for monitor
+set RCFILE monitor.rc
+echo Monitor by Terry R. McConnell
+echo Chicken Haven Software (2018)
+help # display list of available commands at startup
+
+# Illustration of a script to implement a simple interactive choice menu.
+# To invoke, just type santa at the prompt
+# Note the escaped whitespace and newlines, which are needed to gather
+# everything into a single second argument for the set command
+
+set santa \#santa\ -\ humorous\ dialog\ with\ St.\ Nick\
+:santa\
+echo\ Naughty\ or\ Nice?\
+read\ RESPONSE\
+if\ RESPONSE\ Naughty\ goto\ naughty\
+if\ RESPONSE\ Nice\ goto\ nice\
+echo\ Response\ not\ recognized.\ Try\ again.\
+goto\ santa\
+:naughty\
+echo\ No\ presents\ for\ naughty\ people!\
+goto\ end\
+:nice\
+echo\ No\ presents\ for\ haughty\ people!\
+:end
+
+
+
+

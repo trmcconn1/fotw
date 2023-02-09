@@ -1,0 +1,10 @@
+
+Warning: no stack segment
+
+ Start  Stop   Length Name                   Class
+ 00000H 0194BH 0194CH _TEXT                  CODE
+ 01950H 0207AH 0072BH _DATA                  DATA
+ 02080H 02E8FH 00E10H _BSS                   BSS
+
+ Origin   Group
+ 0000:0   DGROUP

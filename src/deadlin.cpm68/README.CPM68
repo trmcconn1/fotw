@@ -1,0 +1,79 @@
+The idea:
+
+ compile the source on unix side to *.S files,
+then transfer to CP/M 68, assemble and link it there.
+
+Compiler used: Mathew Brandt's CC68 from
+http://homepage.ntlworld.com/itimpi/compsrc.htm
+(there are a lot of versions on the net;this is good)
+It needs some patching to generate AS68 compatible code:
+
+out68k_c.c:
+PRIVATE void put_byte P1 (UVAL,val)
+{        
+    put_header (bytegen, alignment_of_type (tp_char));
+    oprintf ("$%lx", (unsigned long) (val & OxffUL));
+/*DtZ     oprintf ("0x%lx", (unsigned long) (val & OxffUL)); */
+    outcol += 4; /* or  should be changed to +3 ? */
+}
+
+PRIVATE void put_word P1 (UVAL, val)
+{
+   put_header (wordgen, alignment_of_type (tp_short));
+/*DtZ     oprintf ("0x%lx", (unsigned long) (val & OxffffUL)); */
+    oprintf ("$%lx", (unsigned long) (val & OxffffUL));
+    outcol += 6; /* or should be changed to +7? */
+} 
+
+....
+static void seg P3 (enum e_sg, segtype, const char *, segname, SIZE, al)
+{
+ nl();                                                                                                         
+ if (curseg != segtype) {                                                                                          
+/*DtZ   oprintf ("\t.sect\t%s%s", segname, newline);*/                                                        
+        oprintf ("\t%s%s", segname, newline);
+
+
+This compiler is only the compiler (with a broken optimizer!), not 
+preprocessor, use gcc as preprocessor. Take headers from DISK4 of 
+CP/M 68 distribution, convert them to unix-style texts, and compile 
+each file like:
+
+
+gcc -nostdinc -E -DCPM68 -I/home/dtz/8BIT/68K/CPM1.3 -I/home/dtz/8BIT/68K/CPM1.3/DISK4 file.c
+./cc68 -cpm68k -int=16 -opt=no _file.c > file.s
+
+(See Makeit.CPM68 script)
+
+Some functions like strstr are missing in CP/M 68 C Library, so they are borrowed from apple.
+Note, that the compiler is sort-of-strict and wants to know all the C Library 
+calls of CP/M 68. It will find [most of] them in cpm.h header file.
+
+Next, transfer all the *.s files (there should be 
+
+F>dir *.s
+F: CPM      S   : MAIN     S   : PARSE   S   : READLINE S  : STRPBRK  S   
+F: STRSTR   S   : STRTOK   S
+
+), then for each the files do
+C:as68 -u f:file.s
+Then link them all as if it was regular C sources by linkit:
+
+F>type linkit.sub
+clink main CPM PARSE PARSE READLINE  STRPBRK STRSTR STRTOK
+
+F>type clink.sub
+c:lo68 -r -u_nofloat -o $1.68k c:s.o $1.o $2.o $3.o $4.o $5.o $6.o $7.o $8.o  $9.o c:clib
+
+Limitations:
+#define MAX_LINES 8191
+#define DEFAULT_BRK 65535    /* 64K */
+
+and around in deadlin.h
+
+The main problem is that malloc can alloc only (WORD)! (WTF?)
+
+DtZ 201412
+
+
+                                                       

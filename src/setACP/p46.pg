@@ -1,0 +1,76 @@
+# Problem 46 of ACP test. 
+#
+# Properties of functions
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 46", $EBOLD, $BR);
+
+
+# Like 45 this problem is unusual. We have five fixed answers that describe
+# possible properties of a function. We present a function generated at
+# random.
+# The function is x^(n/m) and the answers are:
+# A) differentiable at all points, B) defined everywhere, but discontinuous
+# at some points, C) defined and continuous at all points, but not 
+# differentiable at all points D) not defined at all points, E) not defined 
+# everywhere, but differentiable at all points at which it is defined. 
+
+# Choices of (n,m,correct answer letter):
+
+#@data = ((-1,2,"E"),(-1,3,"E"),(-3,4,"E"),(1,2,"D"),(1,3,"C"),(1,5,"C"),
+#(2,3,"C"),(3,2,"D"),(4,3,"A"),(5,3,"A"),(3,5,"C"),(3,4,"E"),(5,2,"E"),
+#(2,5,"C"));
+
+@ns = (-1,-1,-3,1,1,1,2,3,4,5,3,3,5,2);
+@ms = (2,3,4,2,3,5,3,2,3,3,5,4,2,5);
+@letters=("E","E","E","D","C","C","C","D","A","A","C","E","E","C");
+
+$i = random(0,13,1);
+$n = $ns[$i];
+$sign = "";
+if($n < 0){
+	$sign = "-";
+	$n = abs $n;
+}
+$m = $ms[$i];
+$letter = $letters[$i];
+
+# display problem
+
+BEGIN_TEXT
+(Choose the $BBOLD most complete $EBOLD correct answer for this question.)
+$PAR
+The curve \( y = x^{$sign \frac{$n}{$m}} \) is:
+$PAR
+A) differentiable at all points. 
+$BR
+B) defined everywhere, but discontinuous at some points. 
+$BR
+C) defined and continuous at all points, but not differentiable at some points.
+$BR
+D) not defined at all points.
+$BR
+E) not defined at all points, but differentiable at all points at which it is defined. 
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

@@ -1,0 +1,137 @@
+# Problem 47 of ACP test. 
+#
+# This is the first problem of section V of the test: Calculus II
+# Chain rule and trig functions
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 47", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Returns a permutation of 0-4 as a list. Many problems on the second half
+# of the ACP test have 5 choices.
+
+sub mybigshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	my $d = random(0,4,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+
+	if( $d == 0 ){ return ( 4, $a,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 1 ){ return ( $a, 4,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 2 ){ return ( $a, $b, 4,  $c, 6 - $a - $b - $c); }
+	if( $d == 3 ){ return ( $a, $b, $c, 4,  6 - $a - $b - $c); }
+	if( $d == 4 ){ return ( $a, $b, $c, 6 - $a - $b - $c,  4); }
+
+}
+
+# We ask for the derivative of p(x) = f(ax^m + b) where f is either sine
+# or cosine.
+
+# First pick the function and stuff that depends on it:
+
+$i = random(0,1,1);
+if($i == 0){
+	$f = "\sin";
+	$absdf = "\cos";
+	$dfsign = "";
+	$wrongsign = "-";
+}
+else {
+	$f = "\cos";
+	$absdf = "\sin";
+	$dfsign = "-";
+	$wrongsign = "";
+}
+
+$a = random(2,10,1);
+$m = random(3,5,1);
+$b = random(1,15,1);
+$ma =  $m*$a;
+$m1 = $m - 1;
+
+# Correct and incorrect answers to display. Correct is the first one:
+@ans = ($dfsign."$ma x^{$m1}".$absdf."($a x^{$m} + $b)",
+$dfsign.$absdf."($a x^{$m} + $b)",
+$wrongsign."$ma x^{$m1}".$absdf."($a x^{$m} + $b)",
+$f."($ma x^{$m1})",
+$wrongsign."$ma x^{$m1}".$f."($a x^{$m} + $b)");
+
+# For example, if f = sin the choices are:
+# ma x^(m-1) cos(ax^m + b) (correct)
+# cos(ax^m + b)     (forgot to use chain rule)
+# -ma x^(m-1) cos(ax^m + b) (wrong sign)
+# sin(ax^(m-1))   (differentiated inside f)
+# ma x^(m-1) sin(ax^m + b)  (forgot to replace f by df)
+
+# Clearly these are all different, so there are no uniqueness issues.
+
+# get a permutation of 0-3 to shuffle display
+@picks = mybigshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+$ansE = $ans[$picks[4]]; 
+
+# display problem
+
+BEGIN_TEXT
+\( \frac{d}{dx} $f ($a x^{ $m } + $b ) = \)
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$BR
+E) \( $ansE \)
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+$letter = "E" if $picks[4] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

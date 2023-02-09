@@ -1,0 +1,2106 @@
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-1
+                                                            
+
+       1                                ; monitor: very basic, generic command 
+					interpreter 
+       2                                ; Implemented in MASM syntax for 16 Bit
+					 MSDOS platform 
+       3                                ; Ported from an implementation for Lin
+					ux in NASM syntax 
+       4                                 
+       5                                NAME monitor 
+       6                                TITLE monitor 
+       7                                 
+       8                             C  INCLUDE macros.asm     ; macros for DOS
+					 system calls 
+       9                             C   
+      10 = 0200                      C  BUF_SIZ EQU 512 
+      11 = 0200                      C  ENV_SIZ EQU 512 
+      12 = 1000                      C  SCRIPT_SIZ EQU 4096 
+      13 =                           C  PROMPT_STRING EQU "Monitor>" 
+      14 = 005C                      C  ESCAPE_CHAR EQU 05CH 
+      15 = 0023                      C  COMMENT_CHAR EQU 023H 
+      16 = 0024                      C  VARIABLE_CHAR EQU 024H 
+      17                             C   
+      18                             C  ; If the bios is used to print strings 
+					to the console, the following sets 
+      19                             C  ; the attribute, with high nibble = rgb
+					 value of background, low nibble = 
+      20                             C  ; rgb value of foreground. I like white
+					 on blue background 
+      21                             C  ; Standard white on black is 07H 
+      22                             C   
+      23 = 0017                      C  CHAR_ATTR EQU 17H      
+      24                             C   
+      25                             C  ;; Note: all system calls should be cal
+					led from inside macros, for portability
+					 
+      26                             C   
+      27                             C  ; Every system call is implemented in a
+					 separate macro. There are two  
+      28                             C  ; implementations of each one - one usi
+					ng only BIOS interrupts so that 
+      29                             C  ; monitor could be run in the absence o
+					f an operating system, say, as a  
+      30                             C  ; boot monitor. This is selected by def
+					ining BIOS on the assember command 
+      31                             C  ; line. Otherwise, DOS int21H system ca
+					lls are used 
+      32                             C   
+      33                             C  ; BE VERY CAREFUL USING REGISTERS AS MA
+					CRO ARGUMENTS!!! 
+      34                             C   
+      35                             C  IFDEF BIOS 
+      36                             C   
+      37                             C  ; Read a line of text from the terminal
+					 using Bios 00H int 16H service 
+      38                             C  ; Leaves number of characters read in a
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-2
+                                                            
+
+					x.  
+      39                             C   
+      40                             C  READ_LINE MACRO mybuf 
+      41                             C  LOCAL loop,done,do_backsp 
+      42                             C  	push si 
+      43                             C  	push bx 
+      44                             C  	push bp 
+      45                             C  	mov ax,mybuf 
+      46                             C  	mov bp,ax 
+      47                             C  	mov ah,0FH 
+      48                             C          int 10H 
+      49                             C          mov bl,CHAR_ATTR 
+      50                             C  	xor si,si 
+      51                             C  	jmp loop 
+      52                             C   
+      53                             C  do_backsp: 
+      54                             C   
+      55                             C  	cmp si,0 
+      56                             C  	jbe loop 
+      57                             C  	dec si 
+      58                             C  	mov ah,0EH 
+      59                             C  	int 10H 
+      60                             C  	mov al,20H 
+      61                             C  	int 10H 
+      62                             C  	mov al,08H 
+      63                             C  	int 10H 
+      64                             C   
+      65                             C  loop: 
+      66                             C  	mov ax,00H 
+      67                             C  	int 16H 
+      68                             C  	cmp al,1AH 
+      69                             C  	je done 
+      70                             C  	cmp al,08H 
+      71                             C  	je do_backsp  
+      72                             C  	mov BYTE PTR DS:[bp+si],al 
+      73                             C  	inc si 
+      74                             C          mov ah,0EH 
+      75                             C          int 10H 
+      76                             C  	cmp al,0DH 
+      77                             C  	jne loop 
+      78                             C   
+      79                             C  done: 
+      80                             C   
+      81                             C  	mov al,0AH 
+      82                             C  	mov ah,0EH 
+      83                             C  	int 10H 
+      84                             C  	mov ax,si 
+      85                             C  	pop bp 
+      86                             C  	pop bx 
+      87                             C  	pop si 
+      88                             C  ENDM 
+      89                             C   
+      90                             C  ; Print a single character to the termi
+					nal using int 10H service 0EH 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-3
+                                                            
+
+      91                             C   
+      92                             C  PRINT_CHAR MACRO mychar  
+      93                             C  		     push ax 
+      94                             C  	             push bx 
+      95                             C  		     mov ah,0FH 
+      96                             C  		     int 10H 
+      97                             C  	             mov bl,CHAR_ATTR 
+      98                             C  		     mov ah,0EH 
+      99                             C  	             mov al,mychar 
+     100                             C  	             int 10H 
+     101                             C  		     pop bx 
+     102                             C  	             pop ax 
+     103                             C  ENDM 
+     104                             C   
+     105                             C  ; Macro: use BIOS 10H service to write 
+					a string to the screen 
+     106                             C  ; string must be null terminated 
+     107                             C   
+     108                             C  PRINT_STRING MACRO mystring  
+     109                             C  	push ax 
+     110                             C  	push bx 
+     111                             C  	push cx 
+     112                             C  	push dx 
+     113                             C  	push es 
+     114                             C  	push bp 
+     115                             C  	mov ah,0FH 
+     116                             C  	int 10H 
+     117                             C  	mov ah,03H 
+     118                             C  	int 10H 
+     119                             C  	mov ax,OFFSET DGROUP:mystring 
+     120                             C  	push ax 
+     121                             C  	call my_strlen 
+     122                             C  	add sp,2 
+     123                             C  	mov cx,ax 
+     124                             C  	mov ax,ds 
+     125                             C  	mov es,ax 
+     126                             C  	mov ax,OFFSET DGROUP:mystring 
+     127                             C  	mov bp,ax 
+     128                             C  	mov bl,CHAR_ATTR 
+     129                             C  	mov al,01H 
+     130                             C  	mov ah,13H 
+     131                             C  	int 10H 
+     132                             C  	pop bp 
+     133                             C  	pop es 
+     134                             C  	pop dx 
+     135                             C  	pop cx 
+     136                             C  	pop bx 
+     137                             C  	pop ax 
+     138                             C  ENDM 
+     139                             C   
+     140                             C  ; A version of the previous using a reg
+					ister passed as argument 
+     141                             C   
+     142                             C  PRINT_PTR MACRO my_ptr  
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-4
+                                                            
+
+     143                             C  	push ax 
+     144                             C  	push bx 
+     145                             C  	push cx 
+     146                             C  	push dx 
+     147                             C  	push es 
+     148                             C  	push bp 
+     149                             C  	mov ah,0FH 
+     150                             C  	int 10H 
+     151                             C  	mov ah,03H 
+     152                             C  	int 10H 
+     153                             C  	mov ax,my_ptr 
+     154                             C  	push ax 
+     155                             C  	call my_strlen 
+     156                             C  	add sp,2 
+     157                             C  	mov cx,ax 
+     158                             C  	mov ax,ds 
+     159                             C  	mov es,ax 
+     160                             C  	mov ax,my_ptr 
+     161                             C  	mov bp,ax 
+     162                             C  	mov bl,CHAR_ATTR 
+     163                             C  	mov al,01H 
+     164                             C  	mov ah,13H 
+     165                             C  	int 10H 
+     166                             C  	pop bp 
+     167                             C  	pop es 
+     168                             C  	pop dx 
+     169                             C  	pop cx 
+     170                             C  	pop bx 
+     171                             C  	pop ax 
+     172                             C  ENDM 
+     173                             C   
+     174                             C  ; Try to return to whatever might have 
+					called us. For a true boot monitor 
+     175                             C  ; we might want to try int 19H, which d
+					oes a warm reboot 
+     176                             C   
+     177                             C  TERMINATE MACRO rval 
+     178                             C  	mov al,rval	       
+     179                             C  	ret 
+     180                             C  	;int 19H    
+     181                             C  ENDM 
+     182                             C   
+     183                             C  ; SBRK  return in ax the number of K of
+					 total memory as returned 
+     184                             C  ; by the BIOS. It is not clear this is 
+					meaningful    
+     185                             C   
+     186                             C  SBRK MACRO   
+     187                             C  	int 12H 
+     188                             C  ENDM 
+     189                             C   
+     190                             C  ENDIF 
+     191                                 
+     192                                 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-5
+                                                            
+
+     193                                ; symbols exported from this module 
+     194                                 
+     195                                PUBLIC _monitor,newline,environment,env
+					c,my_data,enddata,_rcscript,_linebuf1 
+     196                                PUBLIC _copy_env,_alone 
+     197                                 
+     198                                ; symbols defined externally 
+     199                                 
+     200                                EXTRN my_strlen:near,my_strcpy:near,my_
+					strcmp:near,mygetenv:near,my_strstr:nea
+					r 
+     201                                EXTRN _set:near,set_name:word,set_usage
+					:word,set_help:word 
+     202                                EXTRN _help:near,help_name:word,help_us
+					age:word,help_help:word 
+     203                                EXTRN _echo:near,echo_name:word,echo_us
+					age:word,echo_help:word 
+     204                                EXTRN _status:near,status_name:word,sta
+					tus_usage:word,status_help:word 
+     205                                EXTRN shift_name:word,shift_usage:word,
+					shift_help:word 
+     206                                EXTRN _n_externals:word,_external_names
+					:word,_external_entry_points:word 
+     207                                EXTRN exit_name:word,exit_usage:word,ex
+					it_help:word 
+     208                                EXTRN _read:near,read_name:word,read_us
+					age:word,read_help:word 
+     209                                EXTRN _print_i:near,if_name:word,goto_n
+					ame:word 
+     210                                EXTRN save_disk:byte,save_cyl:byte,save
+					_sec:byte,save_head:byte,save_seg:byte 
+     211                                EXTRN save_off:byte,save_size:byte 
+     212                                 
+     213                                 
+     214                                ;;; Monitor can be built as either a .c
+					om suitable to run 
+     215                                ; as a stand-alone program, or incorpor
+					ated into a larger application. 
+     216                                ; The stand-alone version is tiny model
+					 - one segment for both code and 
+     217                                ; data. Only tiny model programs can be
+					 converted to a .com. 
+     218                                ; As distributed, monitor can also be b
+					uilt as a small model 16 bit program.  
+     219                                ; The segment name and groups 
+     220                                ; are compatible with the ones created 
+					by bcc -c -ms  (Borland C/C++ 4.5) 
+     221                                ; The memory map is: 
+     222                                ; _TEXT and other code class segments 
+     223                                ; _DATA segment 
+     224                                ; Other data class segments (e.g, from 
+					libc) 
+     225                                ; _BSS segment 
+     226                                ; Other _BSS class segments 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-6
+                                                            
+
+     227                                ; STACK segment 
+     228                                 
+     229                                ; Group declares a set of segments that
+					 all use the same segment register  
+     230                                DGROUP GROUP _TEXT,_DATA,_BSS 
+     231                                 
+     232                                ; Combine type public makes segments wi
+					th same name contiguous in the map 
+     233                                ; and class name makes segments of the 
+					same class contiguous 
+     234                                 
+     235 0100                           ORG 100H  ; The entry point for a .com 
+					is at offset 100H to allow space 
+     236                                ; for the PSP 
+     237                                 
+     238 0000                           _TEXT SEGMENT PUBLIC 'CODE' 
+     239                                ASSUME CS:DGROUP,DS:DGROUP 
+     240                                 
+     241                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     242                                ;   Program Entry Point                
+					                                 ; 
+     243                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     244                                 
+     245 0000                           _monitor: 
+     246                                 
+     247 0000  2E: A0 005A R            	mov al,CS:_alone                  ; ju
+					mp around stuff that only 
+     248 0004  3C 00                    	cmp al,0                          ; ap
+					plies in the boot monitor 
+     249 0006  74 49                    	je not_stand_alone                ; ve
+					rsion. In the .exe version 
+     250                                                                       
+					   ; main() sets _alone = 1 
+     251                                 
+     252                                ;  Stuff only done in the standalone (b
+					oot monitor) version: 
+     253                                 
+     254 0008  8C C8                    	mov ax,cs                         ; lo
+					ad segment registers 
+     255 000A  05 0010                  	add ax,010H                       ; co
+					mpensate for org 100H  
+     256 000D  8E D8                    	mov ds,ax                         ; si
+					nce it appears that DOS 
+     257                                                                       
+					   ; points CS:00 at the entry point 
+     258                                					  ; rather than the start of the 
+     259                                                                       
+					   ; code/data segment 
+     260 000F  8E C0                    	mov es,ax 
+     261                                 
+     262                                ;  Unstack arguments passed by the boot
+					 program - needed by save command 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-7
+                                                            
+
+     263                                ;  These must be coordinated with hdbbl
+					k.asm 
+     264                                 
+     265 0011  58                       	pop ax 
+     266 0012  A2 0000 E                	mov save_disk,al 
+     267 0015  58                       	pop ax 
+     268 0016  A2 0000 E                	mov save_size,al 
+     269 0019  58                       	pop ax 
+     270 001A  A2 0000 E                	mov save_sec,al 
+     271 001D  58                       	pop ax 
+     272 001E  A2 0000 E                	mov save_head,al 
+     273 0021  58                       	pop ax 
+     274 0022  A2 0000 E                	mov save_cyl,al 
+     275 0025  58                       	pop ax 
+     276 0026  A2 0000 E                	mov save_seg,al 
+     277 0029  58                       	pop ax 
+     278 002A  A2 0000 E                	mov save_off,al 
+     279                                 
+     280                                ;  Set up our own stack 
+     281                                 
+     282 002D  8C C8                    	mov ax,cs 
+     283 002F  8E D0                    	mov ss,ax 
+     284                                 
+     285 0031  B8 FFFE                  	mov ax,0FFFEH  
+     286 0034  8B E0                    	mov sp,ax 
+     287                                 
+     288 0036  C7 06 005E R 0000 R      	mov source,OFFSET DGROUP:_rcscript; po
+					int input source to rcscript memory  
+     289 003C  C7 06 0060 R 0000 R      	mov source_now,OFFSET DGROUP:_rcscript
+					  
+     290                                 
+     291                                 
+     292                                ; make a primordial environment setting
+					: boot drive number 
+     293                                 
+     294 0042  A0 0000 E                	mov al,save_disk 
+     295 0045  3C 81                    	cmp al,81H 
+     296 0047  75 05                    	jne _main_loop_jmp 
+     297 0049  B0 31                    	mov al,31H      ; digit 1  
+     298 004B  A2 001C R                	mov drivetail,al 
+     299                                 
+     300 004E                           _main_loop_jmp: 
+     301                                	 
+     302 004E  E9 00E2 R                	jmp _main_loop                    ; gi
+					ve prompt and get rolling 
+     303                                	 
+     304                                ; code that runs when monitor() is call
+					ed by main 
+     305 0051                           not_stand_alone: 
+     306                                 
+     307 0051  55                       	push bp                 ; save base po
+					inter  
+     308 0052  8B C4                    	mov ax,sp 
+     309 0054  8B E8                    	mov bp,ax 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-8
+                                                            
+
+     310                                 
+     311                                ; save arguments passed on stack. Right
+					 now stack frame is so: 
+     312                                ; 
+     313                                ;                      null word 
+     314                                ;                      env pointers (on
+					e 16 bit word each) 
+     315                                ;                      null word  
+     316                                ;                      argument pointer
+					s (one word each) 
+     317                                ;                      argc   
+     318                                ;                      saved bp  <--- s
+					p 
+     319                                ; 
+     320 0056  8B 46 02                 	mov ax,  [bp + 2]          ; store arg
+					c 
+     321 0059  A3 0000 R                	mov argc, ax 
+     322 005C  8B 46 04                 	mov ax,  [bp + 4]          ; store arg
+					v	 
+     323 005F  A3 0002 R                	mov argv, ax 
+     324 0062  BE 0006                  	mov si,6                   ; offset on
+					 stack of next arg ptr 
+     325                                 
+     326 0065                           cnt_args_loop:                     ; se
+					e how many args before the null ptr 
+     327                                 
+     328 0065  8B 02                    	mov ax,  [bp + si]         ; store nex
+					t ptr in ax 
+     329 0067  3D 0000                  	cmp ax,0                   ; is it NUL
+					L? 
+     330 006A  74 05                    	jz cnt_args_done           ; yes, foun
+					d end of argv 
+     331 006C  83 C6 02                 	add si,2                   ; no, incre
+					ase count by 2 bytes 
+     332 006F  EB F4                    	jmp cnt_args_loop          ; and resta
+					rt loop 
+     333                                	 
+     334 0071                           cnt_args_done: 
+     335                                 
+     336 0071  83 C6 02                 	add si,2                   ; skip over
+					 the null pointer 
+     337 0074  8D 02                    	lea ax, [bp+si]            ; store cha
+					r **envp 
+     338 0076  A3 0004 R                	mov envp, ax 
+     339                                 
+     340 0079  BF 0000                  	mov di,0                   ; initializ
+					e counter 
+     341 007C  C7 85 0A0A R 0000        	mov environment[di], 00H   ; initializ
+					e with zero pointer 
+     342                                 
+     343 0082  B8 0E0A R                	mov ax,OFFSET DGROUP:my_data      ; In
+					itialize end of data  
+     344 0085  A3 0062 R                	mov enddata,ax             ; to start 
+					of data area 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-9
+                                                            
+
+     345                                 
+     346 0088  A0 005B R                	mov al,_copy_env           ; see wheth
+					er the user wants 
+     347 008B  3C 00                    	cmp al,00H                 ; us to sta
+					rt with a copy of OS env 
+     348 008D  74 36                    	je zero_env_loop           ; No, so sk
+					ip next part 
+     349                                 
+     350 008F  C7 06 005C R 0000        	mov envc,00H               ; zero coun
+					t of env strings 
+     351                                 
+     352 0095                           cpy_env_loop:			   ; store environment 
+					pointers  
+     353                                 
+     354 0095  8B 02                    	mov ax, [bp + si]          ; check for
+					 null pointer on stack 
+     355 0097  3D 0000                  	cmp ax,0                   ; that sign
+					als end of environment 
+     356 009A  74 3A                    	je copy_env_done           ; string po
+					inters: quit loop if found 
+     357                                 
+     358 009C  FF 32                    	push [bp + si]             ; next env 
+					string ptr as source 
+     359 009E  FF 36 0062 R             	push enddata               ; end of da
+					ta area as destination 
+     360 00A2  E8 0000 E                	call my_strcpy             ; and copy 
+					env string to data area 
+     361 00A5  83 C4 04                 	add sp,4                   ; clean sta
+					ck from copy call 
+     362 00A8  8B 1E 0062 R             	mov bx, enddata            ; set next 
+					env string ptr 
+     363 00AC  89 9D 0A0A R             	mov environment[di], bx  
+     364 00B0  3D 0000                  	cmp ax,00H                 ; check for
+					 zero length string 
+     365 00B3  74 21                    	je copy_env_done           ; quit loop
+					 if found 
+     366 00B5  83 C7 02                 	add di,2                   ; index of 
+					next env ptr for copied env 
+     367 00B8  83 C6 02                 	add si,2                   ; offset on
+					 stack of next env string to copy 
+     368 00BB  01 06 0062 R             	add enddata,ax             ; point to 
+					where next string will go 
+     369 00BF  FF 06 005C R             	inc envc                   ; increase 
+					count of env strings 
+     370 00C3  EB D0                    	jmp cpy_env_loop           ; back to s
+					tart of copy loop 
+     371                                 
+     372 00C5                           zero_env_loop:                       
+     373                                 
+     374                                	; Make sure remaining env pointers are
+					 NULL. Not sure this is needed 
+     375                                        ; (not needed if bss is zeroed,
+					 but can we rely on this?) 
+     376                                	 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-10
+                                                            
+
+     377 00C5  83 C7 02                 	add di,2                   ; point at 
+					next slot 
+     378 00C8  81 FF 0400               	cmp di, 2*ENV_SIZ          ; have we f
+					illed up the array 
+     379 00CC  73 08                    	jae copy_env_done          ;  
+     380 00CE  C7 85 0A0A R 0000        	mov environment[di], 00H   ; initializ
+					e with zero pointer 
+     381 00D4  EB EF                    	jmp zero_env_loop 
+     382                                  
+     383 00D6                           copy_env_done: 
+     384                                 
+     385                                ; When monitor starts up it will read c
+					ommands from a "startup script". These 
+     386                                ; commands are copied into memory from 
+					a file named on the command line in 
+     387                                ; the non-standalone version of monitor
+					.    
+     388                                ; If source = 0 then monitor reads from
+					 the terminal 
+     389                                 
+     390 00D6  C7 06 005E R 0000 R      	mov source,OFFSET DGROUP:_rcscript; po
+					int input source to rcscript memory  
+     391 00DC  C7 06 0060 R 0000 R      	mov source_now,OFFSET DGROUP:_rcscript
+					  
+     392                                 
+     393                                ; start of main loop: display the promp
+					t 
+     394                                 
+     395 00E2                           _main_loop: 
+     396                                 
+     397 00E2  A1 005E R                	mov ax,source         ; don't give pro
+					mpt if input is read  
+     398 00E5  3D 0000                  	cmp ax,00H            ; from memory, a
+					s this is non-interactive use 
+     399 00E8  75 51                    	jne skip_prompt 
+     400                                 
+     401                                	PRINT_CHAR 0DH 
+     402 00EA  50                     1 		     push ax
+     403 00EB  53                     1 	             push bx
+     404 00EC  B4 0F                  1 		     mov ah,0FH
+     405 00EE  CD 10                  1 		     int 10H
+     406 00F0  B3 17                  1 	             mov bl,CHAR_ATTR
+     407 00F2  B4 0E                  1 		     mov ah,0EH
+     408 00F4  B0 0D                  1 	             mov al,0DH
+     409 00F6  CD 10                  1 	             int 10H
+     410 00F8  5B                     1 		     pop bx
+     411 00F9  58                     1 	             pop ax
+     412                                	PRINT_CHAR 0AH 
+     413 00FA  50                     1 		     push ax
+     414 00FB  53                     1 	             push bx
+     415 00FC  B4 0F                  1 		     mov ah,0FH
+     416 00FE  CD 10                  1 		     int 10H
+     417 0100  B3 17                  1 	             mov bl,CHAR_ATTR
+     418 0102  B4 0E                  1 		     mov ah,0EH
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-11
+                                                            
+
+     419 0104  B0 0A                  1 	             mov al,0AH
+     420 0106  CD 10                  1 	             int 10H
+     421 0108  5B                     1 		     pop bx
+     422 0109  58                     1 	             pop ax
+     423                                 
+     424                                	PRINT_STRING prompt 
+     425 010A  50                     1 	push ax
+     426 010B  53                     1 	push bx
+     427 010C  51                     1 	push cx
+     428 010D  52                     1 	push dx
+     429 010E  06                     1 	push es
+     430 010F  55                     1 	push bp
+     431 0110  B4 0F                  1 	mov ah,0FH
+     432 0112  CD 10                  1 	int 10H
+     433 0114  B4 03                  1 	mov ah,03H
+     434 0116  CD 10                  1 	int 10H
+     435 0118  B8 001F R              1 	mov ax,OFFSET DGROUP:prompt
+     436 011B  50                     1 	push ax
+     437 011C  E8 0000 E              1 	call my_strlen
+     438 011F  83 C4 02               1 	add sp,2
+     439 0122  8B C8                  1 	mov cx,ax
+     440 0124  8C D8                  1 	mov ax,ds
+     441 0126  8E C0                  1 	mov es,ax
+     442 0128  B8 001F R              1 	mov ax,OFFSET DGROUP:prompt
+     443 012B  8B E8                  1 	mov bp,ax
+     444 012D  B3 17                  1 	mov bl,CHAR_ATTR
+     445 012F  B0 01                  1 	mov al,01H
+     446 0131  B4 13                  1 	mov ah,13H
+     447 0133  CD 10                  1 	int 10H
+     448 0135  5D                     1 	pop bp
+     449 0136  07                     1 	pop es
+     450 0137  5A                     1 	pop dx
+     451 0138  59                     1 	pop cx
+     452 0139  5B                     1 	pop bx
+     453 013A  58                     1 	pop ax
+     454                                 
+     455 013B                           skip_prompt: 
+     456                                 
+     457                                ; While the user is dazzled by the prom
+					pt, zero out the line buffers 
+     458                                ; BUG: is this really needed? 
+     459                                 
+     460 013B  B0 00                    	mov al,00H              ; null char to
+					 move in al 
+     461 013D  B9 0200                  	mov cx,BUF_SIZ          ; initialize c
+					ounter 
+     462 0140  BF 020A R                	mov di,OFFSET DGROUP:_linebuf1 ; point
+					 at start of _linebuf1 
+     463 0143  FC                       	cld 
+     464 0144  F3/ AA                   rep     stosb                   ; copy 
+					al to [di] 
+     465 0146  B9 0200                  	mov cx,BUF_SIZ          ; repeat for l
+					inebuf2 
+     466 0149  BF 040A R                	mov di,OFFSET DGROUP:linebuf2 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-12
+                                                            
+
+     467 014C  F3/ AA                   rep     stosb 
+     468                                  
+     469                                 
+     470                                ; read a line from terminal or from mem
+					ory 
+     471                                 
+     472 014E  A1 005E R                	mov ax,source           ; source for r
+					ead into ax 
+     473 0151  3D 0000                  	cmp ax,00H              ; if it is zer
+					o, then 
+     474 0154  74 0D                     	je read_terminal        ; read from t
+					erminal 
+     475                                	 
+     476 0156  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1       
+					     ; otherwise call read_mem routine 
+					(below) 
+     477 0159  50                       	push ax 
+     478 015A  E8 05E0 R                	call read_mem            ; to read fro
+					m memory 
+     479 015D  83 C4 02                 	add sp,2	         ; clean up from call
+					 
+     480 0160  EB 4C 90                 	jmp read_terminal_done 
+     481                                 
+     482 0163                           read_terminal: 
+     483                                 
+     484 0163  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1 
+     485                                	READ_LINE ax        ; read from canoni
+					cal mode terminal 
+     486 0166  56                     1 	push si
+     487 0167  53                     1 	push bx
+     488 0168  55                     1 	push bp
+     489 0169  8B C0                  1 	mov ax,ax
+     490 016B  8B E8                  1 	mov bp,ax
+     491 016D  B4 0F                  1 	mov ah,0FH
+     492 016F  CD 10                  1         int 10H
+     493 0171  B3 17                  1         mov bl,CHAR_ATTR
+     494 0173  33 F6                  1 	xor si,si
+     495 0175  EB 13 90               1 	jmp ??0000
+     496 0178                         1 ??0002:
+     497 0178  83 FE 00               1 	cmp si,0
+     498 017B  76 0D                  1 	jbe ??0000
+     499 017D  4E                     1 	dec si
+     500 017E  B4 0E                  1 	mov ah,0EH
+     501 0180  CD 10                  1 	int 10H
+     502 0182  B0 20                  1 	mov al,20H
+     503 0184  CD 10                  1 	int 10H
+     504 0186  B0 08                  1 	mov al,08H
+     505 0188  CD 10                  1 	int 10H
+     506 018A                         1 ??0000:
+     507 018A  B8 0000                1 	mov ax,00H
+     508 018D  CD 16                  1 	int 16H
+     509 018F  3C 1A                  1 	cmp al,1AH
+     510 0191  74 10                  1 	je ??0001
+     511 0193  3C 08                  1 	cmp al,08H
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-13
+                                                            
+
+     512 0195  74 E1                  1 	je ??0002
+     513 0197  3E: 88 02              1 	mov BYTE PTR DS:[bp+si],al
+     514 019A  46                     1 	inc si
+     515 019B  B4 0E                  1         mov ah,0EH
+     516 019D  CD 10                  1         int 10H
+     517 019F  3C 0D                  1 	cmp al,0DH
+     518 01A1  75 E7                  1 	jne ??0000
+     519 01A3                         1 ??0001:
+     520 01A3  B0 0A                  1 	mov al,0AH
+     521 01A5  B4 0E                  1 	mov ah,0EH
+     522 01A7  CD 10                  1 	int 10H
+     523 01A9  8B C6                  1 	mov ax,si
+     524 01AB  5D                     1 	pop bp
+     525 01AC  5B                     1 	pop bx
+     526 01AD  5E                     1 	pop si
+     527                                 
+     528 01AE                           read_terminal_done: 
+     529                                 
+     530 01AE  3D 0000                  	cmp ax,00H             ; actual bytes 
+					read returned in ax 
+     531 01B1  75 14                    	jne properly_terminate    
+     532                                	 
+     533                                ; 0 bytes read signals EOF (^Z). When r
+					ead from a script, returns control to 
+     534                                ; the terminal. When read from the term
+					inal, exits the program. 
+     535                                 
+     536 01B3  A1 005E R                	mov ax,source 
+     537 01B6  3D 0000                  	cmp ax,00H 
+     538 01B9  75 03                    	jne stay_in_game 
+     539 01BB  E9 05BC R                	jmp _exit 
+     540                                 
+     541 01BE                           stay_in_game: 
+     542                                 
+     543 01BE  C7 06 005E R 0000        	mov  source,00H  ; signal that input w
+					ill now be from terminal 
+     544 01C4  E9 00E2 R                	jmp _main_loop 
+     545                                 
+     546 01C7                           properly_terminate: 
+     547                                 
+     548                                 
+     549                                ; properly terminate string read into _
+					linebuf1 
+     550 01C7  3D 0002                  	cmp ax,2 
+     551 01CA  77 03                    	ja _something_there           
+     552 01CC  E9 00E2 R                	jmp _main_loop         ; nothing on li
+					ne but \n\r 
+     553 01CF                           _something_there: 
+     554 01CF  8B F0                    	mov si,ax              ; number of byt
+					es read in si 
+     555 01D1  C6 84 020A R 00 90       	mov _linebuf1[si],00H 
+     556                                 
+     557                                ; see if the first character is a # (co
+					mment character)     
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-14
+                                                            
+
+     558 01D7  A0 020A R                	mov al,_linebuf1 
+     559 01DA  3C 23                    	cmp al,COMMENT_CHAR      ; 0x23 is # s
+					ign 
+     560 01DC  75 03                    	jne not_a_comment_char 
+     561 01DE  E9 00E2 R                	jmp _main_loop            ; skip line 
+					since it is a comment 
+     562                                 
+     563 01E1                           not_a_comment_char: 
+     564                                 
+     565                                ; see if the first character is : (colo
+					n character) since then this 
+     566                                ; line is a label and should be skipped
+					 
+     567 01E1  3C 3A                    	cmp al,3AH              ; 0x3A is : si
+					gn 
+     568 01E3  75 03                    	jne not_a_colon 
+     569 01E5  E9 00E2 R                	jmp _main_loop 
+     570                                 
+     571 01E8                           not_a_colon: 
+     572                                 
+     573                                ; Figure out the first word on the line
+					 (in _linebuf1) 
+     574 01E8  BE 0000                  	mov si,00H             ; initialize in
+					dex 
+     575                                 
+     576 01EB                           first_arg_loop: 
+     577                                 
+     578 01EB  8A 84 020A R             	mov al,_linebuf1[si] ; See if current 
+					char value is > 20H 
+     579 01EF  3C 20                    	cmp al,20H              ; i.e. not whi
+					tspace 
+     580 01F1  76 03                    	jbe first_arg_found     ; first whitsp
+					ace so end of arg found 
+     581 01F3  46                       	inc si                 ; not whitspace
+					, so go to next char 
+     582 01F4  EB F5                    	jmp first_arg_loop   
+     583                                 
+     584 01F6                           first_arg_found: 
+     585                                 
+     586                                	; Properly terminate first argument by
+					 inserting null char in buffer 
+     587 01F6  B0 00                    	mov al,00H 
+     588 01F8  88 84 020A R             	mov _linebuf1[si], al  
+     589 01FC  46                       	inc si  
+     590                                 
+     591                                ; Make a processed copy of cmd_tail in 
+					linebuf2. The processing takes care 
+     592                                ; of variable expansion/escaping and se
+					parates each resulting arg by a 
+     593                                ; null character in linebuf2 
+     594                                 
+     595 01FD  33 FF                    	xor di,di             ; Zero destinati
+					on index. Source is ongoing 
+     596 01FF  33 C9                    	xor cx,cx             ; Prepare to use
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-15
+                                                            
+
+					 cx as escape flag 
+     597 0201  33 D2                    	xor dx,dx             ; Prepare to use
+					 dx as whitespace flag 
+     598 0203  33 DB                    	xor bx,bx             ; Prepare to use
+					 bx as comment flag 
+     599                                 
+     600 0205                           expand_line:     
+     601                                 
+     602 0205  8A 84 020A R             	mov al,_linebuf1[si]     ; next char o
+					f cmd_tail 
+     603 0209  3C 00                    	cmp al,00H             ; is it null ? 
+     604 020B  75 03                    	jne line_expand_not_done 
+     605 020D  E9 0332 R                	jmp line_expand_done     ; all done if
+					 so 
+     606 0210                           line_expand_not_done: 
+     607 0210  3C 0D                    	cmp al,0DH              ; is it a NL ?
+					 
+     608 0212  75 0D                    	jne not_newline         ; no, so do no
+					t-NL stuff 
+     609 0214  33 DB                    	xor bx,bx               ; it's a new l
+					ine, cancel pending comment 
+     610 0216  83 F9 01                 	cmp cx,01H            ; is there a pen
+					ding escape? 
+     611 0219  75 03                    	jne not_add_to_linebuf 
+     612 021B  E9 02AD R                	jmp add_to_linebuf       ; yes, there 
+					is, so continuation line 
+     613 021E                           not_add_to_linebuf: 
+     614 021E  E9 0332 R                	jmp line_expand_done    ; all done if 
+					not escaped newline char 
+     615                                 
+     616 0221                           not_newline: 
+     617                                 
+     618 0221  83 FB 00                  	cmp bx,00H 
+     619 0224  75 19                    	jne comment 
+     620 0226  83 F9 01                 	cmp cx, 01H           ; Is there a pen
+					ding escape? 
+     621 0229  74 31                    	je line_expand_copy_char; Yes, so just
+					 copy character literally 
+     622 022B  3C 23                    	cmp al,COMMENT_CHAR     ; Is it the # 
+					sign ? 
+     623 022D  75 06                    	jne no_comment 
+     624 022F  BB 0001                  	mov bx,01H            ; turn on commen
+					t flag 
+     625 0232  EB 0B 90                 	jmp comment 
+     626                                 
+     627 0235                           no_comment: 
+     628                                 
+     629 0235  3C 5C                    	cmp al,ESCAPE_CHAR      ; See if the n
+					ew char is the escape char 
+     630 0237  75 09                    	jne escape_jumparound   ; It is not, s
+					o skip over next steps 
+     631 0239  B9 0001                  	mov cx, 01H           ; it is escape c
+					har, so mark escape flag 
+     632 023C  46                       	inc si                 ; increase copy
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-16
+                                                            
+
+					 index to skip copying char  
+     633 023D  EB C6                    	jmp expand_line         ; and fetch ne
+					xt char 
+     634                                 
+     635 023F                           comment: 
+     636 023F  46                       	inc si 
+     637 0240  EB C3                    	jmp expand_line 
+     638                                 
+     639 0242                           escape_jumparound: 
+     640                                 
+     641 0242  3C 20                    	cmp al,20H             ; Is the curren
+					t char whitspace? 
+     642 0244  77 10                    	ja not_ws;              ; not whitspac
+					e 
+     643                                				; now it must be whitepace 
+     644 0246  83 FA 01                 	cmp dx,01H            ; Was the previo
+					us char whitspace? 
+     645 0249  75 03                            jne new_ws		; No, so mark and c
+					opy a null in its stead 
+     646 024B  46                       	inc si                 ; yes, so skip 
+					copy fetch 
+     647 024C  EB B7                    	jmp expand_line         ; next char 
+     648                                	 
+     649 024E                           new_ws: 
+     650 024E  BA 0001                  	mov dx,01H            ; mark that it w
+					as whitspace 
+     651 0251  B0 00                    	mov al,00H             ; and replace i
+					t with a null in the copy 
+     652 0253  EB 07 90                 	jmp line_expand_copy_char 
+     653                                 
+     654 0256                           not_ws: 
+     655 0256  33 D2                    	xor dx,dx             ; flag as not wh
+					itspace 
+     656                                 
+     657 0258  3C 24                    	cmp al,VARIABLE_CHAR   ; Is it the $ c
+					har ? 
+     658 025A  74 0A                    	je substitution        ; If so, jump t
+					o code that substitutes env var 
+     659                                 
+     660 025C                           line_expand_copy_char: 
+     661                                 
+     662 025C  88 85 040A R             	mov linebuf2[di],al ; copy current cha
+					r to linebuf2 
+     663 0260  33 C9                    	xor cx,cx             ; cancel any pen
+					ding escape 
+     664 0262  46                       	inc si                 ; increment ind
+					ices  
+     665 0263  47                       	inc di                 ; and 
+     666 0264  EB 9F                    	jmp expand_line         ; back to star
+					t of copy loop 
+     667                                 
+     668 0266                           substitution:                   ; copy 
+					value of env var instead of name 
+     669                                	 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-17
+                                                            
+
+     670 0266  57                       	push di                ; save di on st
+					ack 
+     671 0267  33 FF                    	xor di,di             ; so we can use 
+					as a local index into name 
+     672                                 
+     673 0269                           subs_var_name_loop:             ; put e
+					verything from here to next ws into 
+     674                                		                ; expandbuf as env st
+					ring name 
+     675                                 
+     676 0269  46                       	inc si 
+     677 026A  8A 84 020A R             	mov al,_linebuf1[si] ; next char from 
+					input buffer  
+     678 026E  3C 20                    	cmp al,20H             ; is it white s
+					pace 
+     679 0270  76 07                    	jbe subs_var_name_fnd   ; if so comple
+					te name now in expandbuf 
+     680 0272  88 85 000A R             	mov expandbuf[di],al; else add char to
+					 expandbuf 
+     681 0276  47                       	inc di                 ; increment ind
+					ex for next char 
+     682 0277  EB F0                    	jmp subs_var_name_loop 
+     683                                 
+     684 0279                           subs_var_name_fnd: 
+     685 0279  C6 85 000A R 00 90       	mov expandbuf[di], 00H  ; properly ter
+					minate name string 
+     686 027F  5F                       	pop di                           ; res
+					tore index into copy area 
+     687 0280  56                       	push si                          ; sav
+					e si on stack 
+     688 0281  53                       	push bx 
+     689 0282  B8 000A R                	mov ax, OFFSET DGROUP:expandbuf       
+					     ; prepare for call 
+     690 0285  50                       	push ax 
+     691 0286  E8 0000 E                	call mygetenv                     ; se
+					e if name=foo is in env 
+     692 0289  83 C4 02                 	add sp,2                         ; cle
+					an up from call 
+     693 028C  3D 0000                  	cmp ax,00H                      ; null
+					 returned if not found 
+     694 028F  74 16                    	je subs_not_found                     
+					 ; so copy nothing 
+     695 0291  8B D8                    	mov bx,ax                       ; else
+					 save address of foo  
+     696 0293  33 F6                    	xor si,si                       ; prep
+					are counter for copy of foo 
+     697                                 
+     698 0295                           subs_copy_value:           ; copy value
+					 of environment string into output 
+     699                                 
+     700 0295  8A 00                    	mov al,[bx + si] ; fetch next char of 
+					foo 
+     701 0297  3C 00                    	cmp al,00H        ; if it is null we h
+					ave reached the end 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-18
+                                                            
+
+     702 0299  74 08                    	je subs_done 
+     703 029B  88 85 040A R             	mov linebuf2[di],al           ; else c
+					opy new byte into position 
+     704 029F  46                       	inc si                           ; inc
+					rement both counters  
+     705 02A0  47                       	inc di 
+     706 02A1  EB F2                    	jmp subs_copy_value               ; an
+					d restart copy loop 
+     707                                 
+     708 02A3                           subs_done: 
+     709 02A3  5B                       	pop bx 
+     710 02A4  5E                       	pop si                           ; res
+					tore index into input string 
+     711 02A5  EB A7                    	jmp new_ws                        ; pr
+					etend we have just gotten new ws 
+     712                                 
+     713 02A7                           subs_not_found: 
+     714 02A7  5B                       	pop bx 
+     715 02A8  5E                       	pop si 
+     716 02A9  46                       	inc si 
+     717 02AA  E9 0205 R                	jmp expand_line 
+     718                                 
+     719 02AD                           add_to_linebuf:                 ; escap
+					ed newline, so get more input from user
+					 
+     720 02AD  33 C9                    	xor cx,cx             ; cancel escape 
+					that got us here 
+     721 02AF  C6 85 040A R 0D 90       	mov linebuf2[di],0DH  ; copy literal n
+					ewline to destination 
+     722 02B5  47                       	inc di                 ; increment ind
+					ices 
+     723 02B6  C6 85 040A R 0A 90       	mov linebuf2[di],0AH 
+     724 02BC  47                       	inc di 
+     725 02BD  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1   
+     726 02C0  03 C6                    	add ax,si 
+     727                                ;	lea ax,_linebuf1[si]  ; store pointer
+					 to where new input goes 
+     728 02C2  A3 0008 R                	mov my_ptr,ax 
+     729 02C5  A1 005E R                	mov ax,source 
+     730 02C8  3D 0000                  	cmp ax,00H 
+     731 02CB  74 0D                    	je add_from_terminal 
+     732 02CD  FF 36 0008 R             	push my_ptr 
+     733 02D1  E8 05E0 R                	call read_mem 
+     734 02D4  83 C4 02                 	add sp,2 
+     735 02D7  EB 4C 90                 	jmp add_read_done 
+     736                                 
+     737 02DA                           add_from_terminal: 
+     738                                 
+     739 02DA  A1 0008 R                	mov ax,my_ptr 
+     740                                	READ_LINE ax      ; returns with numbe
+					r of bytes read in ax 
+     741 02DD  56                     1 	push si
+     742 02DE  53                     1 	push bx
+     743 02DF  55                     1 	push bp
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-19
+                                                            
+
+     744 02E0  8B C0                  1 	mov ax,ax
+     745 02E2  8B E8                  1 	mov bp,ax
+     746 02E4  B4 0F                  1 	mov ah,0FH
+     747 02E6  CD 10                  1         int 10H
+     748 02E8  B3 17                  1         mov bl,CHAR_ATTR
+     749 02EA  33 F6                  1 	xor si,si
+     750 02EC  EB 13 90               1 	jmp ??0003
+     751 02EF                         1 ??0005:
+     752 02EF  83 FE 00               1 	cmp si,0
+     753 02F2  76 0D                  1 	jbe ??0003
+     754 02F4  4E                     1 	dec si
+     755 02F5  B4 0E                  1 	mov ah,0EH
+     756 02F7  CD 10                  1 	int 10H
+     757 02F9  B0 20                  1 	mov al,20H
+     758 02FB  CD 10                  1 	int 10H
+     759 02FD  B0 08                  1 	mov al,08H
+     760 02FF  CD 10                  1 	int 10H
+     761 0301                         1 ??0003:
+     762 0301  B8 0000                1 	mov ax,00H
+     763 0304  CD 16                  1 	int 16H
+     764 0306  3C 1A                  1 	cmp al,1AH
+     765 0308  74 10                  1 	je ??0004
+     766 030A  3C 08                  1 	cmp al,08H
+     767 030C  74 E1                  1 	je ??0005
+     768 030E  3E: 88 02              1 	mov BYTE PTR DS:[bp+si],al
+     769 0311  46                     1 	inc si
+     770 0312  B4 0E                  1         mov ah,0EH
+     771 0314  CD 10                  1         int 10H
+     772 0316  3C 0D                  1 	cmp al,0DH
+     773 0318  75 E7                  1 	jne ??0003
+     774 031A                         1 ??0004:
+     775 031A  B0 0A                  1 	mov al,0AH
+     776 031C  B4 0E                  1 	mov ah,0EH
+     777 031E  CD 10                  1 	int 10H
+     778 0320  8B C6                  1 	mov ax,si
+     779 0322  5D                     1 	pop bp
+     780 0323  5B                     1 	pop bx
+     781 0324  5E                     1 	pop si
+     782                                 
+     783 0325                           add_read_done: 
+     784 0325  53                       	push bx 
+     785 0326  8B D8                    	mov bx,ax                   ; Cannot u
+					se ax as index in MASM 
+     786 0328  C6 80 020A R 00 90       	mov _linebuf1[bx + si], 00H ; properly
+					 terminate string  
+     787 032E  5B                       	pop bx 
+     788 032F  E9 0205 R                	jmp expand_line 
+     789                                	 
+     790                                 
+     791 0332                           line_expand_done: 
+     792 0332  C6 85 040A R 00 90       	mov linebuf2[di],00H  ; make sure we p
+					roperly terminate 
+     793                                 
+     794                                ; set pointers in lineargs array to nul
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-20
+                                                            
+
+					l terminated strings in linebuf2 
+     795                                ; the address of lineargs to be passed 
+					to commands, both internal and external
+					, 
+     796                                ; as char **argv 
+     797                                 
+     798 0338  BE 0000                  	mov si,00H 
+     799 033B  BF 0000                  	mov di,00H 
+     800 033E  B9 0000                  	mov cx,00H 
+     801                                 
+     802 0341                           find_all_args: 
+     803                                 
+     804 0341  8A 84 040A R             	mov al,linebuf2[si]     ; next char in
+					to al 
+     805 0345  3C 00                    	cmp al,00H                 ; if it is 
+					null, then we are 
+     806 0347  74 1A                    	je all_args_found           ; at end o
+					f buffer: no more args 
+     807 0349  8D 9C 040A R             	lea bx,linebuf2[si]    ; set current c
+					har address as ptr to  
+     808 034D  89 9D 060A R             	mov lineargs[di], bx   ; next line arg
+					ument. Use bx to save 
+     809                                                                    ; c
+					har in al 
+     810                                 
+     811 0351                           plow_through:                       ; p
+					low through the next arg  
+     812                                 
+     813 0351  46                       	inc si                     ; increment
+					 index 
+     814 0352  8A 84 040A R             	mov al,linebuf2[si]     ; next char in
+					to al 
+     815 0356  3C 00                    	cmp al,00H	            ; is it null?  
+     816 0358  74 02                    	je next_arg_found           ; yes, so 
+					branch to properly end new arg 
+     817 035A  EB F5                    	jmp plow_through            ; back to 
+					beginning of plow through loop 
+     818                                 
+     819 035C                           next_arg_found: 
+     820                                 
+     821 035C  41                       	inc cx                     ; increment
+					 arg count 
+     822 035D  83 C7 02                 	add di,2                   ; increment
+					 pointer index 
+     823 0360  46                       	inc si                     ; and char 
+					counter 
+     824 0361  EB DE                    	jmp find_all_args           ; and back
+					 to loop start for remaining args 
+     825                                 
+     826 0363                           all_args_found: 
+     827 0363  46                       	inc si 
+     828 0364  C6 84 040A R 00 90       	mov linebuf2[si],00H    ; mark end of 
+					args in linebuf2 
+     829 036A  89 0E 0006 R             	mov nargs,cx             ; record how 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-21
+                                                            
+
+					many args were found 
+     830                                	  
+     831                                ; Fall through blocks of code, one for 
+					each internal function.  
+     832                                ; Match arg0 against the name of each 
+     833                                ; function. If a match, call the comman
+					d implemented in internal.a and start 
+     834                                ; new loop. If no match, print a helpfu
+					l message and start a new prompt loop 
+     835                                 
+     836                                 
+     837 036E  A1 005E R                	mov ax,source 
+     838 0371  3D 0000                  	cmp ax,00H 
+     839 0374  75 03                    	jne dont_skip_keywords 
+     840 0376  E9 0428 R                	jmp skip_keywords            ; skip ov
+					er programming keywords when 
+     841                                	                            ; used int
+					eractively (source = 0).  
+     842 0379                           dont_skip_keywords: 
+     843 0379  8D 06 0000 E             	lea ax, if_name                ; see w
+					hether this is an if construct 
+     844 037D  50                       	push ax 
+     845 037E  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1       
+					        ; by calling strcmp with the na
+					me "if" 
+     846 0381  50                       	push ax 
+     847 0382  E8 0000 E                	call my_strcmp              ; and argv
+					[0] 
+     848 0385  83 C4 04                 	add sp,4                   ; clean up 
+					from call 
+     849 0388  3D 0000                  	cmp ax,0                   ; do the co
+					mparison 
+     850 038B  75 59                    	jne goto_section            ; not an i
+					f construct, so ... 
+     851 038D  A1 060A R                	mov ax,lineargs 
+     852 0390  50                       	push ax                     ; foo, in 
+					if foo bar 
+     853 0391  E8 0000 E                	call mygetenv               ; see if f
+					oo=* in env 
+     854 0394  83 C4 02                 	add sp,2                   ; clean up 
+					from call 
+     855 0397  3D 0000                  	cmp ax,00H                ; if not, th
+					en restart the main loop 
+     856 039A  75 03                    	jne dont_do_main_loop 
+     857 039C  E9 00E2 R                	jmp _main_loop       
+     858 039F                           dont_do_main_loop: 
+     859 039F  50                       	push ax                    ; value bar
+					 if foo=bar in env 
+     860 03A0  A1 060C R                	mov ax,lineargs[2] 
+     861 03A3  50                       	push ax 
+     862 03A4  E8 0000 E                	call my_strcmp 
+     863 03A7  83 C4 04                 	add sp,4 
+     864 03AA  3D 0000                  	cmp ax,00H 
+     865 03AD  74 03                    	je dont_do_main_loop2 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-22
+                                                            
+
+     866 03AF  E9 00E2 R                	jmp _main_loop       
+     867 03B2                           dont_do_main_loop2: 
+     868 03B2  A1 060E R                	mov ax,lineargs[4] 
+     869 03B5  50                       	push ax 
+     870 03B6  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1       
+					 ; where to copy belch as new argv[0] 
+     871 03B9  50                       	push ax 
+     872 03BA  E8 0000 E                	call my_strcpy              ; do the c
+					opy 
+     873 03BD  83 C4 04                 	add sp,4                   ; clean up 
+					from copy call 
+     874 03C0  8B 0E 0006 R             	mov cx,nargs             ; reduce numb
+					er of args by 3 
+     875 03C4  83 E9 03                 	sub cx,3                   ; we drop i
+					f foo bar  
+     876 03C7  89 0E 0006 R             	mov nargs,cx         
+     877 03CB  33 F6                    	xor si,si                 ; initialize
+					 index for shift args loop 
+     878                                 
+     879 03CD                           shift_args:  ; move belch ... into posi
+					tion as if that had been the command 
+     880                                 
+     881 03CD  83 F9 00                 	cmp cx,00H               ; all args co
+					unted ? 
+     882 03D0  76 14                    	jbe goto_section           ; yes, so c
+					ontinue on to look for belch 
+     883 03D2  83 C6 06                 	add si,6 
+     884 03D5  8B 84 060A R             	mov ax,lineargs[si] ; next arg to get 
+					moved 
+     885 03D9  83 EE 06                 	sub si,6 
+     886 03DC  89 84 060A R             	mov lineargs[si],ax 
+     887 03E0  49                       	dec cx 
+     888 03E1  83 C6 02                 	add si,2 
+     889 03E4  EB E7                    	jmp shift_args 
+     890                                	 
+     891 03E6                           goto_section: 
+     892                                 
+     893 03E6  8D 06 0000 E             	lea ax, goto_name              ; see w
+					hether this is a goto construct 
+     894 03EA  50                       	push ax 
+     895 03EB  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1       
+					        ; by calling strcmp with the na
+					me "goto" 
+     896 03EE  50                       	push ax 
+     897 03EF  E8 0000 E                	call my_strcmp              ; and argv
+					[0] 
+     898 03F2  83 C4 04                 	add sp,4                   ; clean up 
+					from call 
+     899 03F5  3D 0000                  	cmp ax,0                   ; do the co
+					mparison 
+     900 03F8  75 2E                    	jne skip_keywords           ; not an i
+					f construct, so ... 
+     901 03FA  A1 060A R                	mov ax, lineargs       ; copy goto lab
+					el (sans colon) to buffer  
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-23
+                                                            
+
+     902 03FD  50                       	push ax 
+     903 03FE  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1 
+     904 0401  40                       	inc ax 
+     905 0402  50                       	push ax 
+     906 0403  E8 0000 E                	call my_strcpy              ; do the c
+					all 
+     907 0406  83 C4 04                 	add sp,4                   ; clean up 
+					from call 
+     908 0409  C6 06 020A R 3A 90       	mov _linebuf1,3AH    ; colon character
+					 on front of buffer 
+     909 040F  B8 020A R                	mov ax, OFFSET DGROUP:_linebuf1       
+					        ; push label after goto as arg 
+					for 
+     910 0412  50                       	push ax 
+     911 0413  FF 36 005E R             	push source         ; strstr. Also pus
+					h script start 
+     912 0417  E8 0000 E                	call my_strstr              ; search f
+					or label in script 
+     913 041A  83 C4 04                 	add sp,4                   ; clean up 
+					from call 
+     914 041D  3D 0000                  	cmp ax,00H                ; if not fou
+					nd do nothing 
+     915 0420  74 06                    	je skip_keywords 
+     916 0422  A3 0060 R                	mov source_now,ax        ; else branch
+					 by switching next read 
+     917 0425  E9 00E2 R                	jmp _main_loop              ; to label
+					 location 
+     918                                	 
+     919 0428                           skip_keywords: 
+     920                                 
+     921                                ;;;; set section  ;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     922                                 
+     923 0428  8D 06 0000 E             	lea ax, set_name 
+     924 042C  50                       	push ax                  ; stack args 
+					to my_strcmp 
+     925 042D  8D 06 020A R             	lea ax, _linebuf1 
+     926 0431  50                       	push ax 
+     927 0432  E8 0000 E                	call my_strcmp           ; call string
+					 compare routine 
+     928 0435  83 C4 04                 	add sp,4                 ; clean up fr
+					om call 
+     929 0438  3D 0000                  	cmp ax,0                 ; is arg0 equ
+					al to name of set command?  
+     930 043B  75 11                    	jne read_section         ; if not, go 
+					on to check for next command 
+     931 043D  B8 060A R                	mov ax, OFFSET DGROUP:lineargs        
+					    ; char **argv       
+     932 0440  50                       	push ax 
+     933 0441  FF 36 0006 R             	push nargs               ; int argc   
+					    
+     934 0445  E8 0000 E                	call _set                ; call set co
+					mmand (internal.a) 
+     935 0448  83 C4 04                 	add sp,4                 ; clean up fr
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-24
+                                                            
+
+					om call 
+     936 044B  E9 00E2 R                	jmp _main_loop           ; return to b
+					eginning of main loop 
+     937                                 
+     938                                ;;;;; read section ;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     939 044E                           read_section: 
+     940                                 
+     941 044E  8D 06 0000 E             	lea ax, read_name 
+     942 0452  50                       	push ax 
+     943 0453  8D 06 020A R             	lea ax, _linebuf1 
+     944 0457  50                       	push ax 
+     945 0458  E8 0000 E                	call my_strcmp           ; call string
+					 compare routine 
+     946 045B  83 C4 04                 	add sp,4 
+     947 045E  3D 0000                  	cmp ax,0                ; is arg0 equa
+					l to name of read command? 
+     948 0461  75 0D                    	jne help_section         ; no, so go o
+					n to check for next command 
+     949 0463  A1 060A R                	mov ax,lineargs 
+     950 0466  50                       	push ax    ; stack one (and only) char
+					 *arg for read 
+     951 0467  E8 0000 E                	call _read               ; make the ca
+					ll 
+     952 046A  83 C4 02                 	add sp,2                ; clean up fro
+					m call 
+     953 046D  E9 00E2 R                	jmp _main_loop           ; return to b
+					eginning of main loop 
+     954                                 
+     955                                ;;;;; help section ;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     956                                  
+     957 0470                           help_section:   
+     958                                 
+     959 0470  8D 06 0000 E             	lea ax, help_name           ; stack ar
+					gs to help 
+     960 0474  50                       	push ax 
+     961 0475  8D 06 020A R             	lea ax, _linebuf1 
+     962 0479  50                       	push ax 
+     963 047A  E8 0000 E                	call my_strcmp           ; call string
+					 compare routine 
+     964 047D  83 C4 04                 	add sp,4                ; clean up fro
+					m call 
+     965 0480  3D 0000                  	cmp ax,0                ; is arg0 equa
+					l to name of help command?  
+     966 0483  75 11                    	jnz  shift_section         ; if not, g
+					o on to check for next command 
+     967 0485  A1 060A R                	mov ax,lineargs 
+     968 0488  50                       	push ax 
+     969 0489  A1 0006 R                	mov ax, nargs 
+     970 048C  50                       	push ax 
+     971 048D  E8 0000 E                	call _help               ; call help c
+					ommand (internal.a) 
+     972 0490  83 C4 04                 	add sp,4                ; clean up fro
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-25
+                                                            
+
+					m call 
+     973 0493  E9 00E2 R                	jmp _main_loop           ; return to b
+					eginning of main loop 
+     974                                 
+     975                                ;;;;;;; shift section ;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     976                                ; this is the only internal command imp
+					lemented in line here 
+     977                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     978 0496                           shift_section:  
+     979                                 
+     980 0496  8D 06 0000 E             	lea ax, shift_name          ; call str
+					ing compare routine 
+     981 049A  50                       	push ax 
+     982 049B  8D 06 020A R             	lea ax, _linebuf1 
+     983 049F  50                       	push ax 
+     984 04A0  E8 0000 E                	call my_strcmp 
+     985 04A3  83 C4 04                 	add sp,4                ; clean up fro
+					m call 
+     986 04A6  3D 0000                  	cmp ax,0                ; is arg0 equa
+					l to name of shift command? 
+     987 04A9  75 24                    	jne echo_section         ; no, so look
+					 at next command 
+     988                                 
+     989                                ;copy current args to _linebuf1, and ju
+					mp back into main loop at point 
+     990                                ;just after getting user input- remembe
+					r to set si to 0 for that jump 
+     991                                 
+     992 04AB  33 F6                    	xor si,si              ; initialize co
+					py index	 
+     993                                 
+     994 04AD                           copy_args_back_loop: 
+     995                                	 
+     996 04AD  8A 84 040A R             	mov al,linebuf2[si]  ; next char from 
+					source 
+     997 04B1  75 04                    	jnz nonzero_last_char    ; we detect t
+					wo nulls in a row by seeing 
+     998                                                                 ; if t
+					he zero flag is still set from the 
+     999                                                                 ; prev
+					ious loop interation. This is delicate 
+    1000                                                                 ; beca
+					use many instructions (not mov or jmp) 
+    1001                                                                 ; affe
+					ct the zero flag (inc does!) 
+    1002 04B3  3C 00                    	cmp al,00H              ; if flag alre
+					ady set then a second null 
+    1003 04B5  74 0D                    	jz copy_args_back_done   ; means we ar
+					e done 
+    1004                                 
+    1005 04B7                           nonzero_last_char:               ; the 
+					last char was not a null 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-26
+                                                            
+
+    1006                                 
+    1007 04B7  46                       	inc si 
+    1008 04B8  3C 00                    	cmp al,00H              ; Are we at en
+					d of an arg? 
+    1009 04BA  75 02                    	jnz copy_char_back 
+    1010 04BC  B0 20                    	mov al,20H              ; replace null
+					 with space char 
+    1011                                 
+    1012 04BE                           copy_char_back: 
+    1013                                 
+    1014 04BE  88 84 0209 R             	mov _linebuf1[si-1], al ; copy char to
+					 line buf 1	 
+    1015 04C2  EB E9                    	jmp copy_args_back_loop           ; an
+					d restart copy loop 
+    1016                                 
+    1017 04C4                           copy_args_back_done: 
+    1018                                 
+    1019 04C4  C6 84 020A R 00 90       	mov _linebuf1[si],00H ; properly termi
+					nate _linebuf1 
+    1020 04CA  33 F6                    	xor si,si                  ; prepare f
+					or rentry to main loop	 
+    1021 04CC  E9 01EB R                	jmp first_arg_loop           ; rejoin 
+					main loop after user input 
+    1022                                 
+    1023                                ;;;;;;; echo section ;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+    1024                                 
+    1025 04CF                           echo_section: 
+    1026                                 
+    1027 04CF  8D 06 0000 E             	lea ax, echo_name 
+    1028 04D3  50                       	push ax           ; stack args to set 
+    1029 04D4  8D 06 020A R             	lea ax, _linebuf1             
+    1030 04D8  50                       	push ax 
+    1031 04D9  E8 0000 E                	call my_strcmp           ; call string
+					 compare routine 
+    1032 04DC  83 C4 04                 	add sp,4                ; clean up fro
+					m call 
+    1033 04DF  3D 0000                  	cmp ax,0                ; is arg0 equa
+					l to name of help command?  
+    1034 04E2  75 11                    	jne status_section       ; if not, go 
+					on to check for next command 
+    1035 04E4  B8 060A R                	mov ax, OFFSET DGROUP:lineargs      ; 
+					char **argv       
+    1036 04E7  50                       	push ax 
+    1037 04E8  FF 36 0006 R             	push nargs       ; argc       
+    1038 04EC  E8 0000 E                	call _echo               ; call echo c
+					ommand (internal.a) 
+    1039 04EF  83 C4 04                 	add sp,4                ; clean up fro
+					m call 
+    1040 04F2  E9 00E2 R                	jmp _main_loop           ; return to b
+					eginning of main loop 
+    1041                                 
+    1042                                ;;;;;; status section ;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-27
+                                                            
+
+    1043                                 
+    1044 04F5                           status_section: 
+    1045                                 
+    1046 04F5  8D 06 0000 E             	lea ax, status_name 
+    1047 04F9  50                       	push ax 
+    1048 04FA  8D 06 020A R             	lea ax, _linebuf1             
+    1049 04FE  50                       	push ax 
+    1050 04FF  E8 0000 E                	call my_strcmp           ; call string
+					 compare routine 
+    1051 0502  83 C4 04                 	add sp,4                ; clean up fro
+					m call 
+    1052 0505  3D 0000                  	cmp ax,0                ; is arg0 equa
+					l to name of status command?  
+    1053 0508  75 06                    	jne exit_section     ; if not, go on t
+					o check for next command 
+    1054 050A  E8 0000 E                	call _status             ; call status
+					 command (internal.a) 
+    1055 050D  E9 00E2 R                	jmp _main_loop           ; return to b
+					eginning of main loop 
+    1056                                 
+    1057 0510                           exit_section: 
+    1058 0510  8D 06 0000 E             	lea ax, exit_name 
+    1059 0514  50                       	push ax 
+    1060 0515  8D 06 020A R             	lea ax, _linebuf1 
+    1061 0519  50                       	push ax 
+    1062 051A  E8 0000 E                	call my_strcmp 
+    1063 051D  83 C4 04                 	add sp,4 
+    1064 0520  3D 0000                  	cmp ax,0 
+    1065 0523  75 03                    	jnz external_section 
+    1066 0525  E9 05BC R                	jmp _exit 
+    1067                                 
+    1068                                ;;;;;; external commands section ;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+    1069                                 
+    1070 0528                           external_section: 
+    1071                                 
+    1072                                ; Search  through names of external com
+					mands (implemented in external.c)  
+    1073                                 
+    1074 0528  BE 0000                  	mov si, 00H            ; initialize in
+					dex 
+    1075 052B  B9 0000                  	mov cx, 00H            ; initialize co
+					unter 
+    1076                                	 
+    1077 052E                           external_search: 
+    1078                                 
+    1079 052E  3B 0E 0000 E             	cmp cx,_n_externals    ; have we reach
+					ed end of externals array? 
+    1080 0532  73 30                    	jae scripts_section      ; yes, so go 
+					to next section 
+    1081 0534  FF B4 0000 E             	push _external_names[si] ; load name o
+					f next external cmd 
+    1082 0538  8D 06 020A R             	lea ax, _linebuf1            ; and use
+					 strcmp to see if it agrees with 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-28
+                                                            
+
+    1083 053C  50                       	push ax 
+    1084 053D  E8 0000 E                	call my_strcmp           ; the user's 
+					first argument 
+    1085 0540  83 C4 04                 	add sp,4                ; clean up fro
+					m call 
+    1086 0543  3D 0000                  	cmp ax,0                ; Have we foun
+					d a match? 
+    1087 0546  74 06                    	je found_external        ; so branch t
+					o code that makes the call 
+    1088 0548  83 C6 02                 	add si,2                ; no, so incre
+					ment pointer index and 
+    1089 054B  41                       	inc cx; 
+    1090 054C  EB E0                     	jmp external_search      ; and look a
+					t name of next external command 
+    1091                                 
+    1092 054E                           found_external:                  ; actu
+					ally call the matching external command
+					 
+    1093 054E  B8 0A0A R                	mov ax, OFFSET DGROUP:environment     
+					    ; push its char **envp 
+    1094 0551  50                       	push ax 
+    1095 0552  B8 060A R                	mov ax, OFFSET DGROUP:lineargs        
+					    ; push its char **argv 
+    1096 0555  50                       	push ax 
+    1097 0556  FF 36 0006 R             	push nargs       ; push its int argc 
+    1098 055A  FF 94 0000 E             	call _external_entry_points[si] ; call
+					 entry point of command 
+    1099 055E  83 C4 06                 	add sp,6               ; clean up from
+					 call 
+    1100 0561  E9 00E2 R                	jmp _main_loop           ; and restart
+					 main prompt loop` 
+    1101                                 
+    1102 0564                           scripts_section:    ; if all else fails
+					, see if the command is a script 
+    1103                                                    ; i.e., there is an
+					 env variable by this name 
+    1104                                 
+    1105 0564  8D 06 020A R             	lea ax, _linebuf1 
+    1106 0568  50                       	push ax 
+    1107 0569  E8 0000 E                	call mygetenv  
+    1108 056C  83 C4 02                 	add sp,2 
+    1109 056F  3D 0000                  	cmp ax,00H 
+    1110 0572  74 09                    	je not_found_section 
+    1111 0574  A3 005E R                	mov source,ax 
+    1112 0577  A3 0060 R                	mov source_now,ax 
+    1113 057A  E9 00E2 R                	jmp _main_loop 
+    1114                                 
+    1115 057D                           not_found_section: 
+    1116                                 
+    1117 057D  A1 005E R                	mov ax,source         ; in non-interac
+					tive use we do not print 
+    1118 0580  3D 0000                  	cmp ax,00H             ; the helpful m
+					essage 
+    1119 0583  74 03                    	je dont_do_main_loop3 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-29
+                                                            
+
+    1120 0585  E9 00E2 R                	jmp _main_loop   
+    1121 0588                           dont_do_main_loop3: 
+    1122                                 
+    1123                                	PRINT_STRING msg0        ; default act
+					ion: print helpful message 
+    1124 0588  50                     1 	push ax
+    1125 0589  53                     1 	push bx
+    1126 058A  51                     1 	push cx
+    1127 058B  52                     1 	push dx
+    1128 058C  06                     1 	push es
+    1129 058D  55                     1 	push bp
+    1130 058E  B4 0F                  1 	mov ah,0FH
+    1131 0590  CD 10                  1 	int 10H
+    1132 0592  B4 03                  1 	mov ah,03H
+    1133 0594  CD 10                  1 	int 10H
+    1134 0596  B8 002A R              1 	mov ax,OFFSET DGROUP:msg0
+    1135 0599  50                     1 	push ax
+    1136 059A  E8 0000 E              1 	call my_strlen
+    1137 059D  83 C4 02               1 	add sp,2
+    1138 05A0  8B C8                  1 	mov cx,ax
+    1139 05A2  8C D8                  1 	mov ax,ds
+    1140 05A4  8E C0                  1 	mov es,ax
+    1141 05A6  B8 002A R              1 	mov ax,OFFSET DGROUP:msg0
+    1142 05A9  8B E8                  1 	mov bp,ax
+    1143 05AB  B3 17                  1 	mov bl,CHAR_ATTR
+    1144 05AD  B0 01                  1 	mov al,01H
+    1145 05AF  B4 13                  1 	mov ah,13H
+    1146 05B1  CD 10                  1 	int 10H
+    1147 05B3  5D                     1 	pop bp
+    1148 05B4  07                     1 	pop es
+    1149 05B5  5A                     1 	pop dx
+    1150 05B6  59                     1 	pop cx
+    1151 05B7  5B                     1 	pop bx
+    1152 05B8  58                     1 	pop ax
+    1153 05B9  E9 00E2 R                	jmp _main_loop           ; return to b
+					eginning of main loop 
+    1154                                 
+    1155 05BC                           _exit: 
+    1156                                	PRINT_CHAR 0AH           ; Get shell p
+					rompt back on a new line 
+    1157 05BC  50                     1 		     push ax
+    1158 05BD  53                     1 	             push bx
+    1159 05BE  B4 0F                  1 		     mov ah,0FH
+    1160 05C0  CD 10                  1 		     int 10H
+    1161 05C2  B3 17                  1 	             mov bl,CHAR_ATTR
+    1162 05C4  B4 0E                  1 		     mov ah,0EH
+    1163 05C6  B0 0A                  1 	             mov al,0AH
+    1164 05C8  CD 10                  1 	             int 10H
+    1165 05CA  5B                     1 		     pop bx
+    1166 05CB  58                     1 	             pop ax
+    1167                                	PRINT_CHAR 0DH 
+    1168 05CC  50                     1 		     push ax
+    1169 05CD  53                     1 	             push bx
+    1170 05CE  B4 0F                  1 		     mov ah,0FH
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-30
+                                                            
+
+    1171 05D0  CD 10                  1 		     int 10H
+    1172 05D2  B3 17                  1 	             mov bl,CHAR_ATTR
+    1173 05D4  B4 0E                  1 		     mov ah,0EH
+    1174 05D6  B0 0D                  1 	             mov al,0DH
+    1175 05D8  CD 10                  1 	             int 10H
+    1176 05DA  5B                     1 		     pop bx
+    1177 05DB  58                     1 	             pop ax
+    1178                                	 
+    1179 05DC  5D                       	pop bp 
+    1180                                	; Terminate program with appropriate s
+					ystem call 
+    1181                                	TERMINATE 0 
+    1182 05DD  B0 00                  1 	mov al,0
+    1183 05DF  C3                     1 	ret
+    1184                                 
+    1185                                ;  Auxiliary routine 
+    1186                                ;  read bytes from source_now pointer a
+					nd copy to string ptr arg, 
+    1187                                ;  up to and including first NEW_LINE. 
+					Return number of bytes read 
+    1188                                ;  in ax, and position source_now for n
+					ext read 
+    1189                                 
+    1190 05E0                           read_mem:  
+    1191 05E0  55                       	push bp 
+    1192 05E1  8B EC                    	mov bp,sp 
+    1193 05E3  52                       	push dx            ; save reg 
+    1194 05E4  8B 56 04                 	mov dx,4[bp]   ; save char *arg       
+					 
+    1195 05E7  8B EA                    	mov bp,dx      ; reuse bp as base of m
+					emory to be read 
+    1196 05E9  53                       	push bx  
+    1197 05EA  56                       	push si            ; save all regs 
+    1198 05EB  33 F6                    	xor si,si         ; initialize char co
+					unter 
+    1199 05ED  8B 1E 0060 R             	mov bx,source_now 
+    1200                                 
+    1201 05F1                           read_mem_copy_loop: 
+    1202                                 
+    1203 05F1  8A 00                    	mov al,[bx + si] ; copy next byte from
+					 source 
+    1204 05F3  3C 00                    	cmp al,00H           ; Is it a null ? 
+    1205 05F5  74 0A                    	je read_mem_nl        ; Yes, so branch
+					 to prepare to return 
+    1206 05F7  3E: 88 02                	mov DS:[bp + si],al    ; copy char to 
+					output buffer 
+    1207 05FA  46                       	inc si               ; increment count
+					er 
+    1208 05FB  3C 0A                    	cmp al,0AH            ; Was it a newli
+					ne ? 
+    1209 05FD  74 02                    	je read_mem_nl        ; Yes, so branch
+					 to prepare to return 
+    1210 05FF  EB F0                    	jmp read_mem_copy_loop; otherwise cont
+					inue copy loop 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-31
+                                                            
+
+    1211                                 
+    1212 0601                           read_mem_nl: 
+    1213                                 
+    1214 0601  03 DE                    	add bx,si          ; position pointer 
+    1215 0603  89 1E 0060 R             	mov source_now,bx     ; for next read 
+    1216 0607  8B C6                    	mov ax,si          ; return number of 
+					chars copied in ax 
+    1217 0609  5E                       	pop si              ; restore regs use
+					d 
+    1218 060A  5B                       	pop bx 
+    1219 060B  5A                       	pop dx 
+    1220 060C  5D                       	pop bp 
+    1221 060D  C3                       	ret	 
+    1222                                 
+    1223                                ;;;;;;;;;;;;;;;;;;;;;;;;;;; End of Code
+					 ;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+    1224                                 
+    1225 060E                           _TEXT ENDS 
+    1226                                 
+    1227                                ;;;;;;;;;;;;;;;;;;;;;;;;;; Initialized 
+					Data ;;;;;;;;;;;;;;;;;;;;;;; 
+    1228 0000                           _DATA SEGMENT PUBLIC 'DATA' 
+    1229                                ASSUME DS:DGROUP 
+    1230                                 
+    1231 0000  69 6E 66 6F 0D 0A 6D     	_rcscript  DB   "info",0DH,0AH,"menu",
+					0DH,0AH,"set BOOT_DRIVE 8"    
+    1232       65 6E 75 0D 0A 73 65     
+    1233       74 20 42 4F 4F 54 5F     
+    1234       44 52 49 56 45 20 38     
+    1235                                
+    1236 001C  30                       	drivetail  db   "0" 
+    1237 001D  48 00                    	aitch      db   "H",00H 
+    1238 001F  4D 6F 6E 69 74 6F 72     	prompt     DB PROMPT_STRING,00H 
+    1239       3E 00                    
+    1240 0028  0D 0A                    	newline    DB 0DH,0AH     ; space used
+					 by PRINT_CHAR (not always NL) 
+    1241 002A  45 6E 74 65 72 20 68     	msg0       DB "Enter help for a list o
+					f commands, ^Z to exit",0DH,0AH,00H 
+    1242       65 6C 70 20 66 6F 72     
+    1243       20 61 20 6C 69 73 74     
+    1244       20 6F 66 20 63 6F 6D     
+    1245       6D 61 6E 64 73 2C 20     
+    1246       5E 5A 20 74 6F 20 65     
+    1247       78 69 74 0D 0A 00        
+    1248 005A  01                       	_alone     DB 1           ; = 1 for st
+					andalone mode ("boot monitor") 
+    1249 005B  00                       	_copy_env  DB 0           ; -e flag se
+					t 
+    1250 005C  ????                     	envc       DW ?           ; number of 
+					env strings 
+    1251 005E  0000                     	source     DW 0           ; =0 for std
+					in, memory reference else 
+    1252 0060  0000                     	source_now DW 0           ; moved as s
+					ource is read 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Page     1-32
+                                                            
+
+    1253 0062  0E0A R                   	enddata    DW OFFSET DGROUP:my_data  ;
+					 ptr to start of free data area 
+    1254 0064                           _DATA ENDS 
+    1255                                ;;;;;;;;;;;;;;;;;;;;;;;;; End of Initia
+					lized Data ;;;;;;;;;;;;;;;;; 
+    1256                                 
+    1257                                ;;;;;;;;;;;;;;;;;;;;;;;;;; Uninitialize
+					d Data ;;;;;;;;;;;;;;;;;;;;; 
+    1258 0000                           _BSS SEGMENT PUBLIC 'BSS' 
+    1259                                ASSUME DS:DGROUP 
+    1260 0000  ????                     	argc        DW ?                     ;
+					 32 bit int for argc 
+    1261 0002  ????                     	argv        DW ?                     ;
+					 ptr to first argument pointer 
+    1262 0004  ????                     	envp        DW ?                     ;
+					 ptr to environment pointers  
+    1263 0006  ????                     	nargs       DW ?                     ;
+					 number of args from user   
+    1264 0008  ????                     	my_ptr      DW ?                     ;
+					 pointer to whatever 
+    1265 000A  0200[                    	expandbuf   DB BUF_SIZ DUP(?) 
+    1266            ??                  
+    1267                         ]      
+    1268                                
+    1269 020A  0200[                    	_linebuf1   DB BUF_SIZ DUP(?)        ;
+					 buffer area to read into 
+    1270            ??                  
+    1271                         ]      
+    1272                                
+    1273 040A  0200[                    	linebuf2    DB BUF_SIZ DUP(?)        ;
+					 extra storage for parsing, etc 
+    1274            ??                  
+    1275                         ]      
+    1276                                
+    1277 060A  0200[                    	lineargs    DW BUF_SIZ DUP(?)        ;
+					 ptrs to parsed line strings 
+    1278            ????                
+    1279                         ]      
+    1280                                
+    1281 0A0A  0200[                    	environment DW ENV_SIZ DUP(?)        ;
+					 environment ptr storage 
+    1282            ????                
+    1283                         ]      
+    1284                                
+    1285 0E0A  ??                       	my_data     DB ?  
+    1286                                 
+    1287 0E0B                           _BSS ENDS 
+    1288                                 
+    1289                                END 
+
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Symbols-1
+                                                             
+
+Macros:
+
+		N a m e			Lines
+
+PRINT_CHAR . . . . . . . . . . .  	  10
+PRINT_PTR  . . . . . . . . . . .  	  29
+PRINT_STRING . . . . . . . . . .  	  29
+READ_LINE  . . . . . . . . . . .  	  41
+SBRK . . . . . . . . . . . . . .  	   1
+TERMINATE  . . . . . . . . . . .  	   3
+
+Segments and Groups:
+
+                N a m e         	Size	Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _TEXT  . . . . . . . . . . . .  	060E	PARA	PUBLIC	'CODE'
+  _DATA  . . . . . . . . . . . .  	0064	PARA	PUBLIC	'DATA'
+  _BSS . . . . . . . . . . . . .  	0E0B	PARA	PUBLIC	'BSS'
+
+Symbols:            
+
+                N a m e         	Type	Value	Attr         
+
+ADD_FROM_TERMINAL  . . . . . . .  	L NEAR	02DA	_TEXT
+ADD_READ_DONE  . . . . . . . . .  	L NEAR	0325	_TEXT
+ADD_TO_LINEBUF . . . . . . . . .  	L NEAR	02AD	_TEXT
+AITCH  . . . . . . . . . . . . .  	L BYTE 	001D	_DATA
+ALL_ARGS_FOUND . . . . . . . . .  	L NEAR	0363	_TEXT
+ARGC . . . . . . . . . . . . . .  	L WORD 	0000	_BSS
+ARGV . . . . . . . . . . . . . .  	L WORD 	0002	_BSS
+
+BIOS . . . . . . . . . . . . . .  	Text  		
+BUF_SIZ  . . . . . . . . . . . .  	Number	0200	
+
+CHAR_ATTR  . . . . . . . . . . .  	Number	0017	
+CNT_ARGS_DONE  . . . . . . . . .  	L NEAR	0071	_TEXT
+CNT_ARGS_LOOP  . . . . . . . . .  	L NEAR	0065	_TEXT
+COMMENT  . . . . . . . . . . . .  	L NEAR	023F	_TEXT
+COMMENT_CHAR . . . . . . . . . .  	Number	0023	
+COPY_ARGS_BACK_DONE  . . . . . .  	L NEAR	04C4	_TEXT
+COPY_ARGS_BACK_LOOP  . . . . . .  	L NEAR	04AD	_TEXT
+COPY_CHAR_BACK . . . . . . . . .  	L NEAR	04BE	_TEXT
+COPY_ENV_DONE  . . . . . . . . .  	L NEAR	00D6	_TEXT
+CPY_ENV_LOOP . . . . . . . . . .  	L NEAR	0095	_TEXT
+
+DONT_DO_MAIN_LOOP  . . . . . . .  	L NEAR	039F	_TEXT
+DONT_DO_MAIN_LOOP2 . . . . . . .  	L NEAR	03B2	_TEXT
+DONT_DO_MAIN_LOOP3 . . . . . . .  	L NEAR	0588	_TEXT
+DONT_SKIP_KEYWORDS . . . . . . .  	L NEAR	0379	_TEXT
+DRIVETAIL  . . . . . . . . . . .  	L BYTE 	001C	_DATA
+
+ECHO_HELP  . . . . . . . . . . .  	V WORD 	0000		External
+ECHO_NAME  . . . . . . . . . . .  	V WORD 	0000		External
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Symbols-2
+                                                             
+
+ECHO_SECTION . . . . . . . . . .  	L NEAR	04CF	_TEXT
+ECHO_USAGE . . . . . . . . . . .  	V WORD 	0000		External
+ENDDATA  . . . . . . . . . . . .  	L WORD 	0062	_DATA	Global
+ENVC . . . . . . . . . . . . . .  	L WORD 	005C	_DATA	Global
+ENVIRONMENT  . . . . . . . . . .  	L WORD 	0A0A	_BSS	Global	Length = 0200
+ENVP . . . . . . . . . . . . . .  	L WORD 	0004	_BSS
+ENV_SIZ  . . . . . . . . . . . .  	Number	0200	
+ESCAPE_CHAR  . . . . . . . . . .  	Number	005C	
+ESCAPE_JUMPAROUND  . . . . . . .  	L NEAR	0242	_TEXT
+EXIT_HELP  . . . . . . . . . . .  	V WORD 	0000		External
+EXIT_NAME  . . . . . . . . . . .  	V WORD 	0000		External
+EXIT_SECTION . . . . . . . . . .  	L NEAR	0510	_TEXT
+EXIT_USAGE . . . . . . . . . . .  	V WORD 	0000		External
+EXPANDBUF  . . . . . . . . . . .  	L BYTE 	000A	_BSS	Length = 0200
+EXPAND_LINE  . . . . . . . . . .  	L NEAR	0205	_TEXT
+EXTERNAL_SEARCH  . . . . . . . .  	L NEAR	052E	_TEXT
+EXTERNAL_SECTION . . . . . . . .  	L NEAR	0528	_TEXT
+
+FIND_ALL_ARGS  . . . . . . . . .  	L NEAR	0341	_TEXT
+FIRST_ARG_FOUND  . . . . . . . .  	L NEAR	01F6	_TEXT
+FIRST_ARG_LOOP . . . . . . . . .  	L NEAR	01EB	_TEXT
+FOUND_EXTERNAL . . . . . . . . .  	L NEAR	054E	_TEXT
+
+GOTO_NAME  . . . . . . . . . . .  	V WORD 	0000		External
+GOTO_SECTION . . . . . . . . . .  	L NEAR	03E6	_TEXT
+
+HELP_HELP  . . . . . . . . . . .  	V WORD 	0000		External
+HELP_NAME  . . . . . . . . . . .  	V WORD 	0000		External
+HELP_SECTION . . . . . . . . . .  	L NEAR	0470	_TEXT
+HELP_USAGE . . . . . . . . . . .  	V WORD 	0000		External
+
+IF_NAME  . . . . . . . . . . . .  	V WORD 	0000		External
+
+LINEARGS . . . . . . . . . . . .  	L WORD 	060A	_BSS	Length = 0200
+LINEBUF2 . . . . . . . . . . . .  	L BYTE 	040A	_BSS	Length = 0200
+LINE_EXPAND_COPY_CHAR  . . . . .  	L NEAR	025C	_TEXT
+LINE_EXPAND_DONE . . . . . . . .  	L NEAR	0332	_TEXT
+LINE_EXPAND_NOT_DONE . . . . . .  	L NEAR	0210	_TEXT
+
+MSG0 . . . . . . . . . . . . . .  	L BYTE 	002A	_DATA
+MYGETENV . . . . . . . . . . . .  	L NEAR	0000		External
+MY_DATA  . . . . . . . . . . . .  	L BYTE 	0E0A	_BSS	Global
+MY_PTR . . . . . . . . . . . . .  	L WORD 	0008	_BSS
+MY_STRCMP  . . . . . . . . . . .  	L NEAR	0000		External
+MY_STRCPY  . . . . . . . . . . .  	L NEAR	0000		External
+MY_STRLEN  . . . . . . . . . . .  	L NEAR	0000		External
+MY_STRSTR  . . . . . . . . . . .  	L NEAR	0000		External
+
+NARGS  . . . . . . . . . . . . .  	L WORD 	0006	_BSS
+NEWLINE  . . . . . . . . . . . .  	L BYTE 	0028	_DATA	Global
+NEW_WS . . . . . . . . . . . . .  	L NEAR	024E	_TEXT
+NEXT_ARG_FOUND . . . . . . . . .  	L NEAR	035C	_TEXT
+NONZERO_LAST_CHAR  . . . . . . .  	L NEAR	04B7	_TEXT
+NOT_ADD_TO_LINEBUF . . . . . . .  	L NEAR	021E	_TEXT
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Symbols-3
+                                                             
+
+NOT_A_COLON  . . . . . . . . . .  	L NEAR	01E8	_TEXT
+NOT_A_COMMENT_CHAR . . . . . . .  	L NEAR	01E1	_TEXT
+NOT_FOUND_SECTION  . . . . . . .  	L NEAR	057D	_TEXT
+NOT_NEWLINE  . . . . . . . . . .  	L NEAR	0221	_TEXT
+NOT_STAND_ALONE  . . . . . . . .  	L NEAR	0051	_TEXT
+NOT_WS . . . . . . . . . . . . .  	L NEAR	0256	_TEXT
+NO_COMMENT . . . . . . . . . . .  	L NEAR	0235	_TEXT
+
+PLOW_THROUGH . . . . . . . . . .  	L NEAR	0351	_TEXT
+PROMPT . . . . . . . . . . . . .  	L BYTE 	001F	_DATA
+PROMPT_STRING  . . . . . . . . .  	Text  "Monitor>"		
+PROPERLY_TERMINATE . . . . . . .  	L NEAR	01C7	_TEXT
+
+READ_HELP  . . . . . . . . . . .  	V WORD 	0000		External
+READ_MEM . . . . . . . . . . . .  	L NEAR	05E0	_TEXT
+READ_MEM_COPY_LOOP . . . . . . .  	L NEAR	05F1	_TEXT
+READ_MEM_NL  . . . . . . . . . .  	L NEAR	0601	_TEXT
+READ_NAME  . . . . . . . . . . .  	V WORD 	0000		External
+READ_SECTION . . . . . . . . . .  	L NEAR	044E	_TEXT
+READ_TERMINAL  . . . . . . . . .  	L NEAR	0163	_TEXT
+READ_TERMINAL_DONE . . . . . . .  	L NEAR	01AE	_TEXT
+READ_USAGE . . . . . . . . . . .  	V WORD 	0000		External
+
+SAVE_CYL . . . . . . . . . . . .  	V BYTE 	0000		External
+SAVE_DISK  . . . . . . . . . . .  	V BYTE 	0000		External
+SAVE_HEAD  . . . . . . . . . . .  	V BYTE 	0000		External
+SAVE_OFF . . . . . . . . . . . .  	V BYTE 	0000		External
+SAVE_SEC . . . . . . . . . . . .  	V BYTE 	0000		External
+SAVE_SEG . . . . . . . . . . . .  	V BYTE 	0000		External
+SAVE_SIZE  . . . . . . . . . . .  	V BYTE 	0000		External
+SCRIPTS_SECTION  . . . . . . . .  	L NEAR	0564	_TEXT
+SCRIPT_SIZ . . . . . . . . . . .  	Number	1000	
+SET_HELP . . . . . . . . . . . .  	V WORD 	0000		External
+SET_NAME . . . . . . . . . . . .  	V WORD 	0000		External
+SET_USAGE  . . . . . . . . . . .  	V WORD 	0000		External
+SHIFT_ARGS . . . . . . . . . . .  	L NEAR	03CD	_TEXT
+SHIFT_HELP . . . . . . . . . . .  	V WORD 	0000		External
+SHIFT_NAME . . . . . . . . . . .  	V WORD 	0000		External
+SHIFT_SECTION  . . . . . . . . .  	L NEAR	0496	_TEXT
+SHIFT_USAGE  . . . . . . . . . .  	V WORD 	0000		External
+SKIP_KEYWORDS  . . . . . . . . .  	L NEAR	0428	_TEXT
+SKIP_PROMPT  . . . . . . . . . .  	L NEAR	013B	_TEXT
+SOURCE . . . . . . . . . . . . .  	L WORD 	005E	_DATA
+SOURCE_NOW . . . . . . . . . . .  	L WORD 	0060	_DATA
+STATUS_HELP  . . . . . . . . . .  	V WORD 	0000		External
+STATUS_NAME  . . . . . . . . . .  	V WORD 	0000		External
+STATUS_SECTION . . . . . . . . .  	L NEAR	04F5	_TEXT
+STATUS_USAGE . . . . . . . . . .  	V WORD 	0000		External
+STAY_IN_GAME . . . . . . . . . .  	L NEAR	01BE	_TEXT
+SUBSTITUTION . . . . . . . . . .  	L NEAR	0266	_TEXT
+SUBS_COPY_VALUE  . . . . . . . .  	L NEAR	0295	_TEXT
+SUBS_DONE  . . . . . . . . . . .  	L NEAR	02A3	_TEXT
+SUBS_NOT_FOUND . . . . . . . . .  	L NEAR	02A7	_TEXT
+SUBS_VAR_NAME_FND  . . . . . . .  	L NEAR	0279	_TEXT
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:11
+
+monitor                                                     Symbols-4
+                                                             
+
+SUBS_VAR_NAME_LOOP . . . . . . .  	L NEAR	0269	_TEXT
+
+VARIABLE_CHAR  . . . . . . . . .  	Number	0024	
+
+ZERO_ENV_LOOP  . . . . . . . . .  	L NEAR	00C5	_TEXT
+
+??0000 . . . . . . . . . . . . .  	L NEAR	018A	_TEXT
+??0001 . . . . . . . . . . . . .  	L NEAR	01A3	_TEXT
+??0002 . . . . . . . . . . . . .  	L NEAR	0178	_TEXT
+??0003 . . . . . . . . . . . . .  	L NEAR	0301	_TEXT
+??0004 . . . . . . . . . . . . .  	L NEAR	031A	_TEXT
+??0005 . . . . . . . . . . . . .  	L NEAR	02EF	_TEXT
+_ALONE . . . . . . . . . . . . .  	L BYTE 	005A	_DATA	Global
+_COPY_ENV  . . . . . . . . . . .  	L BYTE 	005B	_DATA	Global
+_ECHO  . . . . . . . . . . . . .  	L NEAR	0000		External
+_EXIT  . . . . . . . . . . . . .  	L NEAR	05BC	_TEXT
+_EXTERNAL_ENTRY_POINTS . . . . .  	V WORD 	0000		External
+_EXTERNAL_NAMES  . . . . . . . .  	V WORD 	0000		External
+_HELP  . . . . . . . . . . . . .  	L NEAR	0000		External
+_LINEBUF1  . . . . . . . . . . .  	L BYTE 	020A	_BSS	Global	Length = 0200
+_MAIN_LOOP . . . . . . . . . . .  	L NEAR	00E2	_TEXT
+_MAIN_LOOP_JMP . . . . . . . . .  	L NEAR	004E	_TEXT
+_MONITOR . . . . . . . . . . . .  	L NEAR	0000	_TEXT	Global
+_N_EXTERNALS . . . . . . . . . .  	V WORD 	0000		External
+_PRINT_I . . . . . . . . . . . .  	L NEAR	0000		External
+_RCSCRIPT  . . . . . . . . . . .  	L BYTE 	0000	_DATA	Global
+_READ  . . . . . . . . . . . . .  	L NEAR	0000		External
+_SET . . . . . . . . . . . . . .  	L NEAR	0000		External
+_SOMETHING_THERE . . . . . . . .  	L NEAR	01CF	_TEXT
+_STATUS  . . . . . . . . . . . .  	L NEAR	0000		External
+
+
+   1173 Source  Lines
+   1357 Total   Lines
+    185 Symbols
+
+  43548 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

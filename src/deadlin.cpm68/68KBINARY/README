@@ -1,0 +1,23 @@
+This is build with:
+c:
+as68 -u f:cpm.s
+as68 -u f:main.s
+as68 -u f:parse.s
+as68 -u f:readline.s
+as68 -u f:strpbrk.s
+as68 -u f:strstr.s
+as68 -u f:strtok.s
+f:
+linkit
+
+F>type linkit.sub
+clink main CPM PARSE READLINE  STRPBRK STRSTR STRTOK
+
+F>type clink.sub
+c:lo68 -r -u_nofloat -o $1.68k c:s.o $1.o $2.o $3.o $4.o $5.o $6.o $7.o $8.o  $9.o c:clib
+
+
+And so that's should be relocatable (i.e .REL file).
+If it does not run (but it really should - tested on 1.3) - rename it to .REL 
+- and do RELOC DEADLIN.REL DEADLIN.68K
+

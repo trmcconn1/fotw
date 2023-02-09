@@ -1,0 +1,91 @@
+Suggested PC keyboard mappings
+
+The following keymaps should be made to make keys function as much as
+possible like they do in DOS:
+
+F1 --> ^W
+F2 --> ^L
+F3 --> ^A
+F4 --> ^R
+F5 --> ^T
+F6 --> ^D
+Esc -> ^[
+Backspace -> ^H
+Scroll-Lock -> ^S
+Control-Break -> ^C
+Del -> ^?
+Control-PrintScrn -> ^P
+Num Pad 0-9 -> Numbers 0-9
+Ins -> ^E
+Alt -> ^U
+
+The philosophy behind the following is that if the user has mapped the
+function keys to the control character operations, then she will want to
+get the actual control characters rather than their actions when the
+characters themselves are entered from the keyboard. 
+
+Control-E --> ^VE
+Control-W --> ^VW
+Control-L --> ^VL
+Control-A --> ^VA
+Control-R --> ^VR
+Control-T --> ^VT
+Control-U --> ^VU
+
+For example, pressing the control key and the U key simultaneously 
+should send the two-character string ^VU.
+
+************************************************************************
+                     (Notes on Keymaps provided)
+
+Linux US keyboard (For Linux Text Console)
+==========================================================================
+
+To use the keymap provided in this directory use the loadkeys command.
+This may be included in a script as illustrated in the file edlin.sh
+(which is the version appropriate for linux anyway.) Note that ^T and
+^U print as alternate OEM characters, but this is impossible to emulate
+here. This includes all of the above keymaps. Note that many keys are
+mapped in the default Linux keymap to do special things. These mappings
+have not been removed. Because of the mapping of ALT --> ^U you won't
+be able to switch virtual consoles using the alt key.  Instead, the
+map has been set up so you can use Control Function keys two switch VTs.
+
+Xresources 
+=========================================================================
+
+These provide keymapping resources for the standard Xterm. They should
+be loaded using xrdb, e.g.
+xrdb -merge Xresources
+before launching an xterm from which edlin will be run. (See the example
+shell script "edlin.sh" in the directory above this one.)
+
+Minix.map
+=========================================================================
+
+This is a binary which must be produced from the source file minix.src.
+The method is the following(if you want to make changes):
+1) copy the file /usr/src/kernel/keymaps/genmap.c to the current directory.
+2) give the commands
+
+cc -DKEYSRC\"minix.src\" genmap.c
+a.out > minix.map
+  
+Note that minix does not support mapping keys to emit strings. Thus the
+method outlined above for remapping control characters to enter strings
+beginning with LITERAL (^V) will not work. We have opted instead to turn
+off the control character production altogether so that the user won't get
+surprising results. Thus, e.g., striking CTRL-A will just produce A rather
+than ^A and its attendant action. 
+
+I had no success figuring out how to map Control-Break and Control-PrintScr
+in Minix. Of course, the normal minix "Hot Keys" F1-F3 will no longer
+work. (You might fix this, if it annoys you, by mapping F7-F9 to function
+as hot keys.)
+
+Be sure to read the keymap(5) man page. 
+
+
+======================================================
+Terry R. McConnell
+trmcconn@syr.edu

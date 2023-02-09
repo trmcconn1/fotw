@@ -1,0 +1,33 @@
+This directory contains an implementation of a universal Turing machine. It
+can simulate the action of any other Turing machine that uses a two letter
+alphabet. (For convenience in coding, the universal machine itself uses a
+larger alphabet that includes all of the decimal digits. Thus, the states
+of the simulated machine can be identified using decimal numbers without
+the digit 0. )
+
+To do anything useful, the universal machine needs to be provided with an
+initial tape containing a program and initial data for the machine to be
+simulated. To get a feel for how this works, take a look at add.t, which
+includes universal.t after setting up an initial tape for calculating the
+sum 2+3. (Even this simple computation requires more than 15,000 cycles
+of the universal machine! The universal machine is very slow.) Run the
+computation by giving the command turing test.t.
+
+A more ambitious test is times.t, which simulates the calculation of 2x3
+using the logic collection's multiplication machine. This takes fully
+98,767,380 cycles. On a 1.8 Ghz pentium 4 Dell Optiplex running RedHat
+Linux 7.3, this took a total of 49.98 secs at 99.9% cpu usage System time
+is 0.1 second. Compilation alone takes 19.61 secs at 100% cpu with no
+system time, so the actual simulation takes about 30 seconds. This may
+qualify as the world's slowest algorithm for the product of small positive
+integers.
+
+The main loop of the universal machine is implemented in universal.t. Read
+the extensive comments in that file and in the other files it includes in
+order to understand the details of the implementation. 
+
+We have also written a utility to create initial tapes that can be fed to
+the universal machine. Source code and information on using this utility
+can be found in the lst2tape subdirectory.
+
+

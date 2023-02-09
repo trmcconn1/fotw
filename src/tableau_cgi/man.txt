@@ -1,0 +1,110 @@
+tableau(1)                                                          tableau(1)
+
+NAME 
+
+	tableau
+
+SYNOPSIS
+
+	tableau [ -sctadvhV] [ source files ... ]
+
+OPTIONS
+
+		-h: print this helpful message.
+		-v: print version number and exit.
+		-V: be more verbose.
+		-t: display truth tables.
+		-d: dump parse trees.
+		-a: display analytic tableaux. 
+		-s: make a separate tableau for each source line.
+                    (overriding normal behavior)
+		-c: combine contents of separate files
+
+DESCRIPTION
+
+Parse and analyze sentential logic wff(s) in file[s] (or stdin). The
+input files are parsed and the wffs in them processed depending on the
+option chosen. Any output is sent to stdout. With the -t option, truth tables
+for each wff in each file are generated. With the -a option, each file
+generates a separate tableau, with the wffs in each file being treated as
+a set. (This behavior can be overridden with the -s option. If chosen, a
+separate tableau will be generated for each wff in each source file. The
+-c option overrides normal behaviour in the other direction: together
+with the -a option, all wffs in all files are treated as a set, and a
+single tableau for the set is created. ) 
+
+PARSING
+
+Source files are in ascii format. They may contain one or more wffs (well-formed
+formulas of propositional calculus). Whitespace, except that which serves
+to separate tokens, is ignored. The # symbol is used to introduce comments,
+which are treated as whitespace (up to and including the next newline
+character.) The \ character may be used to escape the meaning of the next
+following special character. The special characters are 
+whitespace characters,  #=()!~-+.&^ and |. A \ before a character with no
+special meaning has no special meaning itself. 
+
+Wffs are whitespace separated strings of characters. A wff needs to be
+on one line unless the newline is escaped. (Note that an escaped newline
+immediately following a partially complete variable name will get
+incorporated in the variable name. Otherwise, the escaped newline is
+treated as any other whitespace. )
+
+A given
+string is treated as the name of a propositional variable unless it is one
+of the names of logical connectives. The logical connectives are: NOT, AND,
+OR, IMPLIES, and EQUIVALENCE. Logical connectives are not case sensitive.
+Thus, e.g, NOT can also be given as not, Not, nOT, ... . Variable names
+are case sensitive. The strings -> and <-> may be used synonomously with
+IMPLIES and EQUIVALENCE respectively. Parentheses may be included to override
+default precedence assumptions (see below.) 
+
+For example, the following is a wff:
+
+not ( Apples AND Oranges ) <-> ( NOT Apples or NOT Oranges )
+
+Many of the connective names also have synonyms that serve as delimiters, i.e,
+do not need white space to set them off from other connective or variable
+names. These synonyms are:
+
+OR:         + |
+AND:        ^ & . *
+NOT:        ! ~ -
+
+Thus, the above wff could also have been written:
+
+~(Apples&Oranges) <-> (!Apples + -Oranges)
+
+The right and left parenthesis characters also serve as delimiters. All
+delimiter characters must be preceeded by \ to be included in variable 
+names.
+
+A line containing the definition of a wff can optionally contain a construct
+the assigns a sign (true or false) to that wff. This makes a difference if
+a tableau is to be constructed from the wff. In situations that do not use
+the sign (e.g., construction of a truth table) the sign is ignored. The
+following construction appearing anywhere on a line sets the sign of the
+wff to be true: =T or =t (note that the letter must immediately follow the
+= with no intervening space.) The constructions =F and =f similarly set
+the sign to be false (though this is unnecessary since false is the default
+sign.) This special meaning of = can be escaped with \. An equal sign followed
+by any other character than t,T,f or F is not considered special.
+If the sign is set more than once the resulting sign will be unpredictable.
+
+Default Precedence and Associativity.
+
+The order of precedence, from highest to lowest, of the connectives is:
+NOT, AND, OR, IMPLIES, EQUIVALENCE. The non-associative connectives (~ and
+->) associate to the right by default. 
+
+SEE ALSO
+
+AUTHOR
+
+Terry R. McConnell
+2458 Swift Road
+Lafayette, NY 13084
+trmcconn@syr.edu
+http://barnyard.syr.edu
+
+BUGS

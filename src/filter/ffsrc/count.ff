@@ -1,0 +1,13 @@
+%{
+/* count.ff: count the number of occurances of some string in a file */
+
+/*     usage: a.out -ln "string"
+	where n is the number of characters in string ( < 11 )
+*/
+#include <stdlib.h>
+#include <stdio.h>
+
+int counter=0;
+%}
+-_ /./ {ECHO;}
+-l1 /./ {if( strcmp(\$0,clvar) 

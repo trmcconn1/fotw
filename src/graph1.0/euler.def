@@ -1,0 +1,12 @@
+# The bridges of konigsberg
+
+pregl { a c b d  ; b c d ; c b ; d b }   
+
+# The square
+
+square { a b; b c; c d; d a }
+
+# a testing eulerian graph with loops
+
+yes_euler { a a c d ; b b c d ; c d e ; d e }
+ 

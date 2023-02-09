@@ -1,0 +1,25 @@
+-----------------------------------------------------------------------------
+|                         Schedule (Version 1.2)                            |
+-----------------------------------------------------------------------------
+Written by Terry McConnell (January 1997)
+Compiled Under Borland C++ version 4.5.
+
+Requires: 640K ram, DOS 2.0 or higher, 386 or higher processor
+(can be compiled for 8086 upon request.)
+
+This is free software. It may be freely copied, modified,
+and distributed. The Author makes no representation concerning
+whether this program is free of bugs. The Author is not
+responsible for any loss of data or damage to equipment this
+program might cause. Use at your own risk.
+
+Please send bug reports to trmcconn@syr.edu
+-----------------------------------------------------------------------------
+To reach the Author:
+
+Terry McConnell                         ----
+2458 Swift Road              OR         215 Carnegie
+Lafayette, NY 14850                     Syracuse, NY 13244-1150
+(315)677-3510                           (315)443-1491
+trmcconn@syr.edu                        tmc@barnyard.syr.edu
+-----                                   Fax: (315)443-1475

@@ -1,0 +1,274 @@
+                              CRYPTO 1.3
+		       ( By Terry R. McConnell )
+
+This package contains source code for a suite of programs that implement
+various encryption methods of historical interest. Currently, the package
+contains source code for the following programs, which implement the
+classical cyphers that bear the same names: caesar, vigenere, beaufort,
+wheatstone, uebchi, playfair, book, onetime, enigma, columnar, hill, feistel
+and cardano.
+More may be added in future versions. There is also a small collection
+of utilities in the utils subdirectory. That has its own README and makefile.
+
+The current version builds on Unix-like systems only. (There may be a 
+DOS-Windows port later.) These are all text mode terminal programs.
+
+Some of the ciphers in this package saw serious action in wartime. Their
+use cost some people their lives, and saved the lives of others. The Author
+intends no disrepect towards anyone who served. 
+
+Contents
+--------
+1. What this package is not
+2. Design Principles
+3. Installation
+4. Usage
+5. Documentation and References
+6. Addendum on Block Ciphers (New for 1.3+)
+7. Author
+8. Disclaimer 
+9. Appendix
+
+1. What this package is not.
+
+It is not an answer to your security needs! Experienced cryptanalysts can easily
+crack any of these encryption methods. (With the possible exception of the
+onetime pad cypher.) If you need real, practical security, I recommend
+the freely available "Pretty Good Privacy" (PGP) program. See, e.g.,
+Simson Garfinkel, PGP: Pretty Good Privacy, O'Reilly and Associates, 1995.
+
+2. Design principles.
+
+I have tried in these implementations to meet the following design goals:
+
+a) The programs should each behave as much as possible like the Unix program
+crypt(1). 
+
+b) Each program should handle both encryption and decryption.
+
+c) Each program should be able to encrypt an arbitrary ascii text file. 
+
+d) Each program should be as faithful as possible to the given classical method.
+
+e) The programs should be useful for examples and personal study.
+
+f) Encrypting and decrypting should reproduce the original file exactly.
+
+Thus, to encrypt and decrypt a file named plain.txt using vigenere (one of the
+package programs), one would begin with the command
+
+% vigenere < plain.txt > cypher.txt
+
+(Here % denotes the Unix prompt.) The program prompts for a key and then writes
+the encrypted text to the file named cypher.txt after it is supplied. To reverse
+the process, the command
+
+% vigenere -d < cypher.txt > plain.txt
+
+can be used.
+
+This already indicates a departure from design principle (a). The crypt program
+doesn't need the -d flag to distinguish encrytion from decryption -- the same
+algorithm works for both encryption and decryption (given that the same key is
+supplied for both.) Many of the classical encryption methods do not have this 
+property. (The crypt command supplied with some unix systems emulates a
+simple form the German WWII enigma cypher.)
+
+Unfortunately, we found it necessary to make further compromises. Most of the
+classical methods were designed to work with a 26 letter alphabet ( or 27 
+letters including the space character.) However, most ascii text files use
+other characters, and binary files may contain all 256 possible bytes. Using
+all 256 characters in cypher text files would yield files which could not
+easily be examined, using, e.g., a text editor. On the other hand, restricting
+to 27 letters would eliminate most text files commonly found on modern computer
+systems. Ultimately, we settled upon a compromise: all the programs use 
+the set of printable ascii characters, those with ascii codes in the range 
+32-126, as their basic alphabet. (Note that binary files can always be
+converted to ascii using uuencode(1), and then encrypted. Decryption followed
+by uudecode(1) recovers the original binary, at least for those methods which
+do reproduce the original plain text -- there are some exceptions to this.
+We now provide our own implementation of uuencode in the utils directory
+for the sake of being self-contained. )
+
+Unfortunately, there are two characters commonly found in Unix text files which
+do not fit this definition of "printable". They are the newline (line feed)
+character and the tab character. Although these could be handled as special
+cases, we decided in the interest of simplicity to forego encrypting them
+altogether in methods that use substitution. Thus, e.g., the cypher text has 
+the same line divisions as the plain text in substitution methods. (This
+gives the bad guy useful information, of course, but anyone worried about 
+that could simply remove all newlines and tab characters from his plain text
+before encryption.)
+
+(Addendum: As of version 1.3 the usage of plaintext only has been abandoned
+in order to implement some of the more modern "block" cyphers, e.g., Feistel
+and Des. These cyphers produce binary output and may be used to encrypt
+binary input as well. )
+
+The nature of some cyphers is at odds with goal f. For example, the playfair
+requires an even number of encyphered plaintext characters. One solution would
+be not to encypher a leftover character, or to add an additional character
+(e.g. space) to make the number even. Either choice could provide a clue to
+a cryptanalyst, and moreover would violate goal d. We elected to compromise
+goal f in this case. (There are further problems with the playfair. See the
+source file for details.)
+
+Despite the fact that these programs are not intended to provide real security,
+we have tried to "do things right" whereever possible. Thus, if a key is
+provided on the command line the programs immediately overwrite their
+argument vector so that the key is not visible systemwide via the ps(1)
+command. Also, echoing is turned off if the key is entered interactively.
+Cyphers which work on blocks of input often have to encrypt a final block
+that is smaller than the rest. Thinking about how best to handle the final
+block often leads to some interesting security considerations.
+
+Some cyphers cannot be implemented by computer. Perhaps the most
+important example is the one invented by Thomas Jefferson and which bears
+his name. Jefferson's cypher used a device built by slicing a cylinder of
+wood into disks which could then be mounted on an axle. Each disk was
+numbered so that the arrangement of disks on the axle could be agreed upon
+by the correspondents. Furthermore, the perimeter of each disk was divided
+into 26 cells on which were printed the letters of the alphabet, with a
+different scrambled order on each disk. To encypher, the user lined up
+one row of cells to form a portion of the plain text. He then transmitted
+as cypher the contents of any other row. The recipient similarly arranged
+a row of cells to spell out the cypher text, and then searched for another
+row of text containing meaningful information. It is this search that
+cannot be implemented on a computer: it requires human intelligence.
+
+(Addendum: One could implement the Jefferson cypher on a computer, but
+not within the design constraints of this package. For example, one might
+have the decryption routine produce many possible decryptions -- one for
+each letter of the alphabet. The recipient would then have to look through
+them all and select the one that "makes sense.")
+
+3. Installation
+
+To build the package, simply say "make all" in this directory. You may wish
+to edit the makefile before doing this to change the default values of
+the following macros. (You may also edit the makefile in the utils directory):
+
+POSIX: Define if your system uses posix terminal i/o. (Most systems now do.)
+If your system uses the older sgtty (as opposed to termios) interface, do
+not define this macro.
+
+_POSIX_SOURCE: Define if your implementation defines extensions which 
+conflict with names in our source files. 
+
+MAX_KEY: Define to the maximum length of the key accepted by the programs.
+
+A few other settable macros are noted in the makefile.
+
+Some system shells will not handle the quoted program name strings in
+the makefile properly. You may need to change, e.g., 
+-DPROGRAM_NAME=\"caesar\" to -DPROGRAM_NAME=\\\"caesar\\\".
+
+After the programs build, move the resulting executables anywhere you wish.
+
+4. Usage
+
+All encryption programs have the same command line format, as illustrated 
+by the following usage line for the vigenere program:
+
+vigenere [-d] [key]
+
+The program reads plain text on stdin and writes encrypted text on stdout.
+If the -d option is supplied, the program reads encrypted text on stdin and
+writes the orginal text on stdout, provided the same key is supplied as
+the one used for encryption. The first non-option argument, if supplied, is
+interpreted as a key. If no key is supplied, and the encryption method
+allows one, it is requested interactively via the prompt "Key:". An empty
+key is valid, but not recommended. 
+
+Use redirection to get plaintext from an existing file, or to write cypher/
+plaintext to a file. For example, if plain.txt contains the text to
+be encyphered, the command
+
+vigenere "Helen of Troy" < plain.txt > cypher.txt
+
+will encypher the text in the file plain.txt using the Vigenere cypher with
+key Helen of Troy (spaces are part of the key), and will store the 
+resulting encrypted text in cypher.txt. The key can also be entered
+interactively, in which case the command line would be
+
+vigenere < plain.txt > cypher.txt
+
+To decypher the text in cypher.txt, use the command
+
+vigenere -d "Helen of Troy" < cypher.txt
+
+This will write the original plain text to the screen. (Use > foo to store
+the text in a file named foo instead.)
+
+If input is not redirected, the programs will read text from the terminal.
+As usual in Unix, input is terminated by entering a ^D character on an
+empty line.
+
+5. Documentation and References
+
+See the readme in the utils subdirectory for a discussion of the programs
+there.
+
+This readme together with the extensive comments in the source are all the
+documentation you're going to get for encryption. For an excellent history of
+cryptography consult David Kahn, The Codebreakers (Revised Edition), Scribner,
+New York, 1996. Another interesting recent book is Simon Singh, The Code
+Book, Random House, New York, 1999. Though not as complete or authoritative
+as Kahn's book, the Code Book makes for entertaining reading.  You may also 
+wish to consult your Unix system manual pages for crypt(1), crypt(3), 
+and des(1), if your system supports DES.  There is also extensive material
+available on the web. I suggest doing a web search on "cipher AND playfair".
+The RSA corporation home page, http://www.rsa.com, has a wealth of material
+on modern cryptography. The Kahn and Singh books cited above have extensive
+bibliographies. 
+
+For a more technical and modern approach to both cryptology and cryptanalysis,
+see William Stallings, Cryptography and Network Security (3rd Edition),
+Prentice Hall, Upper Saddle River, N.J., 2003.
+
+7. Addendum on Block Ciphers
+
+Block ciphers ( Feistel, Des, ...) by convention operate in several modes.
+For example, in Electronic Codebook Mode (ECB), the programs encipher each
+successive block on its own without carrying forward noise to be entered into 
+the encryption of other blocks. In another mode the programs generate "noise"
+that it is added character by character into the input stream to produce
+a stream of output characters. See fiestel.c for a description (inter alea)
+of each mode's function. (Or see the references above.) 
+
+We implement each mode as a separate program, which otherwise behave just
+like the other programs in the package. (They do, however, produce binary
+output.) Thus, to encrypt a message using the feistel cipher in ECB mode
+on does 
+
+feistel_ecb key < foo > bar
+
+These programs can benefit from long keys.
+
+Note that the feistel cipher is really a family of ciphers in which one
+can vary the implementations of several key parts, e.g., the key-scheduling
+routine and the round function. We have provided (probably brain-dead)
+default implementations of these, but one might easily experiment with
+others.
+ 
+
+8. Author 
+
+Terry R. McConnell
+215 Carnegie
+Syracuse University
+Syracuse, N.Y. 13244-1150
+trmcconn@syr.edu
+http://barnyard.syr.edu/~tmc
+
+9. Disclaimer
+
+This work does not necessarily represent the views of my employer and is
+not supported by them. I have done this work entirely on my own time as a
+personal hobby.  This software is offered as is and without charge. The
+author is not responsible for any damages to property that may follow from
+the use of this software.
+
+10. Appendix
+
+The text has not heretofore included the letter z. 

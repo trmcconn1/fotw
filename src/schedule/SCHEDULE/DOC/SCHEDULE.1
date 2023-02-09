@@ -1,0 +1,536 @@
+.TH SCHEDULE 1
+.SH NAME
+Schedule \- Create, manage, and view a departmental schedule database.
+.SH SYNOPSIS
+.B schedule [\-c \-n \-wd <path> \-sem <string> \-debug \-help \-version ]
+
+.SH OPTIONS
+.TP
+.B \-c
+Start the program in command mode. 
+.TP
+.B \-n
+Suppresses sourcing the file $HOME/.schedulerc. (schedule.rc in Dos.)
+.TP
+.B \-wd
+Use the next argument as the full path to the program's working directory(CWD).
+The path should not contain a trailing /. This overrides the shell's built in
+variable.
+.TP
+.B \-sem
+Take the following argument as a string which will be used as the name of
+the sudirectory in CWD/data containing the data files the 
+program will read. Thus the string should be a valid directory name.
+This overrides the shell's built in SEM variable. 
+.TP
+.B \-debug
+Causes the program to run in debug mode. (See the description of the 
+toggledebug shell command below.)
+.TP
+.B  \-help
+Print a brief help message on the screen.
+.TP
+.B \-version
+Print the version number and exit.
+
+.SH DESCRIPTION
+.I schedule
+begins by checking for a file named .schedulerc in the user's home
+directory. (In Dos the command path is searched for a file named
+schedule.rc.)
+ If this file exists a command shell is run to interpret it.
+Among other things this file may contain settings for any shell variables
+including the built-in variable CWD which gives the working directory for
+the program.
+If the
+program successfully finds its working directory, either from .schedulerc or
+from the command line, it changes to that directory. Unless the user exits
+the program by giving the exit command from the command shell, the original
+directory will be restored when the program exits. The program assumes its
+data files are in a directory called CWD/data/xxx, where xxx is a 3 character
+abbreviation for the name of a semester. (e.g. f96.)
+All the data files are plain ascii files and must be
+modified using an editor. They cannot be changed by the program itself.
+
+If the -c option is not given then the program runs a user interface. For
+more information on the interface see the User's Guide. With the -c option
+the program launches a command shell and then proceeds to the user interface
+after the user exits from the shell with any command but the exit command. 
+
+.SH COMMAND SHELL
+
+The command shell provides a prompt at which the user can give database
+commands directly without entering the user interface. The command ? [cmd]
+displays a brief description of cmd. If cmd is omitted, ?
+displays a list of available commands with a brief description of each.
+Two commands are provided for exiting from the command shell. The end
+command terminates the command shell and returns to the main program.
+Any shell variables remain set after an end. If the shell reads EOF it
+removes all shell variables and returns.
+The exit command immediately terminates the program and restores the operating
+system prompt. ( The original directory is not restored (DOS) and the screen
+is not cleared with the exit command. )
+
+.PP
+Shell variables may be displayed, set and modified with the set command.
+References of the form $NAME on the shell command line, where NAME is
+the name of a shell variable, are expanded to the value of the variable
+before the command is executed.
+The names of shell variables can contain any characters except whitespace and
+shell metacharacters. The shell metacharacters are whitespace, $, \\, {,}, and
+". They can
+be escaped by preceeding them with \\. Similarly, long command lines can
+be continued by escaping the newline at the end with \\. The shell ignores all
+lines beginning with #. When the shell parses a command line, it interprets
+any string contained within a pair of unescaped quote signs as a single token.
+This makes it possible to include whitespace in the definition of a shell
+variable. Shell variables can be imbedded and expanded in strings by 
+surrounding the name of the variable with {}. For example, if FOO = BAR then
+${FOO}BAR expands to BARBAR.
+
+.PP
+The following variables are built-in and need not be set explicitly unless
+values different than the default are desired.
+.TP
+.I CWD
+The working directory. The default is the start-up directory.
+.TP
+.I SEM
+The working  abbreviation for the semester, which determines the
+location of the data files as described above. (The default is f96, which
+is probably not what you want.)
+.TP
+.I DATE
+The current date.
+.TP
+.I ECHO
+When set to OFF this suppresses displaying the shell prompt ( Useful for
+scripting applications.) The default is OFF so that prompts don't get displayed
+when the program sources .schedulerc. It would therefore be normal to include
+the command end ECHO ON at the end of .schedulerc.
+.TP
+.I ROWS
+The assumed number of display rows on the terminal. (Default is 25.)
+.TP
+.I PROMPT
+The prompt displayed by the shell. Default is Schedule>.
+.TP 
+.I VERSION
+The version number of the program.
+.TP
+.I SHELL-LEVEL
+The depth of the current shell in a recursive stack of shells.
+.PP
+In addition, the following variables, if set, affect certain commands.
+.TP
+.I SHELL
+A path to a command interpreter to be used by the push command.
+.TP
+.I EDITOR
+A path to an editor to be run by the edit command.
+.TP
+.I TEMPDIR
+A path to a directory which is used by the program to create any needed
+temporary files. If the system has a ramdrive this could be used for TEMPDIR.
+
+.SH SHELL COMMANDS
+The following commands are recognized at the shell prompt.
+.TP
+.I  end [ NAME VALUE ] 
+Exit from the shell and return to the main program, but leave all currently
+defined shell variables in place. Optionally, define the shell variable NAME
+to have value VALUE upon exit.
+.TP
+.I exit
+Immediately exit from the schedule program. Normal exit-time cleanup is not
+done. In particular, in DOS the original directory at startup need not be restored.
+.TP
+.I set [ NAME VALUE ]
+If no arguments are given, display all currently defined shell variables and
+their values. If one argument is given, remove the shell variable of that
+name, if it exists. Otherwise, define (or redefine) the variable NAME 
+to have the value VALUE.
+.TP
+.I echo [\-n] [...]
+Print the arguments listed on the shell's output stream. If \-n is specified
+then no concluding newline is printed. 
+.TP
+.I if <NAME> [Command]
+If there exists a shell variable NAME, then command is executed. This allows
+for a primitive form of batch programming. (See the take command.)
+.TP 
+.I > filename
+Redirect subsequent output to filename. This does not redirect the prompt.
+This actually starts up a sub shell with its output redirected, so
+to return output to  where it was before, use the end command.
+.TP
+.I 2> filename
+Redirect subsequent error messages to filename. To return output to the
+screen use the end command.
+.TP
+.I cd <path>
+Change the program's working directory to path. This automatically resets the
+CWD shell variable.
+.TP
+.I push [ ... ]
+Starts the command interpreter given by the SHELL variable if set. Otherwise
+starts /bin/sh. Remaining arguments are passed to the command interpreter as
+arguments. (Do not give -c  or /C as an argument -- the program supplies that.)
+.TP
+.I take <filename>
+Causes a command sub-shell to source the filename given.
+The default behaviour of take is not to
+echo commands in the command file. If it is desired to see commands as they
+are executed then make the first line of the file set ECHO ON. The last
+command should be end ECHO ON if it is desired to return to normal 
+echoing in the interactive shell.
+.TP
+.I read
+displays a secondary prompt and waits for one line of input from the user.
+The input line is stored as the value of the shell variable USER_INPUT.
+This command reads from a global input stream rather than necessarily from
+the same input stream as the shell that invoked it. This allows the read
+command to get information from the user even when invoked from a takefile.
+Normally, this stream would be stdin since that is the way it is initialized
+in the main program.
+.TP
+.I more <command>
+more pages the output of command one screen at a time for easy viewing at
+a terminal. 
+.TP
+.I shell
+Starts a subshell. All variables are shared between the shells. 
+To see the depth of the current shell give the set command and not the
+value of SHELL-LEVEL.
+.TP
+.I status
+Displays information about stack and program memory usage. (DOS only.)
+.TP
+.I toggledebug
+Turns debug mode on and off. In debug mode the program will echo lines
+read from a data or script file to the console before executing them. The
+user is prompted for a number of lines to process before the program will
+pause for a "break-point."
+.TP
+.I edit <filename>
+Starts the program specified by the EDITOR variable with filename as argument.
+.TP
+.I load [-t -u -sem <semester> -free]
+Loads all the data into memory from external files whose format is described
+below. Without any argument, the data for the current semester ( as indicated
+by the value of the SEM variable ) is loaded and replaces any previously
+loaded data. Any semester may be specified with the -sem flag. 
+With the -t flag the time slot information is not loaded. This
+data consumes a large amount of memory (> 100K) and is not needed, e.g., by
+the audit command. With the -u option the program updates previously loaded
+data rather than overwriting it. Any data present in memory which agrees
+in the primary key with data being loaded is replaced, while other data is
+unchanged. The -free flag causes all currently loaded data, including any
+currently defined schedules, to be removed from memory. 
+.TP
+.I schedule [-c <semester> ]  [semester] [description]:
+With no arguments schedule displays a  list of all currently defined schedules.
+(A schedule comprises a collection of courses, classes, and assignments.). With
+two arguments schedule adds a new schedule named "semester" to the list, 
+though this by itself does not create any courses, classes, or assignments. 
+However, none of the latter can be added without a currrent schedule. 
+The schedule command also sets the SEM shell variable and sets the current
+schedule. With the -c option schedule changes the current schedule to the
+named semester. With one argument, schedule displays a complete listing of
+the current schedule including all courses and their classes, subclasses,
+and assignments. 
+.TP
+.I course [end] [name [supervisor]]
+With no arguments course displays a list of all defined courses in the current
+schedule. With one name argument course displays all classes, subclasses, and
+assignments attached to the named course of the current schedule, and
+sets the COURSE shell variable, and current course. With 2
+arguments, course creates a new course with given name and supervisor, or
+modifies an existing  one. This also sets the current course and the
+COURSE shell variable. The command course end removes the COURSE shell
+variable so
+that subsequent classes or assignments created will not be attached to any
+course. 
+.TP
+.I class [name] [name room teacher time job] [N or enrollment]
+With no arguments class displays all classes and subclasses or the current
+course. With one argument, class displays the named class and all its subclasses,
+and sets the CLASS shell variable and current class. With 5 arguments class
+creates a new class of the current course ( or schedule if there is no
+current course ) or modifies an existing one. This
+also sets CLASS and sets the current class. The optional sixth argument 
+can be used to supply the enrollment in the class. If the letter N is used
+then this class is marked as "not available." A room and times are
+reserved for it, but it is not counted by the audit command.
+.TP
+.I attach name room person time job [N or enrollment]
+This has the same effect as class with 5 or 6 arguments. However, the
+enrollment in the course or parent-class does not include enrollments in
+attached classes created with the attach command.
+.TP
+.I subclass [end]
+Between a subclass ... subclass end pair all classes created are attached to
+the class given by the CLASS shell variable at the time subclass was invoked.
+This command may be used recursively to create subclasses of subclasses ... .
+.TP
+.I assign [course] [name person job]
+With no arguments assign displays all assignments of the current schedule which 
+are not attached to any course. With one argument it displays all assignments
+attached to the named course. With 3 arguments assign creates a new
+assignment of the current course (or schedule if there is no current course)
+or modifies an existing one.
+.TP 
+.I audit [-c -t -a]
+Prints an audit report to the screen using all currently loaded schedules.
+The report lists the total number of load units available for each defined
+job, the number of load units for each job used up because of allocation by
+the schedule, and the differences between these figures. There is one column
+of output for each schedule loaded, and a totals column is included if the
+-t option is used. Internal static variables are used to keep the running
+totals necessary to compute the totals column. The -c option may be used to
+reset these variables to zero so that a subsequent audit will not add to the
+totals. If the -a option is given, the load for each person in a given 
+semester ( which is used to compute the number of load units available, ) is
+gotten by dividing the annual load for that year by two. This is especially
+useful when one wants to project an audit for an academic year before the
+Spring schedule is fully developped. Without -a the actual load for each
+semester is used. An interactive script for producing academic year audits
+may be invoked with the command take scripts/audit.
+.TP
+.I comment [text]
+Attaches a comment to the current course if there is no current class, or
+to the current class if there is one. The comment is printed by the schedule,
+course, or class commands, immediately following the line corresponding to
+the course or class it was attached to. The text should be surrounded with
+quotes if it contains whitespace.
+.TP
+.I finalblock [end] [auto [block]]
+Introduces a block of lines which associate classes with final examination
+blocks. The block of lines must be terminated with the finalblock end statement.
+Between a finalblock ... finalblock end pair, lines can take one of three
+forms: form 1: crse room  -- associates all classes of the given course with
+the  final block and indicates that the examination will take place in the
+given room. form 2: crse class room -- associates only the indicated class.
+form 3: class room -- associates only the indicated stand-alone class. The
+block to which classes are associated can be named on the command line. If
+instead auto is specified, then a block is associated based upon the class's
+meeting time. ( See the discussion of the time file for information about
+how final exam blocks are created, and especially how to create blocks which
+can be assigned by class meeting time.) The resulting final examination
+associations can be viewed using the dfinals command.
+.TP
+.I roomchart [ date time data time ]
+Prints a roomchart specification file to the screen or to a file if redirected
+by a previous > command. With no arguments the user is prompted for the
+time period covered by the room chart. Otherwise the first pair of arguments
+gives the beginning of the time period and the second pair gives the end.
+To actually create a roomchart the specification file
+must be processed by one of the rendering programs defined in the src/render
+directory. For example, see the manual page for rch2txt for more information.
+.TP
+.I dtimes [ n ]
+Displays time slot list number n. If no argument is given dtimes
+lists the number and name of all time slots.
+.TP
+.I djobs [n]
+Displays information about job number n. If no argument is given djobs
+lists the number and name of all jobs.
+.TP
+.I drooms [n]
+Displays information about room number n. If no argument is given drooms
+lists the number and name of all rooms.
+.TP
+.I dpeople [n]
+Displays information about person number n. If no argument is given dpeople
+lists the number and name of all people.
+.TP
+.I dblocks
+Displays information about all currently defined final exam blocks. Final
+exam blocks are defined in the time file for a given semester.
+.TP
+.I dfinals [block]
+Displays the final examination schedule, or just the schedule for the
+named block if given. The final examination schedule is setup in the
+data/final.$SEM file. 
+
+.SH FILES 
+~/.schedulerc, data/xxx/time, data/xxx/jobs, data/xxx/people, data/xxx/rooms
+where xxx is the name of a semester. Lines in all data files are parsed
+into tokens by the same algorithm as the one used by the shell. 
+Thus, fields must be separated by whitespace, and
+fields containing whitespace must be contained within quotes. Shell variables
+are expanded at parse time exactly as at the shell prompt. Lines beginning
+with # are ignored. Shell metacharacters must be escaped if you wish to use
+them literally. 
+
+A more detailed description of each file follows. The example files 
+distributed with the program also contain many comment lines for clarification. 
+
+
+.TP 
+.I .schedulerc
+is sourced by the program's command shell at startup.
+
+.SH
+.I time
+The time data file is used to define meeting times for classes and other
+events. Each such event has associated with it a data structure which lists
+all the periods of time during the semster that the event takes place. For
+example, a class that meets 3 times a week would have associated with it
+a list of the dates and times throughout the semester when the class meets.
+Although most classes meet regularly at certain hours each week, the program
+provides the possibility of associating an arbitrary list of meeting times
+with a class.
+
+.PP
+Dates may be given in either mm/dd/yy or mm-dd-yy format. Years
+before 2000 can be abbreviated by giving only the last two digits. Times
+may be given as hh:mm:secs, hh:mm, or hh followed by am, pm as necessary.
+Since this is a single field, no whitespace should separate the time from
+the am, pm, etc. ( Only the first letter is significant -- it can be any of
+A, a, P, or p. Anything else is a syntax error.)
+Each data line must begin with one of the following keywords:
+
+.TP
+.I SemesterStart
+followed by a date string and a time string
+giving the instant that the current semester is assumed
+to start.
+.TP
+.I EndOfClasses 
+followed by a date string and time string giving
+the instant that classes end. 
+.TP
+.I EndOfSemester 
+followed by a date string and a time string
+giving the instant that the current semester is assumed to end.
+.TP
+.I PeriodicTimeSlot 
+followed by a string giving a name to a list of
+meeting times (e.g MWF8:30-9:25). The actual list of meeting
+times is generated by the program according to the 
+specification given on the rest of the line. Two methods for
+providing this specification are supported.
+.TP
+.B  METHOD 1:
+ List start-end pairs of date-string time-string pairs which give
+all the start and end times for meetings during the first week
+of the semester.
+.TP
+.B METHOD 2:
+List start-end pairs of time offsets
+from the SemestarStart instant. These offsets represent 
+numbers of seconds in the format used by the C-library's time()
+function. Either method will cause start-end pairs one week
+apart until EndOfClasses to be generated by the program. 
+.TP
+.I NonPeriodicTimeSlot 
+followed by a string giving a name to a list
+of meeting times. The rest of the line specifies the
+complete list of start end pairs which must be given in
+date-string time-string format. This will most often be used
+for one-time-only events such as final examinations. It is
+up to the user to ensure that these times actually fall within
+the current semester.
+.TP
+.I Holidays 
+followed by the string "Holidays". The rest of the line
+gives a list in the form Name Start End, where name is
+a string indentifying the holiday, and both Start and End
+are date-string time-string pairs specifying the start and end
+of the holiday. From the point this line occurs, any remaining
+PeriodicTimeSlot lines will automatically have any time
+slots which overlap with any holiday excluded. This does not
+apply to NonPeriodicTimeSlots, allowing the user to force
+certain events to meet on a holiday. 
+.TP
+.I FinalBlock
+defines a final examination block. The keyword FinalBlock must be followed
+followed by 3 fields. The first is a string giving a name to the 
+final examination block being defined. The second names the time slot
+which defines the meeting time for the final examinations for all classes 
+assigned to the block.
+(Normally, this time slot would have been created earlier in the time
+file with a NonPeriodicTimeSlot line.) The last field is the name of 
+a timeslot. Any class which has that timeslot as its meeting times can
+be associated automatically with the Final Block being defined by using
+the "finalblock auto" shell command. (See above.) If the last field is NA,
+classes must be assigned to the block by name.  
+.SH
+.I jobs
+This file is used to define the possible jobs that can be assigned to
+people in a given semester. It contains 1 line for each job. Lines have
+the form
+.TP
+name type start end load description
+.TP
+The name field should be a unique short mnemonic for the job which is used
+to reference that job in other files. You may provide a fuller description
+of the job in the description field. The type field lists the type(s) of 
+appointments that are qualified to do the job. These should match entries
+in the appt type field of the people file (see below.) More than one type
+can be specified by separating the types with the | character with no space
+between. The start and end fields give a range of time during which this
+job is available. Normally this would be the entire semester, in which case
+these fields can be given as NA. The load field gives the number of load
+units carried by the job. It only has meaning when compared with the load
+entries in the people file -- the program does not use any internal system
+of units to measure load. 
+
+.SH
+.I people
+This file is used to give information about all personel currently available
+to be assigned jobs. It contains 1 line per person. Lines have the form
+.TP
+shortname appt-type start end seniority load_fwd load_sem load_ay longname
+.TP
+
+The name field should be a unique short mnemonic for the person which is used
+to reference that person in other files and in some output situations where
+a long name would not be appropriate. The person's full name may be provided
+in the longname field. The appointment type may be used to group people into
+various classes ( e.g Professors, experienced TAs, inexperienced TAs, ...).
+When an assignment is made the program checks whether the assigned job is
+appropriate for the person by comparing the appt-type field with the
+corresponding field in the job description. The start and end fields give
+a range of time during which this person is available to be assigned. They
+may be given as NA if the person is available for the entire semester (which
+would normally be the case.) The load_sem field gives the number of load
+units which this person may be assigned in the given semester. The load_ay
+field is the corresponding figure for the current academic year ( Fall and
+Spring Semesters.) The load_fwd figure can be used in a Spring semester to
+record how much of the academic year load was actually used up the previous
+fall ( the program does not currently make any use of this field.) The
+program does not currently use the seniority field, so it may safely be left
+as 0.
+
+.SH 
+.I rooms
+This file is used to give information about all rooms currently available for
+classes or other schedule events. It contains 1 line per room. Lines have the
+form
+.TP
+Name Number Bldg Seats Exams Usage
+.TP
+The name field should be a unique short mnemonic for the room which is used
+to reference that room in other files. The number field lists the room number
+and the Bldg field lists the name of the building. The number of seats 
+available in the room for classes and for exams are given as the next two
+fields. A narrative description of the room and its purpose may be provided
+in the Usage field. 
+
+.SH SEE ALSO
+.I newsmstr(1), rch2txt(1).
+
+
+.SH AUTHOR
+.I Terry McConnell
+215 Carnegie
+Syracuse University
+Syracuse, NY 13244-1150
+trmcconn@syr.edu
+
+.SH BUGS
+Double quotes can be used for quoting but single quotes cannot.
+.PP
+Subshells should not share variables with their parents. 

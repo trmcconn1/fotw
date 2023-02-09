@@ -1,0 +1,362 @@
+
+; Library routines for monitor. We could just link to stdlib.o, but where's
+; the fun in that?  All routines assume the stack top has the return address
+; (32 bit) with arguments pushed in reverse order above it. All routines
+; save all registers used except for eax. Standard lib names are changed
+; in case we include c code that links to stdlib
+ 
+%include "macros.a"
+
+SEGMENT .text
+
+GLOBAL my_strlen,my_strcpy,my_strcmp,my_strncmp,_print_i,mygetenv,my_strstr
+EXTERN environment,envc
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; strlen (char *string) - return via eax the number of characters in the    ;
+;                         null terminated string. Address of the first char ;
+;                         of string has been pushed before the call         ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+my_strlen:
+
+	push ebx
+	push esi
+	mov esi,0    		; initialize count
+	mov ebx,[esp+12]         ; point at first char of string
+
+strlen_loop:                    ; entry point of loop to scan string
+
+	mov al,[ebx + esi]      ; Is the next byte of string
+	cmp al,0                ; equal to a zero byte (NULL)  ?
+	jz strlen_ret           ; yes it is, so exit scanning loop
+	inc esi                 ; no, so increment counter and
+	jmp strlen_loop         ; begin next loop iteration
+
+strlen_ret:                     ; label for begin return to caller 
+
+	mov eax,esi             ; return char count in eax
+	pop esi
+	pop ebx
+	ret
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  strcpy( char *dest, char *src )                                     ;
+;                                                                      ;
+;  Unlike the C std lib routine, this one returns the number of bytes  ;
+;  copied through eax                                                  ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+my_strcpy: 
+
+	push edx                ; save registers used
+	push ebx
+	push esi
+	mov esi,0    		; initialize count
+	mov edx,[esp+16]        ; point at first char of dest string
+	mov ebx,[esp+20]        ; point at first char of src string
+
+
+	cmp ebx,0
+	jz strcpy_ret           ; Null ptr to src string
+
+strcpy_loop:                    ; entry point of loop to scan string
+
+	mov al,[ebx + esi]      ; copy next byte of src 
+	mov [edx + esi],al      ; to dest. 
+	inc esi                 ; add 1 to count of bytes copied
+	cmp al,0                ; Is byte equal to a zero byte (NULL)  ?
+	jz strcpy_ret           ; yes it is, so exit scanning loop
+	jmp strcpy_loop         ; begin next loop iteration
+
+strcpy_ret:                     ; label for begin return to caller 
+
+	mov eax,esi               ; return char count in eax
+	pop esi
+	pop ebx
+	pop edx
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; strcmp (char *s, char *t) - return via eax 0 if s and t are identical,  ;
+;                             -1 if s < t and 1 if s > t                  ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+my_strcmp:
+
+	push ebx
+	push ecx
+	push esi
+	mov esi,0      		; initialize counter
+	mov ebx,[esp+16]        ; addr of first char of t --> ebx
+	mov ecx,[esp+20]        ; addr of first char of s --> ecx
+
+strcmp_loop:                    ; loop to scan strings
+
+	mov al,[ebx + esi]      ; How does the next byte of s
+	mov ah,[ecx + esi]      ; compare with the 
+	cmp ah,al               ; the next byte of t?
+	jb strcmp_below         ; s < t so jump to -1 return 
+	ja strcmp_above         ; s > t so jump to  1 return
+	cmp ah,0                ; Have we reached end of s (hence also t)?
+	je strcmp_equal         ; If so then s < t
+	inc esi                 ; increment counter and
+	jmp strcmp_loop         ; begin next loop iteration
+
+strcmp_below:
+	mov eax,0xFFFFFFFF      ; unsigned form of -1
+	jmp strcmp_ret
+
+strcmp_above:
+	mov eax,1
+	jmp strcmp_ret
+
+strcmp_equal:
+	mov eax,0
+
+strcmp_ret:                     ; label for begin return to caller 
+
+	pop esi                 ; restore registers used
+	pop ecx
+	pop ebx
+	ret
+	
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; strncmp (char *s, char *t, int n)                                       ;
+; return via eax 0 if first n chars of s and t are identical,             ;     ; -1 if s < t and 1 if s > t                                              ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+my_strncmp:
+
+	push ebx
+	push ecx
+	push edx
+	push esi
+	mov ecx,[esp+28]        ; initialize counter
+	mov edx,[esp+24]        ; addr of first char of t --> edx
+	mov ebx,[esp+20]        ; addr of first char of s --> ebx
+
+	xor esi,esi             ; zero out index
+
+strncmp_loop:                    ; loop to scan strings
+
+	cmp ecx,0               ; Have we checked all necessary chars ?
+	je strncmp_equal        ; if so then s = t
+
+	mov al,[ebx + esi]      ; How does the next byte of s
+	mov ah,[edx + esi]      ; compare with the 
+	cmp ah,al               ; the next byte of t?
+	jb strncmp_below        ; s < t so jump to -1 return 
+	ja strncmp_above        ; s > t so jump to  1 return
+	cmp ah,0                ; Have we reached end of s (hence also t)?
+	je strncmp_equal        ; If so then s = t
+	inc esi                 ; increment index 
+	dec ecx                 ; decrement counter
+	jmp strncmp_loop        ; begin next loop iteration
+
+strncmp_below:
+	mov eax,0xFFFFFFFF      ; unsigned form of -1
+	jmp strncmp_ret
+
+strncmp_above:
+	mov eax,1
+	jmp strncmp_ret
+
+strncmp_equal:
+	mov eax,0
+
+strncmp_ret:                    ; label for begin return to caller 
+
+	pop esi                 ; restore registers used
+	pop edx
+	pop ecx
+	pop ebx
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  char *mygetenv(char *): return pointer to bar when called with       ;
+;  pointer to foo and foo=bar is in the environment. Return null pointer;
+;  when foo is not defined in the environment                           ;
+;  Also return in esi the index of the found environment string         ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+mygetenv: 
+	mov ebp,esp       ; set up stack frame
+	push ebp
+
+	push ebx          ; preserve all registers used
+	push ecx
+	push edx
+	push edi
+
+	mov ecx,[envc]    ; load counter for search loop over environment
+	xor esi,esi       ; initialize index to dword pointer
+	mov ebx,[ebp + 4] ; load pointer to foo passed to us in ebx
+
+mygetenv_loop:
+
+	cmp ecx,0x00      ; have we searched the whole environment yet?
+	je mygetenv_nfd  ; jump to not found code if so
+
+	mov edx,[environment + esi] ; load pointer to current env string in edx
+
+; we need to find the byte offset of the "=" sign in the env string
+
+	xor edi,edi       ; zero out byte counter for search for = sign
+
+mygetenv_sch:             ; the = search loop start
+
+	mov al,[edx + edi]; fetch edi-th byte
+	cmp al,3DH        ; is it ascii code for = sign
+	je mygetenv_efnd  ; yes, so break out loop with found bit offset in edi 
+	inc edi           ; else increase bit offset and 
+	jmp mygetenv_sch  ; back to start of loop
+
+mygetenv_efnd:            ; we have found the = offset by edi
+
+	mov BYTE [edx + edi], 0x00 ; temporarily change = to null char	
+	push edx           ; pointer to before = part of current env string 
+	push ebx           ; pointer to foo string
+	call my_strcmp     ; call compare strings 
+	add esp,8          ; clean up from call
+	mov BYTE [edx + edi], 3DH  ; yes, I did remember to put = back!
+	cmp eax,0          ; did we find foo= in env?
+	je mygetenv_fnd    ; yes, so break out of main loop with found result
+	add esi,4          ; else increment env string pointer offset
+	dec ecx            ; decrement environment counter
+	jmp mygetenv_loop  ; and restart main search loop
+	
+mygetenv_fnd:              ; when found, return address of bar in eax
+	lea eax,[edx + edi +1]; store address of bar part in eax 
+        jmp mygetenv_rtr   ; and prepare to return
+
+mygetenv_nfd:
+	mov eax,0x00       ; return zero address when not found
+
+mygetenv_rtr:
+			   ; prepare to return: restore registers
+	pop edi
+	pop edx
+	pop ecx
+	pop ebx
+	pop ebp 
+
+	ret                ; result in eax
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  print_i( unsigned ) convert 32 bit to ascii string and print it   ;
+;  in decimal format                                                 ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
+SEGMENT .data
+my_buf: db '          ',0      ; leave room for up to 10 digits
+SEGMENT .text
+
+_print_i: 
+	
+	push ebp               ; set up stack frame
+	mov ebp,esp
+	push ebx
+	push ecx
+	push edx
+
+	mov ebx,9
+
+buffer_clear_loop:
+
+	mov BYTE [my_buf + ebx],0x20 
+	dec ebx
+	cmp ebx,0
+	je  buffer_clear_done
+	jmp buffer_clear_loop
+
+buffer_clear_done:
+	
+	mov ebx,9              ; set up bx for byte position
+        mov ecx,10             ; divisor for div by 10   	
+	mov eax, [ebp + 8]     ; load divisor into eax
+
+digit_loop:
+	
+	xor edx,edx            ; clear edx for remainder
+	div ecx                ; divide by 10
+	add dl,48              ; convert remainder in dl into digit
+	mov [my_buf + ebx],dl  ; copy digit into place
+	dec ebx                ; adjust byte position
+	cmp ebx,0
+	je convert_done 
+	cmp eax,0              ; see if anything left of binary number
+	jne digit_loop         ; back to start of loop if so 
+	
+
+convert_done:
+
+        PRINT_STRING my_buf
+
+	pop edx
+	pop ecx
+	pop ebx
+	pop ebp
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;    char *my_strstr(char *haystack,char *needle): return pointer of first;
+; occurrence of string needle in string haystack, or null if not found    ;
+; return haystack if needle is null                                       ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+my_strstr:
+
+	push ebp                ; set up a stack frame 
+	mov ebp,esp
+	push edi                ; save registers used
+	push ebx
+	push ecx
+	push edx
+
+	xor eax,eax             ; default return value is null
+	mov ebx,[ebp + 8]       ; store pointer to haystack in ebx 
+	mov edx,[ebp + 12]      ; store pointer to needle in edx
+	cmp ebx,0x00            ; if haystack is null return null since 
+	je my_strstr_ret        ; nothing can be found in a null haystack
+	mov eax,ebx             ; new default return value is haystack
+	cmp edx,0x00            ; if needle is null return haystack, since you
+	je my_strstr_ret        ; will find nothing if you look for nothing
+	
+	xor edi,edi             ; initialize loop index
+
+little_loop:                    ; this loops over needle
+	mov cl,[ebx+edi]        ; load next byte of haystack in cl
+	mov al,[edx+edi]        ; load next byte of needle in al
+	cmp al,0x00             ; if we have reached null at end of needle
+	je my_strstr_found      ; then needle has been found!
+	cmp cl,0x00             ; if we have reached null at end of haystack
+	je my_strstr_notfound   ; then needle has not been found
+	cmp al,cl               ; does needle char = haystack char?
+	jne big_loop            ; no, so move to next haystack char
+	inc edi                 ; yes, so move to next needle char
+	jmp little_loop
+big_loop:                       ; this loops over haystack
+	inc ebx                 ; move to next haystack char
+	xor edi,edi             ; and reset needle index
+	jmp little_loop	        ; restart loop over needle
+
+my_strstr_found:
+
+	mov eax,ebx             ; ebx points at character in haystack where
+	jmp my_strstr_ret       ; needle matched, so return this value in eax
+
+my_strstr_notfound:
+
+	xor eax,eax             ; needle not found, so return null pointer
+
+my_strstr_ret:
+
+	pop edx                 ; restore registers used
+	pop ecx
+	pop ebx
+	pop edi
+	pop ebp 
+	ret     ; Twizzle, Twazzle, Twuzzle, Twom. Time for this one to come
+	        ; home   -- Mr. Wizard

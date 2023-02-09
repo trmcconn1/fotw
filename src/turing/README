@@ -1,0 +1,120 @@
+				TURING 1.2
+		 by Terry R. McConnell (trmcconn@syr.edu)
+
+
+Introduction
+------------
+
+	Turing is a compiler and simulator for a Turing machine. It reads
+one or more machine description files written in a simple programming
+language and then runs the resulting machine, reporting on the contents of
+the tape each cycle. There are options to compile only, and to run the
+machine at slower than full speed. The compiler is one pass, but supports
+macros with arguments, some conditional expressions, and a few other
+programming niceties. These greatly simplify the labor in specifying all
+the quadruples in a machine that does something nontrivial.  
+
+	There are many sources of information about Turing machines. See,
+e.g., Marvin Minsky, Computation: Finite and Infinite Machines, Prentice
+Hall, 1967. For details on the machine description language, see man.txt.
+Turing machines are named after mathematician Alan M. Turing.
+
+	Please note that this is a non-graphic simulator. The output is
+suitable for any terminal emulator, i.e., it is plain text. It would be
+straightforward to adapt this code for a backend to a more sophisticated screen
+rendering, perhaps of a stylized machine with moving tape head, etc.  
+
+
+Contents
+--------
+
+	1. Makefile
+			Unix style makefile for the package
+
+	2. demo.t
+	   tb.t
+           tt.t
+			A simple demonstration turing program (demo.t) with
+			affiliated include files (tb.t and tt.t.)
+
+	3. global.h
+			Header included by all source files.
+	
+	4. stack.h
+			Header for stack implementation in stack.c
+
+	5. stack.c     
+			Implementation of a FIFO stack of generic pointers.
+
+	6. qsort.c
+			Implementations of quicksort algorithm and binary
+                        search.
+
+	7. macro.h	
+			Header for macro code (macro.c)
+
+	8. macro.c
+			Support for macro management and expansion.
+
+	9. parse.y
+			Yacc source for compiler parser.
+
+	10. lex.l
+			Lex source for compiler scanner.
+
+	11. turing.c
+			Main program source.
+
+	12.man.txt
+			Unix style manual page in text format.
+
+	13.tsrc
+			Directory for assorted Turing programs. 
+
+
+Building
+--------
+
+	Simply edit the Makefile and type make all. If all goes well, there 
+        will be an executable called turing.
+
+Installation
+------------
+
+	Copy the executable (turing) and documentation (this README and the
+        file man.txt) to some convenient place. Copy the library (tsrc) to
+        some convenient place if you intend to use it. 
+
+Using
+------------
+
+	First skim through the manual page, man.txt. Then view the demo
+	by giving the command
+
+		turing -d 1 demo.t
+
+	This puts my first name on the tape, copies it to the left of itself
+	and halts with both copies left on the tape.
+	The -d 1 will cause the machine defined by the instructions to
+        run in steps of one second duration, so that the operation of the
+	machine can be monitored by a human.
+
+	Turing programs don't have to be named with a .t extension, but all
+        the ones distributed with this package adhere to that convention.
+
+	I've started a small library of example programs and building blocks
+        in the tsrc directory. Please consult the README in that directory
+        for what is there currently.
+
+	You can use this code for any purpose you want. I would appreciate
+	getting some credit if you do find something useful.
+
+Author
+---------
+
+	Terry R. McConnell
+	2458 Swift Rd.
+	Lafayette, NY 13084
+	trmcconn@syr.edu
+	http://barnyard.syr.edu
+	

@@ -1,0 +1,19 @@
+0.1 -> 0.2
+
+* Fixed Failure to update previous line buffer when user entered a line number
+at command mode. Now it is initialized to contents of current line.
+
+0.2 -> 0.3
+
+* Now compiles clean on both Linux and Freebsd
+* Ported to Freebsd (Needed new _HARDCH makefile define. See last section of
+  readme.)
+* Now restores terminal settings on exit 
+* Added extensive background discussions on terminals to the README
+* Corrections to man page
+* Corrections to key maps and added one for FreeBsd
+* Added a wrapper script for FreeBsd
+* Corrected display of Tab character when previous line is recalled
+* Numerous other bug fixes
+
+

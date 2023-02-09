@@ -1,0 +1,13 @@
+Ideas for future versions
+
+- Implement Save command that would save a scriptfile containing all commands
+  needed to recreate the current environment (useful when the user debugs
+  a new script, e.g.)
+
+- Port to Masm syntax and 16 bit format and Dos/windows platforms
+
+- Implement a boot monitor version (16 bit standalone, relocatable format,
+save command that saves to an offset on the disk, system calls replaced by
+BIOS calls, external commands that boot a partition and give partition info.) 
+This would need to have special boot sector code to find and boot it. It would
+be similar to Minix 2 monitor. Indeed, monitor is inspired by that one.

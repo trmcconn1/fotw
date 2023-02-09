@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{epsfig}
+\begin{document}
+\centerline{Solution of Kepler's equation, $ 0 < e < 1$}
+
+\vskip .2 in
+Let $f(x) = x - e\sin(x)$, i.e, Kepler's equation becomes $f(x) = M$. Since
+$M$ is an angle we may assume $M \in [0,2\pi).$ Moreover, we may assume
+$M \in [0,\pi].$ Else, if $x$ satisfies $f(x) = 2\pi - M$, then
+using $\sin(x) = -\sin(2\pi -x)$,
+$$
+f(2\pi -x) = 2\pi - x - e\sin(2\pi -x) = 2\pi - f(x) = M.
+$$
+Since $f^{\prime}(x) = 1 - e\cos(x) > 0$, $f(x)$ is strictly increasing,
+continuous, $f(0) = 0, f(\pi) = \pi$, so a unique solution exists by the
+Intermediate Value Theorem.
+
+\vskip .1 in
+% first diagram here
+\epsfig{file=fig1.eps,height=4in,width=2in,angle=270}
+
+\vskip .2 in
+Method 1: Simple iteration.
+\vskip .1 in
+Let $E_0 = M, \dots, E_n = g(E_{n-1}),$ where $g(x) = M + e\sin(x).$ Then
+$$
+|g^{\prime}(x)| = |e\cos(x)| \le e < 1,
+$$
+so $g$ is a contraction and has a unique fixed point $E$. Moreover, the
+$E_n$ converge to $E$, which is the solution of Kepler's equation.
+\vskip .2 in
+Method 2: Newton's method.
+We may apply Newton's method to find a root of $f(x) - M  = 0.$ This
+gives $E_0 = M$,
+$$
+E_n = E_{n-1} + \frac{M - f(E_{n-1})}{f^{\prime}(E_{n-1})}
+=  E_{n-1} + \frac{M + e\sin(E_{n-1}) - E_{n-1}}{1 - e\cos(E_{n-1})}.
+$$
+\vskip .2 in
+Method 3: Binary search
+\vskip .1 in
+$M - f(x)$ is strictly decreasing with a unique zero. Define a sequence
+$I_n$ of closed intervals whose intersection contains the root as follows:
+$I_0 = [0,\pi]\dots I_n = $ the right half of $I_{n-1}$ if $f(\text{midpoint})
+> 0.$ Otherwise, take $I_n$ to be the left half of $I_{n-1}.$
+\vskip .1 in
+\epsfig{file=fig2.eps,height=4in,width=2in,angle=270}
+\vskip .2 in
+Method 4: Series expansion in powers of $e$.
+\vskip .1 in
+The series
+$$
+ E = M + \sum_{n=1}^{\infty} A_n e^n,
+$$
+where
+$$
+A_n = \frac1{2^{n-1}n!} \sum_{k=0}^{[\frac{n}2]} (-1)^k \binom nk
+(n-2k)^{n-1} \sin((n-2k)M),
+$$
+converges for $ e < .662743\dots.$
+\vskip .2 in
+Method 5: Fourier expansion
+\vskip .1 in
+$E - M = e\sin(E)$ is an odd, continuous, $2\pi$ periodic function of $M$,
+hence can be expanded in a Fourier sine series:
+$$
+	E = M + 2\sum_{n=1}^{\infty} A_n \sin(nM),
+$$
+where 
+$$
+A_n = \frac1{\pi} \int_0^{\pi} e\sin(E)\sin(n\theta)\,d\theta.
+$$
+Integrating by parts, we have for $A_n$
+$$
+\frac1{n\pi}\int_0^{\pi}\cos(n\theta)d(e\sin(E)) 
+=
+\frac1{n\pi}\int_0^{\pi}\cos(n\theta)d(E - \theta).
+$$
+The $d\theta$ term vanishes, and making the the substitution
+$\theta = E - e\sin(E),$ we have
+$$
+\frac1{n\pi}\int_0^{\pi}\cos(nE - ne\sin(E))d(E) = \frac{J_n(ne)}{n},
+$$
+where
+$$
+J_n(x) = \frac1{\pi}\int_0^{\pi}\cos(n\theta - x\sin(\theta))d\theta 
+$$
+is the {\it Bessel function of the first kind.} In summary, we have
+the expansion
+$$
+E = M + 2\sum_{n=1}^{\infty} J_n(ne)\frac{\sin(nM)}{n}.
+$$
+\end{document} 
+\bye

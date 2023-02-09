@@ -1,0 +1,62 @@
+.TH MKMATRIX 1  "February 9, 1997" "FOO" "VERY LOCAL USER COMMANDS"
+.SH NAME
+mkmatrix \- Analyze frequencies of letters and strings in a dictionary
+.SH SYNOPSIS
+.B mkmatrix 
+[ \-d path ] [ \-depth n ] [ \-dir path ] [ \-li ] [ \-help ]
+.SH DESCRIPTION
+.I mkmatrix
+analyzes the frequencies of occurence of single characters, pairs of
+characters, etc., up to strings of length (depth + 1) in a text file. 
+The default text file is /usr/dict/words. The program then writes the
+C source files and header files necessary to build the
+.I monkey
+random text generation program. These source files create a tree structured
+data structure which gives the relative frequencies and conditional relative
+frequencies of occurence of each letter in the dictionary, given each 
+sequence of preceeding characters. The files, matrix*.c, must be compiled
+and linked with the monkey program. In addition, the monkey program must
+include the header build.h created by
+.I mkmatrix. 
+Newlines in the dictionary are converted into the space character. It is
+unlikely that this program will actually need to be run by a user. It is
+designed to be run from the makefile of the
+.I monkey
+program.
+.LP
+.SH OPTIONS
+.sp 1
+.TP 0.5i
+.B \-d depth
+Set the internal depth parameter, whose significance is described above.
+Specifying a depth value greater than 4 is quite impractical.
+.TP 0.5i
+.B \-d path
+Gives the path to a file to use in place of /usr/dict/words.
+.TP 0.5i
+.B \-dir path
+Gives the path to a directory in which mkmatrix will write its output files.
+The default is a subdirectory of the working directory called matrix.
+.TP 0.5i
+.B \-i
+Treat all characters in the dictionary as lower case.
+.TP 0.5i
+.B \-l
+Ignore all characters in the dictionary except for letters of the alphabet
+and spaces.
+.TP
+Options \-i and \-l may be combined, but must follow any other options
+present.
+
+.SH "FILES"
+.TP
+/usr/dict/words
+
+.SH "SEE ALSO"
+.PD 0
+.TP 2.0i
+monkey(1).
+.PD
+.SH BUGS
+.SH AUTHOR
+Terry McConnell, trmcconn@syr.edu

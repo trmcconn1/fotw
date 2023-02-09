@@ -1,0 +1,26 @@
+1.0 -> 1.1:
+
+	- Implemented external save command 
+	- Command line processing and -e option
+
+1.1 -> 1.2:
+
+	- Fixed bug in set command. Did not properly remove a string
+          that was set previously
+
+	- added code to store arguments to monitor as env vars $0, $1, ...
+          at startup 
+
+	- allow scripts to access their argv as $0, $1, ...
+
+	- cleaner exit from monitor that allows for return value
+          from exit command. (we used to exit via linux system call) 
+
+	- fixed bug in if processing: didn't properly clean stack after
+          call to library routine
+
+	- implemented new "exec" internal command to allow for shell out
+
+	- implemented new "cd" internal command to change monitor's wd
+
+	- upgraded the 16 bit dos version accordingly.

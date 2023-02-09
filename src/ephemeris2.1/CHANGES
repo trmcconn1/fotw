@@ -1,0 +1,7 @@
+2.0 -> 2.1
+
+Replaced monitor 1.2 code with monitor 1.3. The latter is a port of 1.2 from
+nasm assembly language ported to C. This makes ephemeris much more portable,
+allowing it to be built, e.g., on 64 bit machines.
+
+

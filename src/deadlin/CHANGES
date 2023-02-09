@@ -1,0 +1,4 @@
+0.1 -> 0.2
+
+* Fixed Failure to update previous line buffer when user entered a line number
+at command mode. Now it is initialized to contents of current line.

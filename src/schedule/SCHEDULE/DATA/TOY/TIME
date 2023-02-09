@@ -1,0 +1,142 @@
+###############################################################################
+#            time.f97: Fall 96 Academic Calendar Information                  #
+###############################################################################
+# This file contains information about the academic calendar for this         #
+# semester (copy and change as needed)                                        #
+###############################################################################
+#
+# Lines beginning with # are comments
+# Lines may be continued to another line by making the last character on the
+# line a \
+# Individual fields must not contain whitespace (spaces, tabs or newlines)
+#
+# The Date and Time of the first day of classes. 0:00 denotes midnight
+SemesterStart  8/26/96  0:00
+EndOfClasses    12/6/96 5:00pm
+EndOfSemester   12/17/96 9:00pm
+
+
+
+
+# Time Slot Definitions (Two formats are supported)
+# Time Slots may be periodic are non periodic. For periodic slots you list
+# start-finish times for each meeting the first week, and then it is assumed
+# that the times will repeat each subsequent week. You list just the first
+# week meetings and the computer generates the rest. Two formats for
+# describing the first week meetings are supported.
+#
+# First Format: List date-time pairs
+#Example:
+#                 Name   description  start1       end1         start2 
+#PeriodicTimeSlot foo    bar        8/31/96 8:30 8/31/96 9:25 9/2/96 8:30 9/2/96 9:25 #9/4/96 8:30 9/4/96 9:25
+
+# The disadvantage of this format is that it must be adapted to each semester
+
+# Holidays is a special Time slot list which complies with the first format
+# except that a name must be given before each date time pair and there is
+# no name or description field
+# The fields should both read "Holidays"
+# Holidays must be declared before any other time slot lists
+
+Holidays Labor_Day 9/2/96 0:00 9/3/96 0:00 Yom_Kippur 9/23/96 0:00 \
+9/24/96  0:00 Autumn_Break 10/11/96 0:00 10/14/96 0:00 Thanksgiving \
+11/27/96 0:00 12/2/96 0:00
+
+# The point of the Holidays list is that these get removed from time slot
+# lists which are created automatically by the program. Non periodic lists
+# on the other hand do not have members removed if they fall on Holidays --
+# it is up to you to ensure that. This is actually a feature :-)
+# in that it allows you to force a slot list to include a holiday.
+
+# Second Format for specifying periodic time slots. List pairs of offsets
+# in seconds since semester start for the beginning and end of each class
+# during the first week. The offsets for the standard class meeting times
+# are listed in the file "offsets" in the directory above this one. These
+# can be left alone from semester to semester, but can only be used as is in a
+# semester that starts on a Sunday at midnight.
+
+#             "Standard" Meeting Times
+
+PeriodicTimeSlot mwf8 "MWF 8:30-9:25 "  30600 33900 203400 206700 376200 379500
+PeriodicTimeSlot mwf9 "MWF 9:35-10:30 " 34500 37800 207300 210600 380100 383400
+PeriodicTimeSlot mwf10 "MWF 10:40-11:35 " 38400 41700 211200 214500 384000 387300
+PeriodicTimeSlot mwf11 "MWF 11:45-12:40 " 42300 45600 215100 218400 387900 391200
+PeriodicTimeSlot mwf12 "MWF 12:50-1:45 " 46200 49500 219000 222300 391800 395100
+PeriodicTimeSlot mwf1 "MWF 1:55-2:50 " 50100 53400 222900 226200 395700 399000
+PeriodicTimeSlot mwf3 "MWF 3:00-3:55 " 54000 57300 226800 230100 399600 402900
+PeriodicTimeSlot mwf4 "MWF 4:05-5:20 " 57900 62400 230700 235200 403500 408000
+PeriodicTimeSlot mw5 "MW 5:30-6:50 " 63000 67800 235800 240600
+PeriodicTimeSlot mw3 "MW 3:00-4:20 "  54000  58800  226800  231600
+PeriodicTimeSlot mw4 "MW 4:30-5:50 "  59400 64200 232200 237000
+PeriodicTimeSlot mw7 "MW 7:00-8:20 "  68400 73200  241200 246000
+PeriodicTimeSlot tth8 "TTH 8:30-9:50 " 117000 121800 289800 294600
+PeriodicTimeSlot tth10 "TTH 10:00-11:20 " 122400 127200 295200 300000
+PeriodicTimeSlot tth11 "TTH 11:30-12:50 " 127800 132600 300600 305400
+PeriodicTimeSlot tth1 "TTH 1:00-2:20 " 133200 138000 306000 310800
+PeriodicTimeSlot tth2 "TTH 2:30-3:50 " 138600 143400 311400 316200
+PeriodicTimeSlot tth4 "TTH 4:00-5:20 " 144000 148800 316800 321600
+PeriodicTimeSlot tth5 "TTH 5:30-6:50 " 149400 154200 322200 327000
+#
+# Recitation Times
+#
+PeriodicTimeSlot m8 "M 8:30-9:25" 30600 33900
+PeriodicTimeSlot w8 "W 8:30-9:25" 238400 206700
+PeriodicTimeSlot f8 "F 8:30-9:25" 376200 379500
+PeriodicTimeSlot m9 "M 9:35-10:30" 34500 37800
+PeriodicTimeSlot w9 "W 9:35-10:30" 207300 210600
+PeriodicTimeSlot f9 "F 9:35-10:30" 380100 383400
+PeriodicTimeSlot m10 "M 10:40-11:35" 38400 41700
+PeriodicTimeSlot w10 "W 10:40-11:35" 211200 214500
+PeriodicTimeSlot f10 "F 10:40-11:35" 384000 387300
+PeriodicTimeSlot m11 "M 11:45-12:40" 42300 45600
+PeriodicTimeSlot w11 "W 11:45-12:40" 215100 218400
+PeriodicTimeSlot f11 "F 11:45-12:40" 387900 391200
+PeriodicTimeSlot m12 "M 12:50-1:45" 46200 49500
+PeriodicTimeSlot w12 "W 12:50-1:45" 219000 222300
+PeriodicTimeSlot f12 "F 12:50-1:45" 391800 395100
+PeriodicTimeSlot m1 "M 1:55-2:50" 50100 53400
+PeriodicTimeSlot w1 "W 1:55-2:50" 222900 226200
+PeriodicTimeSlot f1 "F 1:55-2:50" 395700 399000
+PeriodicTimeSlot m3 "M 3:00-3:55" 54000 57300
+PeriodicTimeSlot w3 "W 3:00-3:55" 226800 230100
+PeriodicTimeSlot f3 "F 3:00-3:55" 399600 402900
+PeriodicTimeSlot m4 "M 4:05-5:20"  57900 62400 
+PeriodicTimeSlot w4 "W 4:05-5:20" 230700 235200
+PeriodicTimeSlot f4 "F 4:05-5:20" 403500 408000
+PeriodicTimeSlot t8 "T 8:30-9:50" 117000 121800
+PeriodicTimeSlot th8 "TH 8:30-9:50" 289800 294600
+PeriodicTimeSlot t10 "T 10:00-11:20" 122400 127200
+PeriodicTimeSlot th10 "TH 10:00-11:20" 295200 300000
+PeriodicTimeSlot t11 "T 11:30-12:50" 127800 132600
+PeriodicTimeSlot th11 "TH 11:30-12:50" 300600 305400
+PeriodicTimeSlot t1 "T 1:00-2:20" 133200 138000
+PeriodicTimeSlot th1 "TH 1:00-2:20" 306000 310800
+PeriodicTimeSlot t2 "T 2:30-3:50" 138600 143400
+PeriodicTimeSlot th2 "TH 2:30-3:50" 311400 316200
+PeriodicTimeSlot t4 "T 4:00-5:20" 144000 148800
+PeriodicTimeSlot th4 "TH 4:00-5:20" 316800 321600 
+
+
+
+# Non-periodic time slots must list all start-end pairs.
+# These are for things that meet once, e.g final exam times
+NonPeriodicTimeSlot fp1 "12/20 2:30-4:30"  12/20/96 2:30pm 12/20/96 4:30pm
+NonPeriodicTimeSlot fp2 "12/20 5:00-7:00"  12/20/96 5:00pm 12/20/96 7:00pm
+NonPeriodicTimeSlot fp3 "12/20 7:00-9:00" 12/20/96 7:00pm 12/20/96 9:00pm
+NonPeriodicTimeSlot fp4 "12/15 9:00-11:00" 12/15/96 9:00 12/15/96 11:00
+
+
+# Definitions of final exam blocks. These should be given below all of the
+# time slot definitions since they refer to earlier defined time slots.
+# Syntax:
+# FinalBlock  name  timeslot  class_mtg_time
+# A class_mtg_time of NA means that classes will be assigned to this block
+# by name rather than by class meeting time.
+
+# Assigned by name
+FinalBlock 19a fp1 NA
+FinalBlock 19b fp2 NA
+FinalBlock 19c fp3 NA
+
+# Assigned by class meeting time
+FinalBlock 4 fp4 mwf10

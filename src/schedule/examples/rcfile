@@ -1,0 +1,48 @@
+###############################################################################
+# Scheduling Program: Example Configuration File                              #
+# DOS Version                                                                 #
+# This file should be copied to a directory on the  path , named              #
+# schedule.rc, and customized.                                                #
+# It is read by the command shell when the schedule program is started        #
+###############################################################################
+
+# Lines beginning with # are comments
+# Lines may be continued by putting \ as the last character.
+
+# Working directory: the program will cd to here when it starts unless
+# over-ridden from the command line. This directory should contain a
+# sub-directory named data with sub-directories containing the data for
+# each semester.
+
+set CWD  C:\src\schedule
+set MSDOS ON
+# Semester: Should be the same as the name of subdirectory of data containing
+# data for this semester. Files in that subdirectory should end with this
+# extension, so for compatibility with DOS it should be 3 letters. This
+# can be overridden on the command line and reset from within the user
+# interface.
+
+# Keep this set to the current semester -- program starts up with this as
+# the current semester
+
+set SEM  f97
+set SHELL C:command.com
+set EDITOR D:\WINDOWS\COMMAND\EDIT.COM
+set TEMPDIR J:\\
+# This uses Ansi escape sequences to give me a maroon prompt. May not work
+# on other terminals
+set PROMPT [35mshell>[37m
+
+# Printer Initialization String. This puts the printer in landscape mode with
+# CR -> CR + LF translation and 16.67 cpi font 
+# For the HP 500 using Courier 10 pt.
+# (The escape character is created by hitting <CTL><SHIFT>P
+# followed by the escape key in DOS Edit.)
+set LANDSCAPE "&k2G&l1O(10U(s0p16.67h10V"
+#
+# PrinterNormalString. Sets the printer to print text in portrait mode.
+# The following just enables CR -> CR+LF translation:
+set NORMALPRINTER "&k2G"
+#
+
+end ECHO ON

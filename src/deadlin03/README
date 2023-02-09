@@ -1,0 +1,289 @@
+                 Deadlin 0.03 C Source Code  README FILE
+
+Deadlin is a clone of the MS-DOS program, edlin, which is intended to
+build and run on Unix systems. This file provides background and general
+information in the form of an FAQ.
+
+Contents.
+
+1. What is edlin ?
+2. Why deadlin ?
+3. What are differences between deadlin and the real edlin?
+4. Why is deadlin so large?
+5. How can I maximize my "edlin experience"?
+6. If this is software preservation, how come no actual copies of edlin.com
+   are included? 
+7. Can I build this under MS-DOS?
+8. What else is provided with this file ?
+9. How can I build and install deadlin ?
+10.The Unix Terminal
+
+--------------------------------------------------------------------------
+
+1. What is edlin ?
+
+Edlin, more precisely edlin.com, was the text editor bundled with MS-DOS
+prior to version 5.0. From version 5.0 to version 6.0 edlin was bundled as
+part of the \dos directory, but was effectively made obsolete by the newer
+full screen editor known as "edit". From version 6.0 onward edlin was not 
+part of the official distribution at all. Windows 95 actually expunges it 
+(if found,) probably  because edlin is incompatible with the new file system. 
+(Edlin was available to DOS 6.0 users on a supplemental disk. It is available
+in Windows 95 on the CDROM in the OldDos directory.)
+
+Edlin is a small program (7261 Bytes), and is, to put it gently, lightly 
+featured. It allows the user to create, edit, and save text files, and may
+also be used to edit binary files. It is a pure line editor, allowing 
+manipulation of ranges of lines, direct entry of new lines, or editing of
+an existing line.   Edlin operates in two main modes:   command mode and 
+input mode. In command mode its behaviour is quite similar to the Unix line 
+editor ( ed(1) ). In input mode the user may enter and edit a line using the
+standard DOS command-line editing keys. ( This greatly simplifies the program:
+it needs only to request an input line and the DOS CON driver handles the
+rest. In Unix the program must emulate the required portion of the CON driver's
+behaviour. ) The editing capability that is provided, mainly through the
+PC keyboard function keys, is complete but counter-intuitive  (some would say,
+bizzare.)   
+
+2. Why deadlin ?
+
+OK, after that lukewarm introduction you should ask, "Why would anyone want
+to write an edlin clone?"  For an amateur programmer it is an excellent
+exercise. In programming there are two first steps: (1) define what the program
+is supposed to do, and (2) design and create code to implement the usage defined
+in (1). I'm willing to bet most programmers would rather spend their time
+doing (2) than (1). With edlin the definition is already specified in perfect 
+detail: mimic its behaviour as much as possible. Thus, the student
+is free to focus on the important things, such as designing good data 
+structures, writing compact, efficient, clear code, and isolating system
+dependant from portable code. 
+
+Secondly, like it or not, edlin is a milestone in the history of 
+micro-computing. For many years it was the only way users of stock MS-DOS
+could create and maintain text files. I had this vision of the not-too-distant
+future -- when the last 386 DX had vanished from garage sales, the last
+pre 4.0 DOS partition been erased, and the last 5 1/4 inch floppy 
+lost its magnetization in a dusty drawer -- that edlin.com might pass utterly
+from this earth... and I was saddened.  So you could consider this my one
+contribution to SOFTWARE PRESERVATION. 
+
+Finally, edlin is actually a good tool for certain tasks such as creating
+long lists of lines that only differ from each other in a few characters.
+
+3. What are differences between deadlin and the real edlin?
+
+The main differences are (consult the included man page for details) :
+
+3a. A few things are done the Unix way. 
+
+	-^D instead of ^Z for end of file.
+	-Use of printer spool system for ^P.
+	-Use of hyphens to begin command-line options.
+	-The working directory returns to its original value
+         after the program exits.
+	-Control characters are echoed with ^ before the letter 
+         rather than after as in DOS. They are printed correctly.
+	-The maximum number of characters on a line (including the
+         newline ) is 254, not 253. (254 + newline + terminating null
+         = 256, a good buffer size.) DOS lines are terminated by
+         two characters -- A CR and LF.
+
+3b. There are two  new command-line options: -m <bytes>, which allows deadlin to
+immitate the limited memory environment of early DOS releases; and -t <n>
+which informs the program when tab stops are set at intervals of n columns
+rather than the default 8 columns. Note that this option does not actually
+set tabs. That must be done with an external program, e.g. tset.
+
+3c. Use of control keys instead of function keys.  Many Unix systems don't
+even have function keys, but all terminals in recorded history can generate
+the 32 control characters. ( If you do have function keys, consult section
+5 below for how you can configure deadlin to use them instead of control
+characters. )
+
+3d. The Alt key (or, more precisely, its control character equivalent) can
+be used in conjunction with the numeric keypad to enter extended ascii
+characters. Unlike edlin, the ordinary number keys can also be used.
+Moreover, it is impossible in Unix to emulate the DOS behaviour exactly,
+since it is impossible to test whether a given key has been released. (Dos
+translates extended characters only when the user releases the Alt key.)
+
+3e. We don't implement the DOS critical error handler that prints Abort, Retry,
+Fail? and waits for user input. This has no place in Unix since user processes
+are unable to take any meaningful action in case a device is not ready.
+
+3f. It is possible to include embedded newlines in lines but impossible
+to search for them in the real edlin. Attempting to include either ^M or
+^J in a search or replace string by using ^VM or ^VJ instead terminates
+the command. We have chosen not to emulate this (incorrect) behavior. 
+
+3g. I'm not sure how deadlin would handle the (rare) situation of
+insufficient disk space to write the full edited file. You might end up with
+only a fragment with extension $$$, or you might end up with a full .bak
+file and a fragment with extension $$$. Or, you might end up with nothing :-(.
+
+4. Why is deadlin so large?
+
+	The real edlin was probably written in 8086 assembly language.
+Assembly language programs can be made much smaller than programs written in
+C . Moreover, a considerable amount of extra code is needed to emulate
+the DOS CON driver ( this code comprises the file readline.c ) 
+Finally, (and it hurts me to say this,) the programmers who wrote the
+original edlin were professionals, and much better programmers
+than I am. 
+
+
+5. How can I maximize my "edlin experience"?
+
+	If your computer has 7 or more function keys, you can set up deadlin
+to use them by following these outline steps (details vary by system):
+
+a. Change your kernel's keymap. This is normally done by creating a special
+file called a keymap file, which may either be flat text or a binary. 
+Whatever the details are on your system, you create a file called (say)
+edlin.map which contains lines specifying how keys map to 
+characters. You should create such a file which maps the function keys to
+the various control characters deadlin uses in place of them. (See the
+man page for details. Also see the README in the keymaps directory.) 
+Then you can use whatever command your system provides
+to load the new keymap into the kernel, e.g, in Minix,
+
+Minix> loadkeys /etc/keymaps/edlin.map
+
+b. Write a shell-script wrapper (called, e.g. edlin.sh) which could
+be used to launch deadlin after loading the new keymap. For example,
+
+------------------------ edlin.sh -----------------------------------
+#!/bin/sh
+# 
+# For Minix : adapt this to your system
+
+# Load custom keymap for deadlin
+loadkeys /usr/lib/keymaps/edlin.map 
+
+# Execute deadlin with the arguments passed to this script
+/usr/local/bin/deadlin $*
+
+# Reload the standard keymap
+loadkeys /usr/lib/keymaps/us-std.map 
+
+#
+exit 0
+-------------------------------------------------------------------
+
+c. Make a link from /usr/local/bin/edlin to edlin.sh
+
+Some working keymaps for various systems are provided in the 
+directory keymaps. There is also an edlin.sh for Linux.
+
+
+6. If this is software preservation, how come no actual copies of edlin.com
+   are included? 
+
+	I'm not sure about the legality of that. 
+
+7. Can I build this under MS-DOS?
+
+	Yes, but what's the point?
+
+8. What else is provided with this file ?
+
+	This directory contains a standard Unix Makefile, the source code
+files for deadlin, a document called INSTALL, a Unix-style manual page for
+edlin, and a directory called keymaps for any contributed custom edlin
+keymaps.
+
+9. How can I build and install deadlin ?
+
+	Consult the file called INSTALL.
+
+10. The Unix Terminal
+
+	Edlin under MSDOS is a very small program, due, in part, to the fact
+that all intra-line editing is handled by the DOS terminal driver rather than
+by edlin. Since edlin is line-based, it would be natural to set the Unix 
+terminal to canonical mode. Unfortunately, edlin would then not get a crack
+at managing a line of data until the user presses the enter key on the keyboard
+and it would be impossible to emulate the DOS behavior accurately. Thus, edlin
+must set the terminal to cbreak (-icanon) mode. 
+
+	The unix terminal is actually two devices rolled into one: part of the
+driver manages keyboard input and satisfies read requests from user programs,
+and the other part manages the screen display (assuming a modern setup here) 
+and satisfies write requests from user programs. Depending on how the driver
+is set to operate (using, e.g. the termios or sggty api interface) both ends
+of this transaction are subject to processing by the driver. Thus, what you
+type at the keyboard is not necessarily what is received by a program reading
+what you type, or necessarily what you will see on the screen. 
+
+	The user attempting to understand the effect of terminal settings by
+reading the man pages and experimenting at the command line will likely end up
+confused and frustrated. The problem is most likely the user's shell program,
+which stands between her and the terminal, and which can do anything it
+likes to input from and output to the terminal. The same goes for any other
+program that reads/writes the terminal.
+
+	One way to eliminate the middleman (to a large degree) is to invoke the
+telnet program, which doesn't seem to do very much input processing. On a 
+freshly opened terminal try 
+
+$ stty echoctl
+$ telnet
+
+If you now type control-x you should see ^X appear on the screen. The echoctl
+terminal setting causes the driver to put a "visual representation" of the 
+control character on the screen. If you now do the same thing after first
+typing stty -echoctl you'll probably just see a funny-looking symbol in place of
+the ^X. 
+
+If you type control-h under either of the above settings you should observe 
+that the terminal performs a backspace operation - the cursor is moved back
+one space and the previous character (assuming you had typed one) disappears.
+Historically the ^H character (ascii code 0x08) was used to backspace a
+mechanical terminal, and in honor of this many modern programs emulate this
+behavior when ^H is entered. The behavior you see here is not due to any 
+intervening program such as telnet, however. What you see is the terminal 
+driver itself in action. In canonical mode, under either echoctl or -echoctl,
+typing ^H will result in a backspace operation.    
+
+Well, not necessarily. This assumes that ^H is also set to be an ERASE 
+character. Do stty -a to see all of the terminal settings in force, and 
+in particular all of the special control characters. You may see, e.g., 
+erase = ^?; erase2 = ^h; (This is what I see on the freebsd terminal I'm using
+right now.) This means that typing either ^h or ^? (often generated by the
+backspace key) will cause an erase operation to be done on the screen and the
+last ordinary character entered at the keyboard since the last strike of the
+enter key to be removed from the input buffer. (Try, e.g., stty erase2 e, and
+you will find that typing the letter e now causes a backspace!).
+
+Well, not necessarily. The last paragraph assumes the echoe setting is in force.Under -echoe and echoctl you will see a visual representation on the screen
+when you type ^H and no backspace operation is performed. 
+
+When edlin starts up it sets the terminal into -icanon and echoctl mode. All
+of the above discussion, especially that involving ^H - a particularly 
+important character for edlin - assumes the terminal is in canonical mode.
+
+In non-canonical mode each character is used to satisfy a read request as soon
+as it is typed, and the backspace operation doesn't really make any sense
+anymore: there is no way for the terminal to get back the previous character 
+it sent to a user program in order to remove it. Nevertheless, the driver still
+has to do something reasonable with the screen when the character is typed.
+What does it do?
+
+Unfortunately, the answer seems to be: "It depends on the system."  On my
+FreeBsd xterm-256color the effect of typing ^H under -icanon appears always to 
+be that the cursor is moved back one space on the screen without erasing the
+previous character. In a linux xterm the behavior seems always to be that 
+a visual represetation of ^H is printed to the screen. This explains why
+edlin need to be compiled differently depending on which of these behaviors
+is exhibited by the terminal it runs on.
+  
+Which is "correct"? It's hard to say. A programmer hates to accuse others of
+bugs, since programmers must make many choices between alternatives and one
+man's bug is another man's feature. I'll just say it's a bit unfortunate that
+terminals can't seem to agree on some fundamental features of their own
+operation. 
+
+Author
+Terry McConnell
+trmcconn@syr.edu
+10/9/97

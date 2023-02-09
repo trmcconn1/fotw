@@ -1,0 +1,112 @@
+# Problem 31 of ACP test. 
+# This begins the part III, the Analytic Geometry part, of the traditional
+# ACP test. Problems 31-36 comprise part III.
+#
+# Identifying the equation of a parabola
+# This problem does not shuffle the answers
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 31", $EBOLD, $BR);
+
+# We will present the equation ay^2 + by = cx^2 + dx + e and ask what it
+# represents. b,d, and e will be nonzero, and exactly one of a and c
+# will be nonzero
+
+@as = (-4,-3,-2,0,2,3,4);
+@cs = (-4,-3,-2,0,2,3,4);
+$i = random(0,6,1);
+$a = $as[$i];
+$i = random(0,6,1);
+$c = $cs[$i];
+
+# Exactly one of a and c should be nonzero
+if(($a == 0)&&($c == 0)){
+	$i = random(0,2,1);
+	$a = $as[$i];
+}
+if(($a != 0)&&($c != 0)){
+	$x = random(0,1,1);
+	if($x == 0) { $a = 0; }
+	else {$c = 0;}
+}
+
+$e = random(1,20,1);
+$babs = random(2,7,1);
+$dabs = random(2,7,1);
+$i = random(0,1,1);
+if($i == 0){
+	$bsign = "-";
+	$b = -$babs;
+}
+else {
+	$bsign = "+";
+	$b = $babs;
+}
+$i = random(0,1,1);
+if($i == 0){
+	$dsign = "-";
+	$d = -$dabs;
+}
+else {
+	$dsign = "+";
+	$d = $dabs;
+}
+
+
+# Properly format equation to be displayed and select correct answer letter
+
+if($a == 0){
+	$equation = "$b y = $c x^2"." $dsign"." $dabs x + $e"; 
+	if($b*$c > 0){
+		$letter = "A";
+	}
+	else {
+		$letter = "B";	
+	}
+}
+else {
+	$equation = "$a y^2"." $bsign"." $babs y = $b x + $e"; 
+	if($a*$b > 0){
+		$letter = "D";
+	}
+	else {
+		$letter = "C";	
+	}
+}
+
+
+# display problem
+
+BEGIN_TEXT
+The graph of the equation \( $equation \) represents
+$PAR
+A) a parabola opening upward.
+$BR
+B) a parabola opening downward.
+$BR
+C) a parabola opening towards the left.
+$BR
+D) a parabola opening towards the right.
+$BR
+E) none of the above.
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

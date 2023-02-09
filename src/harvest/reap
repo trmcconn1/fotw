@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# reap uses harvest(1) to remove uuencoded blocks from a terminal session script file and restore them
+# to their original form in the current directory. You would probably run it from your downloads directory
+# after having finished a scripted terminal session from there
+#
+# Also see script(1)
+
+USAGE="Usage: reap scriptfile"
+DOS2UNIX="/usr/local/bin/dos2unix"
+UUDECODE="/usr/local/bin/uudecode"
+HARVEST="/usr/local/bin/harvest"
+
+# Sanity tests:
+
+if test ! $1
+then
+	echo reap: $USAGE
+	exit 1
+fi
+
+if test ! -e $1
+then
+	echo reap: script file $1 not found
+	exit 1
+fi
+
+
+if  test ! -e $DOS2UNIX
+then
+	echo reap: $DOS2UNIX is needed by this script and not found
+	exit 1
+fi
+if test ! -e $UUDECODE 
+then
+	echo reap: $UUDECODE is needed by this script and not found
+	exit 1
+fi 
+if test ! -e $HARVEST
+then
+	echo reap: $HARVEST is needed by this script and not found
+	exit 1
+fi
+
+# Ready to roll ...
+
+for file in `$HARVEST $1`
+do
+	$DOS2UNIX $file
+	$UUDECODE $file
+done
+exit 0
+

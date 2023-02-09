@@ -1,0 +1,102 @@
+##############################################################################
+# Makefile for monitor (DOS 16 bit version) An academic exercise admittedly.
+# Target monitor produces a small model .exe whose external commands can be
+# implemented in external.c. Target bootmon produces a tiny model .com whose
+# external commands need to be implemented in extern.asm
+#
+#          By Terry McConnell, Chicken Haven Software (2018)
+#
+# Adapted from my Linux version written in NASM syntax
+##############################################################################
+VERSION = "1.2"
+PROG_NAME = monitor
+#
+# Edit other settings in macros.a
+############## DOS 16 bit #####################
+CC = bcc
+CFLAGS = -ms 
+AS_FLAGS =    
+LIBS = 
+AS = masm
+LD = tlink
+LDFLAGS = 
+##########################################
+
+############# One should not have to edit below this line #####################
+
+OBJECTS = main.o monitor.o lib.o internal.o external.o  
+
+.c.o:
+	$(CC) -c -DVERSION=$(VERSION) $(CFLAGS) $<
+.asm.o:
+	$(AS) $(AS_FLAGS) $<,,,,
+
+# Build monitor to be called from main, with external commands implemented
+# in external.c. This build uses the small model. If a larger model is used
+# it may be necessary to change references to symbols defined in the .asm
+# files to FAR pointers. If other compilers are used it may be necessary
+# to adapt segments and group names in the assembly code to be compatible
+# with the compiler. We assume C calling convention, so compiler here means
+# C compiler. If you port this to pascal, of course, other things may need
+# to change. (Borland C: For other memory models change c0s.obj, CS.lib, and 
+# the compiler flag -ms)
+
+monitor: $(OBJECTS) macros.asm 
+	tlink   @&&|
+	/P /Tde /s /n +
+	C:\BC45\LIB\c0s.obj+
+	monitor.obj+
+	main.obj+
+	internal.obj+
+	external.obj+
+	lib.obj,+
+	$(PROG_NAME),,+
+	C:\BC45\LIB\CS.lib,,
+|
+
+# Build monitor as a .com. Also, use only tools available in very old
+# DOS versions: MASM, LINK, and EXE2BIN. EXE2BIN converts the .exe produced
+# by LINK to a .com. This requires the tiny memory model. Note that some
+# further steps are needed to make bootmon a true boot monitor: (1) DOS
+# system calls in macros.asm must be converted to use only BIOS calls. (2) The
+# offset of the entry point must be made compatible with the boot loader. 
+# (3) A bblock target that can be written to disk partition where
+# bootmon.com lives to be used as boot block. It will need to have actual
+# disc address of bootmon.com patched in, as well the offset to its save
+# data area. (see the bootmon directory) 
+
+bootmon: monitor.asm lib.asm internal.asm extern.asm macros.asm 
+	MASM /DBIOS /DCOM monitor.asm,,,,
+	MASM /DBIOS lib.asm,,,,
+	MASM /DBIOS /DCOM internal.asm,,,,
+	MASM /DBIOS extern.asm,,,,
+	LINK monitor.obj internal.obj extern.obj lib.obj,bootmon,,,
+	echo Ignore message from EXE2BIN. Just hit return
+	EXE2BIN bootmon.exe
+	move bootmon.bin bootmon.com
+#	del bootmon.exe
+
+all: monitor bootmon
+
+clean:
+	del *.obj
+	del *.lst
+	del *.crf
+	del *.map
+	
+
+distclean:
+	del *.obj
+	del *.lst
+	del *.crf
+	del *.map
+	del monitor.exe
+	del bootmon.com
+
+# Invoke a batch file to create a zip archive. Distrib.bat has
+# hard-wired names depending on the version and may need to be updated.
+# This will produce a zip archive that lives in c:\src
+
+distribution: distclean
+	distrib.bat
+

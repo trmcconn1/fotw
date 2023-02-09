@@ -1,0 +1,29 @@
+#############################################################################
+# DOS Makefile for Schedule Program by Terry McConnell                    #
+############################################################################
+.SUFFIXES : .c .obj
+
+OBJS = rch2txt.obj  qsort.obj
+CFLAGS = -ml  -I..\..\Include  
+CC = bcc
+
+.c.o: 
+	 $(CC) $(CFLAGS) -c $<
+
+all: rch2txt
+
+rch2txt : rch2txt.obj qsort.obj
+	 tlink   @&&|
+  /Tde /c /d +
+C:\BC45\LIB\c0l.obj+
+rch2txt.obj+
+qsort.obj
+$<,$*
+C:\BC45\LIB\fp87.lib+
+C:\BC45\LIB\mathl.lib+
+C:\BC45\LIB\cl.lib
+
+|
+
+clean:
+	del *.obj

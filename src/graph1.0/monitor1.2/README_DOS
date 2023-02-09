@@ -1,0 +1,16 @@
+The dos 16 bit version of the monitor program is in the dosmon subdirectory,
+but those files should not be edited directly from unix since they are would
+need to be converted with unix2dox first. At any rate, it is pointless since
+the dos version needs to be managed under dos. 
+
+Whenver the unix version is uddated the dos version should be kept in sync. 
+Assuming this is going to be done under an emulator (e.g. bochs or dosemu) 
+the simplest thing is just to copy the zip file dosmon12.zip to the
+unix filesystem emulated drive and then copy the zipfile from there running
+under the emulator. Copy it to a dedicated directory (e.g. C:\src\monitor)
+and unzip in there with pkunzip -d dosmon12.zip. 
+
+keep the version of dosmon12.zip here up to date with any changes made under the
+emulator.
+
+Try maker if make doesn't work. It is the real mode version.

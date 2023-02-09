@@ -1,0 +1,20 @@
+# The platonic solids
+
+# The tetrahedron has 4 vertices, 4 triangular faces and 6 edges
+tetrahedron { a b c d;  b c d ; c d}
+
+# The cube has 8 vertices, 6 square faces, and 12 edges
+cube { a b d e; b c f; c d g; d h; e f h; f g; g h}
+
+# The octahedron has 6 vertices, 8 triangular faces, and 12 edges
+octahedron { a b d e f; b c e f; c d e f; d e f } 
+
+# The dodecahedron has 20 vertices, 12 pentagonal faces, and 30 edges
+dodecahedron { a b e o; b c m; c d k; d e s; e q; f g j l; g i n;
+
+h i j r; i p; j t; k l t; l m; m n; n o; o p; p q; q r; r s; s t}
+
+# The icosahedron has 12 vertices, 20 triangular faces, and 30 edges
+icosahedron { 1 2 3 4 5 6; 2 3 12 8 6 ; 3 12 11 4; 4 11 10 5 ;
+5 10 9 6; 6 9 8; 7 8 9 10 11 12; 8 9 12; 9 10 ; 10 11; 11 12 }
+

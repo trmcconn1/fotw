@@ -1,0 +1,59 @@
+###########################################################################
+# README: general setup information for the scheduling programs           #
+###########################################################################
+
+This directory should have been created automatically when the program
+archive was extracted. It is a subdirectory called schedule of whatever
+directory the archive was in when it was extracted.
+
+This directory is the root directory of the math department scheduling
+programs. It is the most logical choice for the working directory of the
+programs.
+
+The main programs:
+schedule: manage the math department schedule. 
+newsmstr: Begin the process of creating a new semester's schedule.
+
+These programs have been built and tested under two varieties of Unix ( Linux
+and NeXTStep ) with gcc 2.5.8,gcc 2.7.0, gcc 2.7.2 and MSDOS (Borland C/C++ 4.5) 
+
+Description of contents of subdirectories:
+
+src: contains the source code for the programs. To build the programs change
+to each sub-directory and say make. The makefile also contains the target
+"clean"
+
+include: contains custom header files.
+
+doc: program documentation including the man page, schedule.1., and latex
+source for the user's guide, guide.tex.
+
+examples: a sample configuration file (rcfile), and other miscellaneous stuff.
+
+data: There should be one subdirectory in this directory for each semester's
+data.  There should be one schedule batch file for each semester.
+
+scripts: Auxiliary programs. These should not be touched by the user.
+
+The dos batch file in this directory called makedist can be used to
+make distribution disks or backups. It is interactive.
+
+Installation: the executables can be put anywhere on the command search path.
+(They can be put anywhere, but if not on the path then the full path to the
+program must be given. ). In Unix, the configuration file ( see 
+examples/rcfile ) should be put in the user's home directory and named 
+.schedulerc, and a link to file doc/schedule.1 should be put in some 
+directory on the user's MANPATH. In Dos, the configuration file should
+be named schedule.rc and placed in any directory on the command search path.
+
+Use schedule -help   to get a brief usage message and schedule  -version
+to display the program version.
+
+Author: Terry McConnell
+Department of Mathematics
+304B Carnegie
+Syracuse, NY 13244-1150
+(315)443-1491 (Work)
+(315)677-3510 (Home)
+(315)443-1475 (Fax)
+trmcconn@syr.edu.

@@ -1,0 +1,38 @@
+#
+# roomchart
+#
+# Script for the schedule program command shell
+#
+# By Terry McConnell (July 1996)
+#
+# This script requires that the shell variables START_DATE, START_TIME,
+# END_DATE, and END_TIME be defined before it is called
+
+# save loaded and semester state
+if LOADED set HOLDLOAD $LOADED
+if SEM set HOLDSEM $SEM
+
+# Free memory just in case
+load -free
+load
+take data\sched.$SEM
+> temp.rch
+roomchart "$START_DATE" "$START_TIME" "$END_DATE" "$END_TIME"
+end
+load -free
+push src\render\rch2txt temp.rch > $TEMPFILE
+push del temp.rch
+
+
+# clean up
+if HOLDLOAD load -sem $HOLDLOAD
+if HOLDLOAD take data\$sched.$HOLDLOAD
+if HOLDSEM set SEM $HOLDSEM
+set HOLDLOAD
+set HOLDSEM
+set START_DATE
+set END_DATE
+set START_TIME
+set END_TIME
+
+end

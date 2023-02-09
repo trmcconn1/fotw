@@ -1,0 +1,184 @@
+
+This is the README for the boot monitor form of my monitor program. 
+
+Version 1.2
+
+Bootmon.com is a 16 bit program that runs in x86 real mode. It is meant to
+run in the absence of any operating system by using only services provided by
+the ROM BIOS. Thus, bootmon.com needs a friendly boot block to get it up and
+running. (In effect, it is its own minimal operating system, providing the 
+user with a command line interface that allows booting partitions and other
+things. It could be used in place of LILO or GRUB, for example, but it 
+doesn't have any specific built-in knowledge about how to boot a linux 
+kernel. It was inspired by the Minix 2.0 boot monitor program, although unlike
+that monitor, it runs in real mode. ) 
+
+There are two models for deploying bootmon.com on the traditional 4 partition
+AT hard disk.  
+
+Model 1: (Used by version 1.2 and later)  Run wrboot -m  to install a boot
+program in the master boot record (sector 0,0,1) of the current hard drive.
+The monitor itself is stored in the "hidden sectors" of the drive, starting
+from sector (0,0,3) and continuing for about 40 512 byte sectors from there.
+Most partitioning tools seem to leave an empty cylinder at the beginning of
+the drive. If this is not true, or if somebody else is using the hidden 
+sectors, then this will obviously cause trouble. 
+
+Model 2: (Used by version 1.1). Leave an empty partition for use by 
+the monitor program. Edit the settings in hdbblk.asm depending on the 
+chosen partition. Then running wrboot will do 3 things:
+
+(a) installs a generic mbr program that simply boots the active partition.
+(b) installs a volume boot record on the chosen partition that finds the
+monitor on the partition and boots it.
+(c) installs the monitor program on the partition.  A tiny partition can
+be used - it only needs to be about 40k. 
+
+After running wrboot, use fdisk to make the chosen partition active. The next
+boot should run the monitor. 
+
+The disadvantage of this approach is that it wastes a precious partition.
+
+wrboot -f can be used to install a boot block and the monitor program on
+floppy a:
+
+BUILDING
+
+This package requires only the most primitive tools to build. It was developed
+under DOS 3.3 using MAKE,LINK,EXE2BIN, and MASM. Assuming these programs
+are in the PATH, typing make makefile  at the command.com prompt in this
+directory will build the following:
+
+fdbblk.bin - a boot block for booting bootmon.com from a floppy
+hdbblk.bin - a boot block for booting bootmon.com from a hard drive partition
+mbrblk.bin - a boot block for the mbr - optional in model 2 if there is already
+an mbr that boots the active partition. 
+monitor.com - a runnable image of the monitor program.
+
+In the presence of a suitable C-compiler, the installer wrboot.exe will also
+be built. (I used an old compiler named power C that I once bought for $12. If
+you want to use another compiler, edit the makefile appropriately. Monitor
+needs to use the tiny memory model so that it can be a .com. )
+
+USAGE
+
+bootmon provides access to a primitive command line that manages an environment
+and invokes various builtin commands. It shares command line syntax and most
+commands with the 16 bit MS-DOS version, so one should read the README for
+that version for basic usage. It acts like a very brain dead version of
+the Bourne shell. The boot monitor version provides the 
+following commands that do not appear in the DOS version:
+
+partinfo - display information from a hard drive partition table
+
+USAGE  partinfo [80H | 81H]
+
+partinfo lists the starting and ending coordinates for each of the 4 partitions
+on the drive monitor was booted from. You need these to use the boot command 
+(see below). A specific drive can be selected by means of the optional 
+argument. The bios drive number is stored as the value of environment variable
+BOOT_DRIVE when monitor is started. 
+
+boot - boot a partition of the boot drive or the mbr of a selected drive
+
+USAGE  boot <c,h,s> or boot <a|b|c|d>
+
+With 3 arguments, boot attempts to load and run the sector with given
+cylinder,head,sector coordinates as boot code.  It does some minimal validity
+checking, but it is quite possible to load nonsense, which will likely just 
+produce a hang. 
+
+With 1 argument:  boot a and boot b boot one of the two floopy drives. boot c
+boots the mbr of bios drive 80H, and boot d boots the mbr of bios drive 81H. 
+Boot d almost never does anything useful since the mbr that is installed (if
+there even is one) probably assumes the drive is the first drive. Even if
+the mbr code knows it is living on the second drive, the operating systems it
+is trying to boot may not. (It is theoretically possible to create a command
+named swap, e.g., that would hook int 13H and swap all references to the
+two drives. This might even work.)	
+
+save - save the current program state to disk
+
+save rewrites the disk image of bootmon.com  (the one that is installed by
+wrboot) so that all current environment variables will be remembered on the
+next boot. Using save, you can build a nifty menu script that will allow
+you to select a partition to boot without having to use the boot command
+directly.
+
+EXTENDING THE PROGRAM
+
+The OS-dependent versions of monitor are designed to be easily extensible
+so that monitor can be used as a command line front end to an application
+program. The boot monitor program can be similarly extended by creating
+new commands in the extern.asm file. Hopefully the code there explains well
+enough how to do it. You can also change the built in startup script (similar
+to naming a startup command file on the monitor command line under an OS) by
+editing the memory contents beginning at the label _rc_script in monitor.asm.
+
+DISCLAIMER
+
+Obviously, when you muck around with hard drive partitions and boot blocks 
+the potential for disaster exists. Don't even think about using bootmon
+on real hard drives unless you know exactly what you are doing. I developed
+the program under the bochs simulator with hard drive images created 
+using bximage. You can have many hours of good clean fun that way. 
+
+You can actually run bootmon.com from the DOS command line. Unlike monitor.com,
+bootmon.com does not exit back to DOS (since it is designed to run when there
+is no DOS). Instead, it starts a cold reboot. 
+
+The following notes are very incomplete - maybe I'll extend them some day.
+
+Issues involved in the port (32 bit Linux, Nasm -> 16 bit Masm)
+
+1) 32 bit registers are replaced with 16 bit registers, and 16 bit registers
+need to be replaced by 8 bit registers. Thus, every eax must change to ax,
+and every dx to dl, etc. This is easy to do in every source file using
+search and replace.
+
+2) A more pernicious consequence of word size is that size of pointers must be
+attended to whenever one cleans up after a call, or advances a pointer. 
+Thus, 
+
+push eax
+push ebx
+call foo
+add esp,8
+
+becomes
+
+push ax
+push bx
+call foo
+add esp,4
+
+Similarly, to access the first passed argument on the stack, mov eax,[ebp+4]
+becomes mov ax,[bp+2].  And often, foo[esi+4] must be replaced by 
+foo[si + 2]. You will never find all of these, and there will be crashes. 
+
+3) Masm syntax is different than nasm syntax. There are simple things, like
+GLOBAL becomes PUBLIC, and EXTERNAL becomes EXTRN (go figure), and tricky
+issues involving addressing modes. Here, in no particular order, are some
+of the things that tripped me up:
+
+(a) Masm wants to know the size of external symbols. Thus, one must say
+EXTRN foo:BYTE and EXTRN myfunct:NEAR
+
+(b) Masm's addressing modes are notoriously baffling and inconsistent, while
+nasm's are simple, and somewhat ineffective. Generally, in Masm, if you use
+the name of a symbol, you are referencing the contents of the memory that
+symbol labels. In nasm, symbols ALWAYS refer to an address unless you
+use brackets ([]). If you want to move the contents of the memory labeled by
+symbol foo to ax, in nasm you say mov ax,[foo], while in Masm you say
+mov ax,foo.  The latter seems simpler and more natural to me (kudos to Masm),
+but pointers (and pointers to pointers) are easier to handle in nasm than
+masm. For example, suppose you pass a pointer to an array of pointers as the
+second argument up the stack, and you want to move the first pointer in the
+array into ax.  (Think: argv[0]). [ etc ]
+
+(c) Syntax to reserve memory is different
+
+4) That big ugly segmentation thing.
+
+5) The notorious NL vs CR-NL thing. 
+

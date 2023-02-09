@@ -1,0 +1,267 @@
+		Age Group Records Rubbish Lister .03
+			by Terry R. McConnell
+		          Perl version 5.003
+
+
+Processing roster.94 ...
+Processing roster.95 ...
+Processing roster.96 ...
+Processing roster.97 ...
+Processing roster.98 ...
+Processing roster.99 ...
+Processing results.94 ...
+Processing results.95 ...
+Processing results.96 ...
+Processing results.97 ...
+Processing results.98 ...
+Processing results.99 ...
+
+Age group records for 100m
+==============================================================
+f29: 14.0        mromagnoli             04/08/99
+f34: 15.1        czogby                 01/08/99
+f39: 15.2        sfalso                 01/08/99
+f44: 13.2        ithompson              03/21/96
+f49: 15.5        pwatson                01/08/99
+f54: 17.1        yrothenberg            01/31/97
+f59: 17.9        ltucker                01/31/97
+f64: 18.7        ltucker                05/07/99
+f69: 20.9        mzeppetello            04/18/96
+m29: 11.3        mroux                  03/21/96
+m34: 12.8        mpowell                01/31/97
+m39: 12.1        bjackson               04/18/96
+m44: 12.6        fstdennis              02/13/98
+m49: 13.7        dwohlers               02/13/98
+m54: 13.0        rmicho                 01/08/99
+m59: 13.2        tfondy                 04/18/96
+m64: 12.4        abranch                04/24/97
+m69: 13.5        abranch                01/08/99
+m74: 17.0        rmore                  03/21/96
+m79: 16.2        rmore                  04/24/97
+
+
+Age group records for 10k
+==============================================================
+f29: 38:29       jvollweiler            02/07/97
+f34: 40:25.5     ldamron                10/28/94
+f39: 39:33.2     ldamron                02/19/99
+f44: 37:48.8     pford                  03/12/99
+f49: 41:12.5     bblaszak               01/19/96
+f54: 49:08       ytasker                10/28/94
+f59: 49:44.3     ltucker                02/07/97
+f64: 50:56.1     ltucker                02/19/99
+m29: 33:13.3     jeliasson              02/20/98
+m34: 33:13.3     dmcmillan              02/20/98
+m39: 34:29.8     rwheeless              02/21/97
+m44: 38:14       tmcconnell             01/19/96
+m49: 37:52       bbush                  05/14/99
+m54: 39:17.5     smurphy                10/28/94
+m59: 40:23.9     sgraceffo              02/23/96
+m64: 41:32.5     establer                4/21/94
+m69: 41:32.5     establer               10/28/94
+m74: 49:13       nwhite                  3/10/94
+m79: 49:28       nwhite                 10/28/94
+
+
+Age group records for 1500m
+==============================================================
+f29: 4:59.2      hmcmillan              02/16/96
+f34: 5:07.0      ldamron                02/16/96
+f39: 4:44.2      pford                   12/3/93
+f44: 4:56.1      pford                  02/16/96
+f49: 5:12.5      bblaszak               11/30/95
+f54: 5:53.8      ytasker                 12/3/93
+f59: 8:17.9      ehahn                  02/16/96
+f64: 9:37        mcarrino               11/03/94
+m29: 3:59.9      eberntsen              02/09/95
+m34: 4:13.5      dmcmillan              11/30/95
+m39: 4:16.7      canklin                02/16/96
+m44: 4:42.0      tmcconnell             11/30/95
+m49: 4:49        lnafie                  12/3/93
+m54: 4:48.1      jsmith                   1/7/94
+m59: 5:04.3      jallen                 11/30/95
+m64: 5:11.8      rbrock                 11/11/94
+m69: 5:19.6      establer               11/11/94
+m74: 5:36.7      nwhite                   1/7/94
+m79: 7:07.8      nwhite                 11/11/94
+
+
+Age group records for 15k
+==============================================================
+f29: 65:16.3     jvollweiler            02/21/97
+f34: 77:03       kbedard                 4/16/94
+f39: 58:26.4     pford                   3/10/94
+f44: 59:27       pford                  05/14/99
+m29: 51:35.0     jeliasson              04/09/98
+m34: 52:02       rbrenner                3/10/94
+m39: 51:26       rwheeless              04/25/96
+m44: 58:21.5     snix                   11/13/93
+m49: 59:42       smurphy                11/13/93
+m54: 63:29.7     lnafie                 02/23/96
+m59: 60:47       sgraceffo              02/23/95
+m64: 1:02:44     rbrock                  3/10/94
+m69: 79:56       wmcrae                 05/14/99
+m74: 77:11.2     twalnut                02/23/96
+m79: 86:40.1     rmore                  02/21/97
+
+
+Age group records for 200m
+==============================================================
+f29: 27.8        acooper                03/26/98
+f34: 31.2        sfalso                 03/14/96
+f39: 30.8        sfalso                 03/26/99
+f44: 27.5        ithompson              03/14/96
+f49: 31.9        pwatson                12/29/98
+f54: 36.4        ytasker                12/17/93
+f59: 36.8        ltucker                03/06/97
+f64: 38.1        ltucker                12/29/98
+f69: 45.0        mzeppetello            01/05/96
+m29: 22.5        mroux                  05/05/95
+m34: 24.8        mpowell                  2/3/94
+m39: 24.4        tguiden                12/17/93
+m44: 25.1        tguiden                01/10/97
+m49: 25.6        rmicho                 02/02/95
+m54: 26.0        pstelmaczyk            12/17/93
+m59: 26.8        tfondy                 12/04/94
+m64: 26.8        fschlereth             12/17/93
+m69: 27.7        abranch                03/26/99
+m74: 31.2        hmacmillan             03/06/97
+m79: 35.3        rmore                  03/06/97
+
+
+Age group records for 3k
+==============================================================
+f29: 10:30.4     jvollweiler            12/19/96
+f34: 10:46.1     ldamron                02/27/98
+f39: 10:08.9     pford                  12/30/93
+f44: 10:28.8     pford                  01/16/98
+f49: 11:04       bblaszak               12/19/96
+f54: 13:42       ytasker                11/03/94
+f59: 13:49.8     ltucker                11/26/97
+f64: 14:49.5     ltucker                03/12/99
+f69: 25:41       mzeppetello            12/19/96
+m29: 9:02.6      kcollins               12/30/93
+m34: 8:49.6      dmcmillan              02/27/98
+m39: 9:21.0      rwheeless              01/12/96
+m44: 9:26.8      kkelly                 12/30/93
+m49: 10:03.7     thomeyer               12/23/94
+m54: 10:12       jsmith                 12/30/93
+m59: 10:24.6     rmilner                12/23/94
+m64: 10:54.9     rbrock                 12/30/93
+m69: 11:10       establer               11/03/94
+m74: 13:38       twalnut                11/03/94
+m79: 13:38.9     nwhite                 12/23/94
+
+
+Age group records for 400m
+==============================================================
+f29: 61.5        acooper                03/13/98
+f34: 67.9        sfalso                 01/06/95
+f39: 67.1        pford                  12/17/93
+f44: 62.1        ithompson              02/28/97
+f49: 70.8        pwatson                12/17/98
+f54: 80.2        ytasker                12/17/93
+f59: 84.2        ltucker                02/28/97
+f64: 86.2        ltucker                02/26/99
+f69: 1:59.5      mzeppetello            02/29/96
+m29: 49.8        mroux                  12/02/94
+m34: 52.8        mpowell                12/17/93
+m39: 51.9        tguiden                12/22/95
+m44: 57.8        sbennett               03/02/95
+m49: 58.4        rmicho                  3/18/94
+m54: 61.9        pstelmaszyk            12/05/96
+m59: 60.7        tfondy                 01/06/95
+m64: 58.6        fschlereth               3/4/94
+m69: 63.6        fschlereth             12/17/98
+m74: 73.4        hmacmillan             03/20/98
+m79: 89.4        rmore                  04/10/97
+
+
+Age group records for 5k
+==============================================================
+f29: 18:35.6     hmcmillan              01/02/97
+f34: 18:48.9     kstopyra               03/22/95
+f39: 18:32       kstopyra               01/02/97
+f44: 18:40.2     pford                  04/15/99
+f49: 19:20.4     bblaszak               01/05/96
+f54: 23:51       ytasker                10/21/94
+f59: 24:05.5     ltucker                02/20/98
+f64: 24:15.8     ltucker                02/05/99
+m29: 15:57.1     enordman               01/16/98
+m34: 15:07.5     dmcmillan              01/16/98
+m39: 16:27.8     akilfoyle              01/02/97
+m44: 17:11.0     mdibattista            04/15/99
+m49: 17:45.5     kkelly                 01/02/97
+m54: 17:51.8     jsmith                  3/18/94
+m59: 18:23       sgraceffo              12/16/94
+m64: 18:56       rmilner                04/04/96
+m69: 19:59.7     establer               10/21/94
+m74: 23:38.7     twalnut                01/05/96
+m79: 23:22.4     nwhite                 12/16/94
+
+
+Age group records for 800m
+==============================================================
+f29: 2:19.7      hmcmillan              11/27/96
+f34: 2:27.5      jvollweiler            12/10/98
+f39: 2:21.1      pford                   1/20/94
+f44: 2:24.2      pford                  11/27/96
+f49: 2:36.8      bblaszak               12/08/95
+f54: 2:58.8      ytasker                12/10/93
+f59: 3:14.3      ltucker                12/11/97
+f64: 3:16.7      ltucker                02/12/99
+f69: 5:20.8      mzeppetello            12/11/97
+m29: 2:01.5      eberntsen              04/21/95
+m34: 1:57.3      mpowell                 3/18/94
+m39: 2:03.9      bjackson               03/06/98
+m44: 2:10.1      mrybinski              12/10/98
+m49: 2:21.6      rmicho                 12/30/94
+m54: 2:22        jsmith                  4/15/94
+m59: 2:21.8      jallen                 11/27/96
+m64: 2:23        fschlereth             12/10/93
+m69: 2:40.6      fschlereth             12/10/98
+m74: 3:04.9      twalnut                12/08/95
+m79: 3:19.3      nwhite                 12/30/94
+
+
+Age group records for 8k
+==============================================================
+f34: 39:12.0     lbernhofen              2/24/94
+f39: 39:40       sohara-c                2/24/94
+f44: 32:01.7     bblaszak                2/24/94
+m29: 29:37.0     hlocher                 2/24/94
+m34: 27:18.1     rwheeless               2/24/94
+m39: 29:17       dhughes                 3/10/94
+m44: 29:41.3     jjohnson                2/24/94
+m49: 31:40.4     jascioti                2/24/94
+m54: 29:50.6     jsmith                  3/10/94
+m59: 32:54       rwilett                11/13/93
+m64: 32:22.2     rbrock                  2/24/94
+m69: 39:09       twalnut                 2/24/94
+m74: 39:12       nwhite                  2/24/94
+
+
+Age group records for mile
+==============================================================
+f29: 5:10.2      mromagnoli             04/01/99
+f34: 5:21.8      jvollweiler            11/25/98
+f39: 5:27.3      sfalso                 04/01/99
+f44: 5:12.4      pford                  11/22/96
+f49: 5:39.3      bblaszak               11/22/96
+f54: 7:12.8      eclark                 12/04/97
+f59: 6:58        ltucker                11/22/96
+f64: 7:04.3      ltucker                03/19/99
+f69: 13:24.9     mzeppetello            11/25/98
+m29: 4:32.7      enordman               12/04/97
+m34: 4:22.8      dmcmillan              12/04/97
+m39: 4:38.5      dmcmillan              02/12/99
+m44: 4:52.4      mrybinski              11/25/98
+m49: 5:25        jcondon                11/22/96
+m54: 5:19.8      jsmith                 11/22/96
+m59: 5:22.2      edonoghue              11/22/96
+m64: 5:36.5      rmilner                12/04/97
+m69: 6:02.2      rbrock                 03/20/98
+m74: 7:02.9      hmacmillan             11/22/96
+m79: 8:00.8      nwhite                 12/04/97
+
+

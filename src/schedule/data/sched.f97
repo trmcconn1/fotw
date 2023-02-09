@@ -1,0 +1,330 @@
+# This is the definition of the Fall 1996 schedule
+# It is a script for the schedule program command shell
+
+# This script assumes you have already loaded the f97 schedule data
+
+
+# Create a schedule
+schedule f97 "Fall 1996    Mathematics Department Schedule of Classes"
+
+# The Basic Algebra Courses
+course "BAlg" Masingila
+# MAT 111: Decelerated. Being phased out this semester
+#
+comment "NB: MAT 111 is being phased out this semester"
+class 111 TBA TBA TBA TBA
+subclass
+# 001 does mods 1 and 2 only
+class 001 C-114 TBA mwf11 Balg_Teacher
+#002 does mods 2 and 3 only
+class 002 C-220 TBA mwf1 Balg_Teacher
+class UC1 P-309 Chakrabarty mw5 Balg_Teacher
+# UC2 is an off-budget tutor session run by UC
+class UC2 P-309 Chakrabarty mw7 Heop_Tutor
+subclass end
+
+assign "Algebra Coord" Dominguez BAlgCoord
+class 112 TBA TBA TBA TBA
+subclass
+class 001 C-220 Masingila mwf8 Balg_Teacher
+refno 05962
+class 002 C-222 TBA mwf11 Balg_Teacher
+refno 15962
+class 003 C-222 TBA mwf12 Balg_Teacher
+class 004 C-219 TBA mwf1 Balg_Teacher
+class 005 C-114 Chakrabarty mwf3 Balg_Teacher
+class 006 C-300 TBA mwf12 Balg_Teacher
+class 007 C-222 TBA mwf1 Balg_Teacher
+class 008 C-114 TBA mwf8 Balg_Teacher N
+class UC1 P-308 Hayden mw5 Balg_Teacher
+subclass end
+
+# 113: accelerated version: being phased out this year.
+class  113 TBA TBA TBA TBA
+subclass 
+class 001 C-300 TBA m11 Balg_Teacher
+subclass end
+
+
+# MAT 121: Statistics for the Liberal Arts I
+course 121 Diaz
+class 100 Heroy Diaz tth1 Lecturer 186
+subclass
+class 101 C-100 TBA m8 Recit_2
+class 102 C-100 TBA f8 Recit_2
+class 103 C-100 TBA m9 Recit_2
+class 104 C-100 TBA f9 Recit_2
+class 105 C-100 TBA m11 Recit_2
+class 106 C-100 TBA f11 Recit_2
+subclass end
+class 200 Heroy Lindberg mwf1 Lecturer 201
+subclass
+class 201 C-100  TBA t8 Recit_2 20
+class 202 C-100 TBA th8 Recit_2 23
+class 203 C-100 TBA t10 Recit_2 34
+class 204 C-100 TBA th10 Recit_2 45
+class 205 C-100 TBA t11 Recit_2 23
+class 206 C-100 TBA th11 Recit_2 11
+subclass end
+class UC1 C-100 Schadler mw5 Teacher 28
+
+course 122 Kim
+class 100 Heroy Kim tth2 Lecturer
+subclass
+class 101 C-100 TBA m12 Recit_2
+class 102 C-100 TBA f12 Recit_2
+class 103 C-100 TBA m1 Recit_2
+class 104 C-100 TBA f1 Recit_2
+class 105 C-100 TBA m3 Recit_2
+class 106 C-100 TBA f3 Recit_2
+subclass end
+
+course end
+class 171 H-113 Santaguida mwf1 Teacher
+class 172 C-300 Davidenko mwf3 Teacher
+
+course 183 Lewin
+class 100 Heroy Lewin mwf8 Lecturer
+subclass
+class 101 C-114 TBA t10 Recit_1
+class 102 C-114 TBA th10 Recit_1
+class 103 C-114 TBA t11 Recit_1
+class 104 C-114 TBA th11 Recit_1
+class 105 C-114 TBA t1 Recit_1
+class 106 C-114 TBA th1 Recit_1
+subclass end
+class 200 Heroy Lewin mwf9 Lecturer
+subclass
+class 201 C-219 TBA t10 Recit_1
+class 202 C-219 TBA th10 Recit_1
+class 203 C-300 TBA t1 Recit_1
+class 204 C-300 TBA th1 Recit_1
+class 205 C-208 TBA t4 Recit_1
+class 206 C-208 TBA th4 Recit_1
+subclass end
+class 300 Heroy Ucci tth8 Lecturer
+subclass
+class 301 H-113 TBA m12 Recit_1
+class 302 H-113 TBA w12 Recit_1
+class 303 C-222 TBA f3 Recit_1
+subclass end
+class UC1 C-219 ADecampo tth5 Teacher
+assign "Calculator Off Hrs" TBA 183_Coord
+
+course end
+class 200 C-222 Nigam mw3 Teacher
+
+course 194 Doerr
+class 001 C-220 Doerr tth1 Teacher
+class 002 C-313 TBA tth11 Teacher
+class 003 C-306 TBA mwf12 Teacher
+class 004 C-300 TBA tth2 Teacher
+class 005 C-219 TBA mwf10 Teacher
+class 006 C-311 TBA mwf11 Teacher
+class 007 C-313 TBA mwf11 Teacher
+class UC1 C-311 Hsiang tth5 Teacher
+
+course 221 Watkins
+class 001 C-316 Watkins mwf10 Teacher 23
+class 002 C-219 Lau mwf11 Teacher 12
+class 003 C-300 Lau mwf1 Teacher 11
+class 004 C-300 Galac mwf8 Teacher 13
+class 005 C-220 TBA mwf9 Teacher  58
+class 006 C-220 Galac mwf10 Teacher 13
+class 007 C-306 Dudewicz tth2 Teacher 26
+class 008 C-208 TBA mwf12 Teacher 47
+class 009 C-316 Aluzzo tth4 Teacher 23
+class 010 C-316 Ferland tth1 Teacher 12
+class UC1 C-300 Nojaim tth5 Teacher 
+
+course 222 Chen
+class 001 C-306 Chen tth1 Teacher
+class 002 C-208 Javor tth2 Teacher
+class 003 C-114 Ahmed mwf10 Teacher
+
+course 284 Church
+class 100 Heroy Church tth11 Lecturer
+subclass
+class 101 C-222 TBA m9 Recit_1
+class 102 C-222 TBA w9 Recit_1
+subclass end
+class 200 Heroy Kleiner mw4 Lecturer
+subclass
+class 201 C-114 TBA t4 Recit_1
+class 202 C-114 TBA th4 Recit_1
+subclass end
+
+course 285 Graver
+attach 100 Heroy Graver f12 Plenary 100
+attach 200 Heroy Graver f3 Plenary 100
+class 001 C-222 TBA tth8 Teacher 23
+class 002 C-222 Krywonos tth10 Teacher 24
+class 003 C-222 Krywonos tth11 Teacher 25
+class 004 C-222 TBA tth1 Teacher 22
+class 005 C-222 TBA tth2 Teacher 21
+class 006 C-222 Kreps tth4 Teacher 20
+class 007 C-220 TBA tth11 Teacher 19
+class 008 C-208 TBA tth1 Teacher 18
+
+course 286 Griffin
+class 001 C-114 Murray mwf1 Teacher
+class 002 TBA TBA mwf3 Teacher N
+class 003 C-300 Tripp tth11 Teacher 
+class 004 C-306 Griffin mwf9 Teacher
+
+course 295 Poletsky
+class Hon C-306 Anderson mwf11 Teacher
+subclass
+class 091 C-219 Achmann t4 Recit_1
+subclass end
+class 002 C-311 Barth mwf9 Teacher
+subclass
+class 092 C-222 O'Brien w10 Recit_1
+subclass end
+class 003 C-311 Barth mwf1 Teacher
+subclass
+class 093 C-219 Myers w3 Recit_1
+subclass end
+class 004 C-313 McConnell mwf3 Teacher
+comment "McConnell is the best teacher in the department"
+subclass
+class 094 C-219 Myers w4 Recit_1
+subclass end
+class 005 C-300 McConnell mwf10 Teacher
+subclass
+class 095 C-219 O'Brien w8 Recit_1
+subclass end
+class 006 C-316 Lardy mwf3 Teacher
+subclass
+class 096 C-219 O'Brien f8 Recit_1
+subclass end
+class 007 C-316 Nichifor mwf11 Teacher
+subclass
+class 097 C-219 Achmann t8 Recit_1
+subclass end
+class 008 C-300 Duah-Agyeman mwf9 Teacher
+subclass 
+class 098 C-222 O'Brien f10 Recit_1
+subclass end
+class 012 C-220 Sayles mwf12 Teacher
+subclass
+class 912 C-222 Myers f8 Recit_1
+subclass end
+class 013 C-220 Sayles mwf11 Teacher
+subclass
+class 913 C-208 Manns t10 Recit_1
+subclass end
+class 014 C-208 Lynn mwf10 Teacher
+subclass
+class 914 C-114 Manns th2 Recit_1
+subclass end
+class 100 Heroy Poletsky mwf11 Lecturer
+subclass
+class 101 C-306 Bell t11 Recit_1
+class 102 C-306 Bell th11 Recit_1
+class 103 P-233 Bell w3 Recit_1
+class 104 C-114 Bell w4 Recit_1
+class 105 C-208 Manns t11 Recit_1
+class 106 C-208 Manns th11 Recit_1
+subclass end
+class UC1 TBA Uva mw5 Teacher
+
+course 296 Lewis
+class 001 C-208 Howes mwf8 Teacher
+subclass
+class 091 C-316 Streltchenko m1 Recit_1
+subclass end
+class 002 C-208 Howes mwf9 Teacher
+subclass
+class 092 C-316 Streltchenko w1 Recit_1
+subclass end
+class 003 C-208 Lewis mwf11 Teacher
+subclass
+class 093 C-316 Sachs w9 Recit_1
+subclass end
+class 004 C-313 Lewis mwf1 Teacher
+subclass 
+class 094 C-316 Sachs f9 Recit_1
+subclass end
+class 006 C-219 Tyler tth1 Teacher
+subclass
+class 096 C-316 Peterson t11 Recit_1
+subclass end
+class 007 C-219 Tyler tth2 Teacher
+subclass
+class 097 C-316 Peterson th11 Recit_1
+subclass end
+class 008 C-300 Iwaniec tth10 Teacher
+subclass
+class 098 C-219 Streltchenko m4 Recit_1
+subclass end
+assign "Clinic Director" Peterson Clinic_Coord
+
+
+course 331 Deleanu
+class 001 C-313 Deleanu tth1 Teacher
+class 003 C-313 Troutman mwf12 Teacher
+
+course 397 Quinn
+class 001 C-311 Pfaff mwf8 Teacher
+class 002 C-306 Banerjee mwf3 Teacher
+class Hon C-311 Quinn tth11 Teacher
+class 004 C-306 Cargo mwf4 Teacher
+class 005 C-306 Vogel tth10 Teacher
+class 006 C-219 Pfaff mwf12 Teacher
+class 007 C-208 Tran mwf1 Teacher
+
+course 398 Cox
+class 001 C-313 Cox mwf10 Teacher
+class 002 C-219 Qazi mwf9 Teacher
+class 003 C-219 Boelkins tth11 Teacher
+
+course 485 Lutoborski
+class 010 C-313 Verchota mwf8 Lecturer
+class 011 C-313 Deleanu tth5 Lecturer
+class UC1 C-306 Lutoborski tth5 Lecturer
+
+course end
+
+class 511 C-311 Verchota mwf10 Lecturer
+class 512 C-316 Lindberg mw4 Lecturer
+class 514 C-311 Quinn tth8 Lecturer
+class 518 C-311 Troutman mwf3 Lecturer
+
+course 521 TBA
+class 001 C-313 Kim tth10 Lecturer
+class 002 C-313 Watkins mwf9 Lecturer
+
+course end
+
+class 525 C-306 Dudewicz tth4 Lecturer
+class 531 C-311 Ucci tth10 Lecturer
+class 541 C-306 Cargo mwf1 Lecturer
+class 545 P-233 Graver tth2 Lecturer
+class 554 C-311 Hsiang tth4 Lecturer
+class 605 C-306 Vogel tth8 Lecturer
+class 625 C-316 Chen tth10 Lecturer
+class 635 H-113 Kleiner mw3 Lecturer
+class 661 C-311 Church tth2 Lecturer
+class 683 C-311 Lutoborski tth1 Lecturer
+class 687 C-311 Banerjee mwf12 Lecturer
+class 706 C-306 Griffin mwf10 Lecturer
+class 721 C-312 Cox mwf9 Lecturer
+class 735 C-312 Lewin mwf12 Lecturer
+class 738 C-312 Diaz tth10 Lecturer
+class 808 C-312 Poletsky mwf10 Lecturer
+class 817 C-312 Iwaniec tth1 Lecturer
+
+# Department Assignments (i.e., not attached to a course )
+
+assign "HEOP Tutor" Dashinsky Heop_Tutor
+assign "System Administrator" Hu Sysadmin
+assign "485 Grader" TBA Grader_1
+assign "514 Grader" TBA Grader_1
+
+# end of schedule
+
+# This turns prompting back on
+end ECHO ON
+
+

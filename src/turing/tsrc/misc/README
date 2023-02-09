@@ -1,0 +1,17 @@
+This directory is just what it sounds like: a hodgepodge of various 
+things.
+
+Turing program source files:
+
+parens.t:  Test whether a parenthesis expression is balanced.
+prime.t:   Test whether a natural number is prime.
+un2bin.t:  Convert unary to binary representation.
+countup.t: List all natural numbers on the tape in binary form. (Runs
+           forever.)
+
+C program language source files:
+
+lisper.c: Generate a balanced parenthesis expression at random. (Could be
+          used to generate examples for parens.t.)
+
+

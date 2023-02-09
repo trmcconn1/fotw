@@ -1,0 +1,128 @@
+# Problem 13 of ACP test. All problems are multiple choice.
+# A problem on simplifying radicals. The students are presented
+# with 3 possible simplifications of sqrt(a) + b sqrt(acd)
+# as a single term, and the choice "does not simplify".
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 13", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Generate the numbers that will be used in the problem:
+
+$i = random(0,3,1);
+if($i == 0){
+
+	$a = 2;
+	$c = 3;
+	$d = 5;
+}
+if($i == 1){
+	
+	$a = 5;
+	$c = 3;
+	$d = 3;
+}
+if($i == 2){
+
+	$a = 3;
+	$c = 5;
+	$d = 5;
+}
+if($i == 3){
+
+	$a = 3;
+	$c = 2;
+	$d = 5;
+}
+
+$b = random(2,8,1);
+
+$acd = $a*$c*$d;
+$cb1 = $c*$b + 1;
+$cdb1 = $c*$b*$d + 1;
+$cbbd1 = 1 + $b*$b*$c*$d;
+
+# The expression to be simplified is sqrt(a) + b sqrt(acd)
+
+# If c != d (cases i = 0 and 3 above) then the expression cannot be rewritten
+# as a single term. If c = d then it is (1+bc)sqrt(a)
+# The other possible numerical choices are (1+bcd)sqrt(a) and (1+b^2cd)sqrt(a)
+# These are easily seen to be distinct since none of b, c, or d equals 1
+#
+
+# compute correct and incorrect answers to display (correct is first one)
+if($c != $d){
+@ans = ("\text{Cannot be rewritten as a single term}", 
+"\text{Is equal to } $cb1\sqrt{$a}",
+"\text{Is equal to } $cdb1\sqrt{$a}",
+"\text{Is equal to } $cbbd1\sqrt{$a}");
+}
+else {
+@ans = 
+("\text{Is equal to } $cb1\sqrt{$a}",
+"\text{Cannot be rewritten as a single term}", 
+"\text{Is equal to } $cdb1\sqrt{$a}",
+"\text{Is equal to } $cbbd1\sqrt{$a}");
+}
+
+@picks = myshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+The expression \( \sqrt{$a} + $b\sqrt{$acd} \)   
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$PAR
+Enter your choice (A,B,C, or D.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

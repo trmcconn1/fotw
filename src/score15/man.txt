@@ -1,0 +1,263 @@
+SCORE                                                                     SCORE
+
+NAME
+	Score - Program to manage and score noontime running
+	league results.
+
+SYNOPSIS
+	score [-f <results,roster,teams> -i -y <year> -s <scorall>
+		 -q  -help -v]
+
+DESCRIPTION
+	Score parses a results file (see below FILES) and a
+	roster file which describe the current state of the SU
+	noontime running league. The program is menu-driven.
+	It can produce various reports on the screen, in a file,
+	or in hard-copy.
+
+OPTIONS
+		-f     Take the next three arguments as the full paths
+		       to files which will be used in place of
+		       RESULTSFILE,ROSTERFILE, and TEAMSFILE named in
+		       .scorerc. (Relative paths may be used if these
+		       files are in the working directory.)
+		
+		-i     Prints a summary of the settings in .scorerc
+                       and exits.
+
+		-help  Print a brief help message on the screen.
+
+		-q     Quick. Prints the error log on the screen and
+		       writes the individual and team standings to the
+		       file named in the Scorall entry of .scorerc. With
+		       this option the program has essentially the same
+		       behaviour as Ed Stabler's "Newnoon" programs.
+		      
+		-s     Take the following argument as the full path to
+		       a file which will be used in place of the Scorall
+		       entry of .scorerc 
+
+		-v     Print the version number.
+
+		-y     Use the next argument as the competition year.
+
+		Options v and help can only be used by themselves. The 
+		other options can be given in any order, and q can be
+		combined as -qy , -qf, -qs, but not -fq or -yq.
+
+UI
+	The User Interface is a text-mode document/view model with 4 ( or 5 )
+	windows: The title line, the main menu, the main window, and
+	the status bar. A dialog box may be present. The UI has 3
+	possible states: main window focus, menu focus, and submenu focus.
+	(Dialog box might be considered a 4th, although it only takes
+        place from submenu focus.) Striking the ALT-ESC key ( or ESC twice
+	in succession ) results in a change of focus. The obvious changes
+	are allowed. Whenever cursor movement is enabled both "grey" keys
+ 	and number-pad keys should work. 
+
+		Main Menu: Is only accessible to the user in menu focus.
+		The left and right arrow keys cycle through the menu. 
+		The down arrow or enter shift to submenu focus and select
+		the highlighted submenu. Invalid keys beep.
+
+		In submenu focus the up and down arrow keys cycle through
+		the submenu, and an action is selected by striking the
+                enter key. Invalid keys beep.
+
+		Main Window: There is always a current open document which
+		is being displayed in the Main Window. The current document
+		may be viewed, saved and printed, but not edited. All the
+		cursor movement keys except home and end  are enabled. In
+		addition, control end moves to the last line of the document,
+		control home moves to the first, enter moves the screen down by
+                one line, and space displays the next page with one line
+		in common at the top. Alt Esc or two Esc's in succession
+		change to menu focus and highlight the last chosen menu item.
+		All other keystrokes and attempts to move outside the
+		document beep.
+
+		Status bar: At the bottom of screen, it displays current 
+		information and is updated at least after every keystroke.
+		Displayed is current line:col in the current open document,
+		path of current open document, current sort criterion ( and
+		direction ), and the current message. All error messages
+		appear on the status bar as current messages. 
+
+		Dialog Boxes: Only the most primitive editing is enabled:
+		the back-space key moves the cursor back one space and 
+		deletes the character there. Invalid characters and esc
+		abort the dialog. 
+
+FILES
+	$HOME/.scorerc, ResultsFile, RosterFile, TeamsFile,
+	./errlog, Scorall, /usr/lib/kbd/keytables/score.map
+
+	Certain options may be set by editing the file .scorerc, which
+	should be located in the user's home directory. 
+	These are overidden by options set on the command line. Both
+	.scorerc settings and command-line settings may be overridden
+	from the "Options" menu of the user interface.
+
+		CompetitionYear  -- For example 1995 = 94-95 AY.
+
+		Scorall -- File for output of the team and individual
+		standings.
+
+		Working Directory -- The program cd's here before doing
+		anything substantial. Normally this would be the directory
+		containing all the data files. In order for the help menu
+		to work properly, all the .txt help files MUST be located
+ 		in this directory.
+
+		RosterFile -- Contains information on all runners. 
+		Use full path if not in the working directory.
+
+		ResultsFile -- File containing all current results. 
+		Use full path if not in the working directory.
+		TeamsFile -- File containing team information.
+		Use full path if not in the working directory.
+
+		OutputFile -- Normally cout, where reports should be
+			sent. This can also be set from a menu and, if so,
+			the menu choice overrides this setting.
+
+		UseOldAge -- Prior to the 96-97 season the runner's age
+                on the last day of competition (May 15) was used as his or her
+                age for scoring purposes throughout the competition year. 
+                Including this directive makes the program use this old age
+                determination method.
+
+		ExclusiveExtremes -- Of the 100m and the 15k, count only the
+                one with the higher point value. (This method was used in
+                some competition years.)
+
+		PointResolution %d -- Decimal number is taken to be the
+                resolution of the point scale. Thus, if the number given is
+                .5, then the possible scores in each event are to be 1, 1.5,
+                2, 2.5, ... , 9.5, 10.
+
+		Use10MFor15K -- Handles a rule change in 98-99. A runner can 
+		turn in times for either 10Mile or 15K event: each is scored
+                according to the actual event standard, but only better counts
+                towards points in a combined 10M/15K event. It probably only
+                makes sense to set this flag if either 10Mile or 15K is an
+                excluded event (see below.) If only one event appears in
+                scorall, the listed time will always be from the event giving
+                the higher number of points (before roundoff) and the higher
+                number points is recorded. If the time shown is not for the
+                event of the column heading, it is marked with an asterisk.  	
+		
+		ExcludedEvent -- Name of an event known to the program which
+		is not being run this year. (Doesn't count in team totals
+                and is not shown in scorall.)
+
+		ExcludedRelay -- Name of a relay event known to the program
+		which  is not being run this year.
+
+		PrinterInitString -- Command string necessary to put the
+		printer in landscape mode with a sufficiently compressed
+		font (16.67 cpi will do.)
+
+		PrinterResetString -- Command string necessary to return the
+		printer to its default state.
+
+		The results file contains the following:
+			Lines beginning with *  are ignored.
+			Lines of the form
+				date <datestring> <type>
+			 set the date and run type for all subsequent results 
+			 until reset by another such line. Type must be one
+			 of regular, outside, or informal.
+			 This program recognizes date-
+			 strings in either mm/dd/yy or mm-dd-yy format.
+			Lines of the form
+				distance <eventname> 
+			 set the event name until reset by another
+			 such line. The eventname must be one of those
+			 currently recognized by the program: 100m,200m, 400m,
+			 800m, 1500m, 1600m, 3k, 5k, 10k, 15k, mar, 800r,1600r,
+			 dmr, 3200r.
+			Lines of the form
+				<name> <time>
+					  -OR-
+				<name> <name> <name> <name> <time>
+			 report a performance in the current event. The names
+			 must be exactly as given in the roster file. Times
+			 can be reported in hh:mm:sec.s, mm:sec.s, or sec.s
+			 format. The 4 name format is for relays.
+
+			The roster file contains lines of the form
+			(separated by whitespace):
+				<name> <month> <day> <year> <sex> <team>
+			 For example,
+			  tmcconnell   4 30 54  m tmt
+			 The sex must be either m or f :-) and team must be
+			 one of the three-letter codes known to the
+			 program through the teams file.
+
+			 The teams file contains lines of the form
+			 (separated by whitespace):
+				<team> <Long Name> <Captain's Name>
+			  For example,
+				sdd  "The Steddies" "Ed Stabler"
+			  The team must be a three-letter identifier which
+			  will be used in reports to stand for this team.
+			  It must be the same as the one used in the roster.
+			  The Long Name and Captain's name must be enclosed
+			  in quotes. These fields are limited in size.
+			  Specifying a very long name may cause problems.
+
+			  All of these files allow commenting -- any line
+			  beginning with * is ignored.
+			  
+		(Linux Only) The file /usr/lib/kbd/keytables/score.map
+			 contains some customized keymappings that this
+			 program uses. 
+
+			  customizations:
+			  Control Pgdown mapped to F10  = <esc>[6+
+        		  PgUP             F11  = <esc>[5+
+        		  Home             F12  = <esc>[1+
+        		  End              F13  = <esc>[4+
+			  ( same for number pad )
+			  Alt escape mapped to F15 = <esc><esc>
+			  BackSpace mapped to Control_H
+
+		
+		errlog contains error messages generated during parsing
+			  of the results file. These are displayed when the
+			  program loads and can be redisplayed at will.
+			  It will be found in the working directory.
+	      
+
+BUGS
+	-If both the Use10MFor15K and ExclusiveExtremes flags are set in the 
+	 same year, the program will probably not do the right thing.        
+	-Does not yet support long names for individuals.
+	-Blank lines containing spaces or tabs in the input files
+	 can cause problems.
+	-The window colors are not the same as in the DOS version. This
+         seems to be a problem with ncurses. (The NeXT version doesnt
+         support colors at all. )
+	- Relays are not enabled in the superlatives menu choice.
+	- Scorall can only be sorted in increasing/decreasing alphabetic
+          by last name order. Other sorts that should be supported are
+          by team/lastname, team/totalpoints, totalpoints. 
+	- UP probably should be DWN and DWN should be UP in the sort
+	  direction description.
+	- The user interface hardwires terminal capabilities instead of
+	  of reading them from terminfo. Consequently it will only work
+          with the "linux" terminal, although vt100 is probably similar
+          enough.
+	-Excluding events just supresses that column of scorall. Times
+	 for events which are excluded are still counted in the point
+	 totals. It might be nice to fix this so that you could play
+	 "what if".
+	-Worst performances in the superlatives submenu are actually worst
+	 best performances. Runners are only listed once in these reports.
+	 I.e., if a runner has the 3 top times in the 5k ( say, ) then
+	 only the best time is reported.
+	 ( Changing either of these would be very painful. )
+
+

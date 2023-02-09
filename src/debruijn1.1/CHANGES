@@ -1,0 +1,7 @@
+1.0 -> 1.1
+
+- added lempel method and supporting routines
+- added undocumented -x option for testing new code 
+- added repke_rytter method and supporting routines
+
+

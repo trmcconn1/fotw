@@ -1,0 +1,35 @@
+This is the Noontime Running League scoring program for Linux
+
+The official code is on barnyard. Keep home linux code in sync.
+
+There is still old code (including sourcefile gui.dos) for a dos
+version, but it will probably not work anymore. (I still have the
+original DOS code hanging around anyway.)
+
+To change versions you need to edit the VERSION variable in makefile. Also
+change in a couple of help strings in score.cc and in the file info.txt.
+
+Keep the file rules.txt synced with the current one in the web directory. 
+
+The program can be run in pure text mode using -q. Otherwise it uses the
+interface defined in gui.cc, which is not entirely satisfactory over a
+remote terminal -- read comments in gui.cc for further information.
+
+IMPORTANT:
+To add new age-groups, standards or events, read the detailed procedure
+in source.txt. This can be quite tricky.
+
+PROCEDURE FOR STARTING A NEW SEASON
+1) Recode and recompile if necessary due to rule changes. Install in
+/usr/local/bin
+2) Edit .scorerc
+3) Archive old roster.asc, scorall.asc,  results.asc from web directory
+   as roster.yy, results.yy, and scorall.yy in both web directory and
+   this one.
+4) You might need to create temporary versions of roster.asc and results.asc
+for testing. Edit .scorerc to point to them.
+5) Create an new teams.yyyy in this directory. (Note: unlike the other
+files, the yyyy in teams.yyyy is one year later.)
+6) Edit patti's setup if necessary.
+
+

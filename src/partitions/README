@@ -1,0 +1,75 @@
+Introduction
+
+Integer partitions are sums of natural numbers that equal a given natural 
+number. Simple as it seems, it is a surprisingly difficult combinatorial 
+problem to count the number of possible partitions of n for a given n. It is
+instructive to consider an equivalent combinatorial problem. Suppose you have 
+n indistinguishable balls that are to be distributed among boxes numbered 1 
+through n. The number of balls that end up in a box constitutes a summand
+in a sum that adds up to n. Such a sum, in which the order of summands is
+tracked, constitutes a composition of n. Counting the number of possible 
+compositions of n is a relatively simple combinatorial problem, and indeed it
+is not difficult to show that the number of such compositions is 2^(n-1). 
+Now suppose we remove the numbers on the boxes and allow the boxes to be
+freely permuted among themselves. The possible distributions of balls in this
+case represent the possible partitions of n. 
+
+The forgoing discussion shows that there are fewer partitions than compositions
+but their number nevertheless grows quickly, and indeed, exponentially. 
+For example, the number of psrtitions of 200 equals 3972999029388.  In 
+addition to ordinary partitions, one can count partitions of a particular type.
+How many partitions of 200 have no repeated summands? How many use only odd
+summands or summands belonging to some other designated set? 
+
+There has been considerable interest in identifying types of partitions that
+give identical counts. The original result of this type is due to Euler
+and says that the number of partitions with distinct parts is equal to the
+number of partitions with odd parts. Such results are called "partition 
+identities" and many fascinating examples have been discovered. For example,
+the first Rogers-Ramanujan identity says the number of partitions with parts
+that differ by at least 2 is the same as the number of partitions into parts
+congruent to 1 or 4 modulo 5.  
+
+The basic usage of the program
+
+%partition n
+
+simply prints the number of partitions of n. The algorithm used is very fast
+and handles all numbers up to the limit imposed by machine architecture. 
+(See comments in partition.c for more information on the algorithm). 
+Unfortunately, the algorithm used to count the total number of partitions does
+not apply to count partitions of a particlar type. To handle such problems,
+the program must generate all possible partitions in a suitably compact 
+representation and test each one with a filter designed to select the type
+of partition desired. The program comes with a library of filters 
+(implemented in the subfolder filterlib). To select a filter, use the -f
+option with an argument that gives the index in the library of the desired 
+filter. To see a list of available filters and their indices, first invoke the
+program with the -d option. 
+
+For example,
+
+%partition -f 1 67
+
+will count the partitions of 67 that satisfy the requirements of the filter
+of index 1. 
+
+Using filters slows the program down greatly. Partitions of n < 50 take
+less than a second, but when n = 100 or more expect times on the order of
+10 minutes or so. 
+
+When invoked with the -l option the program will list all partitions rather
+than merely counting them. Beware that this can produce extraordinarily large
+amounts of output. Run the program without the -l option first to see how 
+many partitions will be listed.
+
+-------
+
+Limits 
+
+We use unsigned arithmetic as much as possible so that on a 64 bit machine
+p(n) is computable up to p(416) = 17873792969689876004. (The largest 
+unsigned integer on a 64 bit machine is 2^20 = 18446744073709551616.)   
+The largest available n is set at compile time by a setting in the Makefile.
+See partition.h for appropriate values of N_MAX on machines with a smaller
+word size. 

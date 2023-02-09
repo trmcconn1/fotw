@@ -1,0 +1,11 @@
+                          Changes between versions
+Old --> New
+
+1.1 --> 1.2:
+
+	Make tape dynamically allocated, and grow as necessary. (Philo-
+        sophically important, though it makes little difference in practise.)
+
+	Minor changes to output under -c option.
+
+	Misc subdirectory of tsrc with several new example programs.

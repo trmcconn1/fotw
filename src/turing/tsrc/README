@@ -1,0 +1,49 @@
+This is the place to store implementations of various turing machines. I
+suggest placing related machines in a common subdirectory. Thus this
+directory should only contain this file and names of directories. 
+
+I suggest using a .t extension to denote turing programs.
+
+Here are the current collections and brief descriptions. See the directory
+for any other documentation.
+
+1. Logic
+
+The logic directory contains examples relevant to issues in symbolic logic
+and computability theory. See the files themselves for references.
+
+Conventions for logic code
+
+The alphabet is B and |. B stands for a blank cell and | for a nonblank cell.
+The routines implement basic machines for manipulating the tape contents
+and for implementing arithmetic functions. Arithmetic functions expect to
+find a B separated list of arguments on the tape, each argument being the
+representation of a whole number. We let |||...|, where there are n+1 |'s,
+represent n. Calling convention is to put prepend directives in the 
+calling file.
+
+2. Universal 
+
+The universal directory contains an implementation of a universal turing
+machine. The initial tape for this machine consists of a sequence of cells
+representing the instructions for a machine to be simulated, followed by an 
+end of instruction marker, followed by the initial tape description for
+the machine to be simulated. (A tape description shows the current location
+of the read head and the current state, as well as the contents of the tape.) 
+In brief, a cycle of the universal machine works as follows:
+
+	1) Search the instruction part of the tape for a pair that matches
+           the current state/cell-contents pair.
+
+	2) If a matching instruction is found
+           either move the read head marker, or change the 
+           appropriate cell of the data portion of the tape, depending on
+	   what action is encoded in the matching instruction.
+
+	3) Begin the next cycle.
+
+The machine halts when no matching instruction can be found.
+ 
+3. Misc
+
+Programs you can't decide where else to put.

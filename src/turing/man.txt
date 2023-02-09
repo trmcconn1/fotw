@@ -1,0 +1,378 @@
+Turing(1)                                                            Turing(1)
+
+NAME
+
+	Turing - create and run a simulated turing machine
+
+SYNOPSIS
+
+	turing [-d <n> -i <string> -D[ ]<name[=value]> -n <n> 
+			          -t <n> -lcvh] [ source files ... ]
+
+DESCRIPTION
+
+	Turing compiles the machine description given in source files
+	and then runs the resulting Turing machine until it halts. After
+    	each run cycle of the machine, a line showing the contents of the
+	tape in the vicinity of the read head's current postion, the current
+	state name, and the current tape index of the read head, is
+	printed to stdout. 
+
+	The final contents of the tape is printed to stdout after the
+	machine halts. 
+	
+	If no source files are listed, turing reads stdin.
+
+	See below for details of the language in which the instructions 
+	defining the machine are written.
+
+OPTIONS
+
+	-l: Print a listing of the compiled source (this is mainly of 
+            debugging interest.) This option suppresses any other form
+            of non-error output.
+
+	-c: Compile only. Don't run the machine.
+
+	-d: Take n as number of seconds to delay between cycles (default is
+            to run at full speed.)
+
+	-D: Take either the following argument or the immediately following
+	    string as the definition of a macro. (Also see the .define 
+    	    directive.) The macro is defined before any files are compiled.
+	    Macros defined on the command line cannot take arguments.
+
+	-E: Echos commands rather than compiling them, but otherwise processes
+            the file, i.e, macros are expanded and directives are carried out.
+	    Generates line and file directives as needed, so that the output
+            can be used as input, with appropriate file and line information 
+	    appearing in error messages. (Intended to emulate the preprocessor
+            of some other languages.) 
+
+	-i: Use the following argument as the initial tape state. The string
+            should be given in terms of the default tape alphabet, i.e., the
+            digits 0-9, with zero standing for blank. In addition, a 
+            ~ character in the argument indicates that the  read head is 
+            pointed initially at following character. If no ~ is included
+            then the read head points at the left end.  Without this 
+            argument, the programs themselves must set up the initial
+            state, if it is to be different from the all-blank state. 
+	    (Also see the tape directive below.)
+
+	-n: The following number tells how often to print the
+	    tape update. (Default is n=1). A value of zero
+	    supresses printing tape updates. Otherwise, a tape update is
+	    printed every nth cycle.
+
+	-t: The following number gives how often to print tape dumps. The
+	    default of 0 is to print it only at the end.  Otherwise, there is
+	    a dump every nth cycle.
+
+	-h: Print usage information and exit 
+
+	-v: Print version number and exit
+
+LANGUAGE
+
+	Conceptually, a Turing machine is a finite state machine with a
+	one dimensional storage medium (the "tape") that is infinite in both
+	directions. The tape is divided into a sequence of discrete cells, 
+	each of which can be either blank or filled with a letter from a chosen
+	alphabet. The only additional hardware is a "read head" which is
+	positioned over one of the cells on the tape. At each discrete unit
+	of time, the read head reads the contents of the current cell. 
+	Depending on the character read and on the current state of the 
+	machine, one of the following 4 actions is possible:
+
+		i) Write a character in the current cell.
+
+		ii) Move the read head one cell to the right.
+
+		iii) Move the read head one cell to the left.
+
+		iv) Halt.
+
+	Which action is chosen depends on the structure ("internal wiring") of
+	the machine. In most implementations -- including this one -- the
+  	structure is specified by means of a finite sequence of instructions
+	that direct which action is chosen. The machine begins operation in
+	a special state designated as the start state and with a blank tape.
+	(The -i option of this program or the tape directive allow one to 
+        cheat by specifying an arbitrary initial tape.) It halts when no 
+        action has been prescribed for the current character-state pair.
+        The result of the machine's operation is represented by the contents
+        of the tape when it halts. 
+
+	Instructions consist of quadruples of one of the following forms,
+	in which x and y stand for states and a and b stand for characters of
+	the designated alphabet:
+
+		1) x a b y
+
+		2) x a R y
+
+		3) x a L y
+
+	These instructions would apply when the current state is x and the
+        current character is a. (There can be at most one instruction for
+	a given pair (x,a).) An instruction of type 1 directs the machine to
+	print b in the current cell and enter state y. An instruction of type
+	2 directs it to move one cell to the right and enter state y, and an
+	instruction of type 3 directs it to move left and enter state y. 
+
+	In this implementation, a source file consists of a list of 
+	instructions to be compiled into a machine, together with comments and
+        directives that control aspects of the compiler's operation. 
+
+SOURCE FILE FORMAT
+
+	Source files are ascii files.
+
+	Anything from an unescaped # to the end of a line is treated as a 
+        single newline. Whitespace between tokens is ignored. 
+
+	Lines must be either a number of instructions or a directive. A 
+  	directive is a line whose first word begins with an unescaped . 
+	(period) character. 
+
+	The character \ is used to escape ( from the special meaning ) of
+	the #, ., \n and whitespace characters. \ itself can be escaped with
+	a \. An escaped character is treated as an ordinary, non whitespace
+        charcter.
+
+	The initial state is always a state named "0". New 
+        states come into being as they are referenced in instructions. 
+        (The actual name of a state is influenced by the current value of
+        the state_prefix string. See the discussion of the prepend directive
+        below.)  There is no way to remove states. 
+ 
+	The default alphabet is 0-9 (digits). It can be changed using 
+	the alphabet directive (see below).
+
+Built in Macros
+
+	All built in macros start with a . and are all capital letters.
+
+.LINE:	  Expands to current source file line number.
+.FILE:    Expands to the current input file name.
+.VERSION: Expands to the program version number.
+
+Directives 
+
+	All directives begin with a period.
+
+.alphabet: the token following gives the alphabet written to and read from the
+	tape. This affects how subsequent instructions are interpreted into
+        internal format. Internally, a letter is represented by its index   
+	in the current alphabet. The default alphabet, used if there is no
+        alphabet directive, is 0123456789. This directive might be used at
+        the beginning of each source file to indicate the alphabet for tape
+        entries in the rest of the file. The first entry in the alphabet
+        indicates the symbol for a blank tape entry.
+	
+	It is an error for the alphabet to contain the reserved letters, R and
+        L. (it can contain lowercase r and l.) If the same letter appears more
+	than once in the alphabet, the second and subsequent instances are 
+	ignored. (They are stored, but have no effect.)
+
+.define: the token following the directive is the name of macro. The value of
+        the macro is then created by concatenating all remaining tokens on the
+        line with a space character between each. The macro is invoked by 
+        using its name preceded with a "." character. For example, the 
+        following will echo hello world as the file is compiled:
+
+		.define GREET hello world
+		.echo .GREET
+        
+	The name of a directive should not be used as the name of a macro.
+        Otherwise, the directive will be recognized subsequently as a macro
+	rather than as a directive.
+
+	Macros can also take one or more arguments, up to a limit of 16. The
+	syntax for a macro with arguments is
+
+		.define FOO ( xxx [,...] ) text
+
+	where FOO can be replaced by any name for the macro, and xxx stands
+        for any string used as the name of the first macro argument. 
+	Additional arguments can be specified separated by commas. When the
+        macro is subsequently expanded, each occurence of a variable name in
+        the text is replaced by the value assigned to the macro variable in
+ 	the call of the macro. Note that ( must be separated from the name
+	of the macro by whitespace.
+
+	The syntax for a call of a macro is
+
+		.FOO(xxx[,...])
+
+	Note that here no whitespace should separate the name and the other
+	syntactical components, i.e., the entire call must be a single
+	token.
+
+	Compilation is single pass. In particular, macros cannot
+	be called before they are defined. The string produced by
+        expansion of a macro is subject to further expansion.
+
+	If the macro is already defined, a warning is printed and the
+        directive is ignored. (This occurs harmlessly when a file defining
+	a macro is included more than once.)
+
+
+.echo:  The rest of the line is echoed to the screen during compilation. Could
+        be used for checkpoints inside program files during debuging.
+
+.endif: Closes an ifdef or ifndef block. 
+
+.error: Forces a compilation error. Rest of line is printed as message.
+
+.file:  Sets the input file name. Used by the program running under -E option.
+
+.ifdef: If the word following is not the name of a previously defined macro,
+        then everything until the next matching endif directive is ignored.
+	For example, the following would echo hello BAR and hello world 
+        at compilation time:
+
+		.define FOO BAR
+		.ifdef FOO
+		.echo hello .FOO
+		.endif
+		.ifndef BAR
+		.echo hello world 
+		.endif
+
+.ifndef: The same as ifdef, but everything until the next endif is
+        ignored if the word following is a defined macro.
+
+.include: argument is the name of a new program file to read. The contents of
+        that file are inserted in the input stream at this point. The name
+	of the new program file must be fully qualified if the file is not
+	to be found within a directory on the current directory search path. 
+
+.line: resets the line counter to the following value. This is 
+	unlikely to be used in a user written program. It is used to generate
+        an input file by the program running under the -E option.
+	
+.prepend: the argument is a string to append to an internal string named
+        state_prefix. State_prefix is automatically prepended to all state
+        names referenced in instructions and directives. Multiple prefix
+        strings are managed as a FIFO stack. Thus, after 
+
+		.prepend foo
+		.prepend bar
+
+	state_prefix is foobar. 
+	With no arguments, the most recent addition to state_prefix is
+        removed from the right end. Thus, after
+
+		.prepend foo
+		.prepend bar
+		.prepend
+
+	state_prefix is foo.  
+
+	This directive may be used in concert with .include to invoke 
+        existing stand-alone subroutines without creating state name
+	conflicts. One way to do this is as follows: Let foo.t be the source
+        file containing a subroutine named foo. Then the sequence
+
+		.prepend foo
+		.include foo.t
+		.prepend
+
+	ensures that states created and used in foo.t do not conflict with
+        states in the current namespace. To be useful, some instruction
+        should enter the state foo0, which is the the actual name of the
+        starting state of subroutine foo that would result from the above
+	directive sequence. It is also useful to have foo halt in a
+	standardized halting state which can then be referenced from the
+	main routine file. Thus, assuming the machine defined in foo.t has
+	a halting state named halt, the following lines would normally be
+        included in the main routine file:
+
+		# some instruction(s) that enter foo's start state
+		x x x foo0
+
+		.prepend foo
+		.include foo.t
+		.prepend
+
+		# some instruction(s) matching foo's halt state
+		foohalt x x x
+
+	
+	If different behaviour were necessary with more than one include of
+	foo.t, then different prepend strings would be needed each time.
+
+	The FIFO behavior of multiple prepends supports nested includes.
+
+	It is also possible to devise schemes that have the .prepend directives
+        inside the called routine's source file. Good programming technique
+        dictates using a consistent "calling convention."
+
+.tape:  Use the following string as the initial contents of the tape and
+        optionally locate the initial position of the read head. By default the
+        read head is pointed at the left end. Characters used in the string
+        must be in the current alphabet, either the default alphabet, or
+	one previously defined with the alphabet directive. The character R,
+	if included, marks a non default position of the read head. (Recall
+        that R is not a valid alphabet character, so its use here cannot
+        conflict with any desired tape content. Think of R as standing for
+	"Read head." ) If more than one R is included, all but the rightmost
+        is ignored.
+
+.status: Print information about the current complilation, including alphabet,
+        states, and macros. Remaining tokens on the line are printed as a 
+        message.  (This directive is intended as a tool for debugging program 
+        files.)
+
+.undef: Undefines the macro with the name that follows undef.
+
+.warn: Issue a warning. Rest of line is text of warning.
+
+EXAMPLE 
+	
+	Here is a listing of a source file that computes the sum of two
+	numbers stored on the tape (it is stored in the 
+	[distribution directory]/tsrc/logic directory):
+
+# sum.t: Compute the sum of two natural numbers x + y
+# A natural number n is represented on the tape as a sequence |||...| where
+# the number of | characters = n+1. (0 is |). The pair x y is represented
+# on the initial tape as x+1 |'s followed by a blank(B) followed by y+1 |'s.
+
+.alphabet B|
+
+# Delete the first |, move right to the blank between x and y and convert it
+# to a |. Then delete the rightmost |
+0 | B 0
+0 B R q1
+q1 | R q1
+q1 B | q2
+q2 | R q2
+q2 B L q3
+q3 | B q3
+
+SEE ALSO
+
+	Elliott Mendelson, Introduction to Mathematical Logic, 3rd Edition,
+	Wadsworth & Brooks/Cole, Monterey, California, 1987.
+
+AUTHOR
+	Terry R. McConnell
+	trmcconn@syr.edu
+	http://barnyard.syr.edu
+
+BUGS
+
+	Much more could be done in the way of reporting statistics about the
+	computation, at the user's option. For example, what proportion of
+	the time does a computation spend in each state, etc... ?
+
+	We don't bother trying to head off macro "loops" like
+		.define foo \.bar
+		.define bar \.foo
+
+	It is standard, indeed theoretically indispensible, behaviour for
+	a Turing machine to run forever. This might be considered a bug by
+	some.
+

@@ -1,0 +1,33 @@
+%{
+/* wrap.ff: Wrap character supplied on command line around all
+	words */
+#include <stdlib.h>
+#include <stdio.h>
+struct {
+	char *left;
+	char *right;
+	} delimiters[8] = {
+	"(",")",
+	")","(",
+	"{","}",
+	"{","{",
+	"[","]",
+	"]","[",
+	"<",">",
+	">","<"
+	};
+int i;
+char *left, *right;
+%}
+# default: look up matching wrapper in table
+-_ /\([^ \t\n]+\)/  {left = clvar; right = clvar;
+		for(i=0;i<8;i++) {
+		if(strcmp(clvar,delimiters[i].left)==0) {
+		left = delimiters[i].left; 
+		right = delimiters[i].right;
+		break;
+		}} 
+		printf("%s%s%s",left,\$0,right);}
+# suppress look-up. Use same character on each side.
+-s /\([^ \t\n]+\)/  {left = clvar; right = clvar;
+		printf("%s%s%s",left,\$0,right);}

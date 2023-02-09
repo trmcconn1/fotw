@@ -1,0 +1,16 @@
+Second match times before time 18385 (sequence, match length, time)
+
+: m=0, time = 1
+0: m=1, time = 4
+01: m=2, time = 8
+010: m=3, time = 17
+0100: m=4, time = 34
+01001: m=5, time = 38
+010011: m=6, time = 115
+0100110: m=7, time = 186
+01001101: m=8, time = 414
+010011010: m=9, time = 757
+0100110101: m=10, time = 1909
+01001101011: m=11, time = 3977
+010011010111: m=12, time = 4174
+0100110101110: m=13, time = 10347                         

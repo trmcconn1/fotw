@@ -1,0 +1,14 @@
+%{
+                     /* Stutter filter */
+#include <stdio.h>
+#include <stdlib.h>
+#define INFO "           CHICKEN HAVEN SOFTWARE  (T. McConnell)
+		Made by fgn 1.1, 1995
+		stutter: repeat each non-whitespace character
+			 a number of times given by command line
+			 argument. "
+int count;
+%}
++_ /\([^ 	\n]\)/ {count=atoi(clvar)+1;while(--count >0)
+			printf("%s",\$0);} 
+%%

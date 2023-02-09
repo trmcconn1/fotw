@@ -1,0 +1,103 @@
+			Crypto Utils Directory
+			   (Version 1.0)
+
+
+Contents:
+
+	1. Introduction
+	2. Building
+	3. Installation
+	4. Usage
+	5. Disclaimer
+	6. Author
+
+1. This directory was created at the 1.1 version of the crypto package of
+encryption methods of historical interest. The programs so far include:
+
+	makebook: create a text file suitable for use with the book cypher.
+	makepad:  create a text file suitable to be used as a one time pad.
+	mkrotor:  create a random permutation used in building an enigma
+                  machine emulator. Essentially, this just creates possible
+                  initializors for the rotor and reflector arrays in 
+                  enigma.c.
+	uuencode: A workalike for unix uuencode/decode. This is included
+                  for completeness.
+	
+	freq:     A quick and dirty tool for tallying relative frequencies
+	          of characters in text or binary files. 
+
+See the source files book.c, onetime.c, and enigma for an explanation of how
+the cyphers work.
+
+2. Give the command make all in this directory. Edit the makefile if needed.
+Individual program names can also be used as targets, as well as clean and
+several others. (The command make all is run recursively if the package
+is built from the directory above this one.)
+
+Operation of makebook depends upon a compiled-in table of frequency 
+distribution of characters in text of the sort to be encrypted. This table
+can always be edited and hopefully improved. Both programs are only as good
+as their random number generators. Different RNGs could be linked by
+setting the values of macros as explained in the makefile.
+
+3. Move the executables to any desired directory.
+
+4. The usage line of makebook is
+
+	makebook [ -s number -f number -h -v ] [ > output_file ]
+
+   where the  options are
+
+		-s: take the following number as seed for the random number
+		    generator (system time is used by default.)
+
+		-f: take the following number to be the size (in KB) of the 
+                    book file to create. (Default: 20KB)
+
+		-h: print help information and exit.
+
+		-v: print version number and exit.
+
+Note that each program responds to -h with a usage line and summary similar
+to the above.
+
+The usage line for makepad is exactly the same. (with makepad in place of
+makebook.) 
+
+Both programs write a stream of random text characters to their standard
+output, so to capture output you have to use redirection, as in
+
+% makebook -s 100286 -f 100 > book.txt
+% chmod 400 book.txt
+
+Here % denotes the shell prompt and the chmod command sets the file
+permissions to only read by owner. (The file should then be moved to
+a directory or other location that is as secure as possible. All traces
+of the file should be removed from public places.) The same comments apply
+to usage of makepad.
+
+Makebook attempts to create text in which the relative frequency of occurence
+of each character matches the probability of its occurence in text of the
+type that is to be encrypted. Makepad, on the other hand, attempts to create
+a uniform distribution of text characters, i.e, one that is as random as
+possible. Both programs print (to stderr) the value of the chi-square 
+goodness of fit statistics for the desired target frequency distribution.
+
+
+5. Author 
+
+Terry R. McConnell
+215 Carnegie
+Syracuse University
+Syracuse, N.Y. 13244-1150
+trmcconn@syr.edu
+http://barnyard.syr.edu/~tmc
+
+6. Disclaimer
+
+This work does not represent the views of my employer and is not supported
+by them. I have done this work entirely on my own time as a personal hobby.
+This software is offered as is and without charge. The author is not
+responsible for any damages to property that may follow from the use of this
+software.
+

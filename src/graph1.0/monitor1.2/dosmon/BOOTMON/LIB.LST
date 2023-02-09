@@ -1,0 +1,1017 @@
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-1
+                                                            
+
+       1                                NAME mylib 
+       2                                TITLE mylib 
+       3                                 
+       4                                ; Library routines for monitor. We coul
+					d just link to stdlib.o, but where's 
+       5                                ; the fun in that?  All routines assume
+					 the stack top has the return address 
+       6                                ; (32 bit) with arguments pushed in rev
+					erse order above it. All routines 
+       7                                ; save all registers used except for ea
+					x. Standard lib names are changed 
+       8                                ; in case we include c code that links 
+					to stdlib 
+       9                                  
+      10                             C  INCLUDE macros.asm 
+      11                             C   
+      12 = 0200                      C  BUF_SIZ EQU 512 
+      13 = 0200                      C  ENV_SIZ EQU 512 
+      14 = 1000                      C  SCRIPT_SIZ EQU 4096 
+      15 =                           C  PROMPT_STRING EQU "Monitor>" 
+      16 = 005C                      C  ESCAPE_CHAR EQU 05CH 
+      17 = 0023                      C  COMMENT_CHAR EQU 023H 
+      18 = 0024                      C  VARIABLE_CHAR EQU 024H 
+      19                             C   
+      20                             C  ; If the bios is used to print strings 
+					to the console, the following sets 
+      21                             C  ; the attribute, with high nibble = rgb
+					 value of background, low nibble = 
+      22                             C  ; rgb value of foreground. I like white
+					 on blue background 
+      23                             C  ; Standard white on black is 07H 
+      24                             C   
+      25 = 0017                      C  CHAR_ATTR EQU 17H      
+      26                             C   
+      27                             C  ;; Note: all system calls should be cal
+					led from inside macros, for portability
+					 
+      28                             C   
+      29                             C  ; Every system call is implemented in a
+					 separate macro. There are two  
+      30                             C  ; implementations of each one - one usi
+					ng only BIOS interrupts so that 
+      31                             C  ; monitor could be run in the absence o
+					f an operating system, say, as a  
+      32                             C  ; boot monitor. This is selected by def
+					ining BIOS on the assember command 
+      33                             C  ; line. Otherwise, DOS int21H system ca
+					lls are used 
+      34                             C   
+      35                             C  ; BE VERY CAREFUL USING REGISTERS AS MA
+					CRO ARGUMENTS!!! 
+      36                             C   
+      37                             C  IFDEF BIOS 
+      38                             C   
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-2
+                                                            
+
+      39                             C  ; Read a line of text from the terminal
+					 using Bios 00H int 16H service 
+      40                             C  ; Leaves number of characters read in a
+					x.  
+      41                             C   
+      42                             C  READ_LINE MACRO mybuf 
+      43                             C  LOCAL loop,done,do_backsp 
+      44                             C  	push si 
+      45                             C  	push bx 
+      46                             C  	push bp 
+      47                             C  	mov ax,mybuf 
+      48                             C  	mov bp,ax 
+      49                             C  	mov ah,0FH 
+      50                             C          int 10H 
+      51                             C          mov bl,CHAR_ATTR 
+      52                             C  	xor si,si 
+      53                             C  	jmp loop 
+      54                             C   
+      55                             C  do_backsp: 
+      56                             C   
+      57                             C  	cmp si,0 
+      58                             C  	jbe loop 
+      59                             C  	dec si 
+      60                             C  	mov ah,0EH 
+      61                             C  	int 10H 
+      62                             C  	mov al,20H 
+      63                             C  	int 10H 
+      64                             C  	mov al,08H 
+      65                             C  	int 10H 
+      66                             C   
+      67                             C  loop: 
+      68                             C  	mov ax,00H 
+      69                             C  	int 16H 
+      70                             C  	cmp al,1AH 
+      71                             C  	je done 
+      72                             C  	cmp al,08H 
+      73                             C  	je do_backsp  
+      74                             C  	mov BYTE PTR DS:[bp+si],al 
+      75                             C  	inc si 
+      76                             C          mov ah,0EH 
+      77                             C          int 10H 
+      78                             C  	cmp al,0DH 
+      79                             C  	jne loop 
+      80                             C   
+      81                             C  done: 
+      82                             C   
+      83                             C  	mov al,0AH 
+      84                             C  	mov ah,0EH 
+      85                             C  	int 10H 
+      86                             C  	mov ax,si 
+      87                             C  	pop bp 
+      88                             C  	pop bx 
+      89                             C  	pop si 
+      90                             C  ENDM 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-3
+                                                            
+
+      91                             C   
+      92                             C  ; Print a single character to the termi
+					nal using int 10H service 0EH 
+      93                             C   
+      94                             C  PRINT_CHAR MACRO mychar  
+      95                             C  		     push ax 
+      96                             C  	             push bx 
+      97                             C  		     mov ah,0FH 
+      98                             C  		     int 10H 
+      99                             C  	             mov bl,CHAR_ATTR 
+     100                             C  		     mov ah,0EH 
+     101                             C  	             mov al,mychar 
+     102                             C  	             int 10H 
+     103                             C  		     pop bx 
+     104                             C  	             pop ax 
+     105                             C  ENDM 
+     106                             C   
+     107                             C  ; Macro: use BIOS 10H service to write 
+					a string to the screen 
+     108                             C  ; string must be null terminated 
+     109                             C   
+     110                             C  PRINT_STRING MACRO mystring  
+     111                             C  	push ax 
+     112                             C  	push bx 
+     113                             C  	push cx 
+     114                             C  	push dx 
+     115                             C  	push es 
+     116                             C  	push bp 
+     117                             C  	mov ah,0FH 
+     118                             C  	int 10H 
+     119                             C  	mov ah,03H 
+     120                             C  	int 10H 
+     121                             C  	mov ax,OFFSET DGROUP:mystring 
+     122                             C  	push ax 
+     123                             C  	call my_strlen 
+     124                             C  	add sp,2 
+     125                             C  	mov cx,ax 
+     126                             C  	mov ax,ds 
+     127                             C  	mov es,ax 
+     128                             C  	mov ax,OFFSET DGROUP:mystring 
+     129                             C  	mov bp,ax 
+     130                             C  	mov bl,CHAR_ATTR 
+     131                             C  	mov al,01H 
+     132                             C  	mov ah,13H 
+     133                             C  	int 10H 
+     134                             C  	pop bp 
+     135                             C  	pop es 
+     136                             C  	pop dx 
+     137                             C  	pop cx 
+     138                             C  	pop bx 
+     139                             C  	pop ax 
+     140                             C  ENDM 
+     141                             C   
+     142                             C  ; A version of the previous using a reg
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-4
+                                                            
+
+					ister passed as argument 
+     143                             C   
+     144                             C  PRINT_PTR MACRO my_ptr  
+     145                             C  	push ax 
+     146                             C  	push bx 
+     147                             C  	push cx 
+     148                             C  	push dx 
+     149                             C  	push es 
+     150                             C  	push bp 
+     151                             C  	mov ah,0FH 
+     152                             C  	int 10H 
+     153                             C  	mov ah,03H 
+     154                             C  	int 10H 
+     155                             C  	mov ax,my_ptr 
+     156                             C  	push ax 
+     157                             C  	call my_strlen 
+     158                             C  	add sp,2 
+     159                             C  	mov cx,ax 
+     160                             C  	mov ax,ds 
+     161                             C  	mov es,ax 
+     162                             C  	mov ax,my_ptr 
+     163                             C  	mov bp,ax 
+     164                             C  	mov bl,CHAR_ATTR 
+     165                             C  	mov al,01H 
+     166                             C  	mov ah,13H 
+     167                             C  	int 10H 
+     168                             C  	pop bp 
+     169                             C  	pop es 
+     170                             C  	pop dx 
+     171                             C  	pop cx 
+     172                             C  	pop bx 
+     173                             C  	pop ax 
+     174                             C  ENDM 
+     175                             C   
+     176                             C  ; Try to return to whatever might have 
+					called us. For a true boot monitor 
+     177                             C  ; we might want to try int 19H, which d
+					oes a warm reboot 
+     178                             C   
+     179                             C  TERMINATE MACRO rval 
+     180                             C  	mov al,rval	       
+     181                             C  	ret 
+     182                             C  	;int 19H    
+     183                             C  ENDM 
+     184                             C   
+     185                             C  ; SBRK  return in ax the number of K of
+					 total memory as returned 
+     186                             C  ; by the BIOS. It is not clear this is 
+					meaningful    
+     187                             C   
+     188                             C  SBRK MACRO   
+     189                             C  	int 12H 
+     190                             C  ENDM 
+     191                             C   
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-5
+                                                            
+
+     192                             C  ENDIF 
+     193                                 
+     194                                 
+     195                                PUBLIC my_strlen,my_strcpy,my_strcmp,my
+					_strncmp,_print_i,mygetenv,my_strstr,my
+					_atoi 
+     196                                EXTRN environment:WORD,envc:WORD 
+     197                                 
+     198                                DGROUP GROUP _TEXT,_DATA,_BSS 
+     199                                 
+     200 0000                           _TEXT SEGMENT PUBLIC 'CODE'  
+     201                                ASSUME CS:DGROUP,DS:DGROUP 
+     202                                 
+     203                                 
+     204                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     205                                ; strlen (char *string) - return via ax
+					 the number of characters in the    ; 
+     206                                ;                         null terminat
+					ed string. Address of the first char ; 
+     207                                ;                         of string has
+					 been pushed before the call         ; 
+     208                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     209                                 
+     210 0000                           my_strlen: 
+     211                                 
+     212 0000  55                       	push bp 
+     213 0001  8B EC                    	mov bp,sp 
+     214 0003  53                       	push bx 
+     215 0004  56                       	push si 
+     216 0005  BE 0000                  	mov si,0 	        ; initialize count 
+     217 0008  8B 5E 04                 	mov bx,4[bp]            ; point at fir
+					st char of string 
+     218                                 
+     219 000B                           strlen_loop:                    ; entry
+					 point of loop to scan string 
+     220                                 
+     221 000B  8A 00                    	mov al,[bx + si]        ; Is the next 
+					byte of string 
+     222 000D  3C 00                    	cmp al,0                ; equal to a z
+					ero byte (NULL)  ? 
+     223 000F  74 03                    	jz strlen_ret           ; yes it is, s
+					o exit scanning loop 
+     224 0011  46                       	inc si                  ; no, so incre
+					ment counter and 
+     225 0012  EB F7                    	jmp strlen_loop         ; begin next l
+					oop iteration 
+     226                                 
+     227 0014                           strlen_ret:                     ; label
+					 for begin return to caller  
+     228                                 
+     229 0014  8B C6                    	mov ax,si             ; return char co
+					unt in ax 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-6
+                                                            
+
+     230 0016  5E                       	pop si 
+     231 0017  5B                       	pop bx 
+     232 0018  5D                       	pop bp 
+     233 0019  C3                       	ret 
+     234                                	 
+     235                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     236                                ;  strcpy( char *dest, char *src )     
+					                                ; 
+     237                                ;                                      
+					                                ; 
+     238                                ;  Unlike the C std lib routine, this o
+					ne returns the number of bytes  ; 
+     239                                ;  copied through ax                   
+					                               ; 
+     240                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     241                                	 
+     242 001A                           my_strcpy:  
+     243                                 
+     244 001A  55                       	push bp 
+     245 001B  8B EC                    	mov bp,sp 
+     246 001D  52                       	push dx                ; save register
+					s used 
+     247 001E  53                       	push bx 
+     248 001F  56                       	push si 
+     249 0020  BE 0000                  	mov si,0    		; initialize count 
+     250 0023  8B 56 04                 	mov dx,4[bp]        ; point at first c
+					har of dest string 
+     251 0026  8B 5E 06                 	mov bx,6[bp]        ; point at first c
+					har of src string 
+     252 0029  8B EA                    	mov bp,dx 
+     253                                 
+     254                                 
+     255 002B  83 FB 00                 	cmp bx,0 
+     256 002E  74 0C                    	jz strcpy_ret           ; Null ptr to 
+					src string 
+     257                                 
+     258 0030                           strcpy_loop:                    ; entry
+					 point of loop to scan string 
+     259                                 
+     260 0030  8A 00                    	mov al,[bx + si]      ; copy next byte
+					 of src  
+     261 0032  3E: 88 02                	mov DS:[bp + si],al      ; to dest.  
+     262 0035  46                       	inc si                 ; add 1 to coun
+					t of bytes copied 
+     263 0036  3C 00                    	cmp al,0                ; Is byte equa
+					l to a zero byte (NULL)  ? 
+     264 0038  74 02                    	jz strcpy_ret           ; yes it is, s
+					o exit scanning loop 
+     265 003A  EB F4                    	jmp strcpy_loop         ; begin next l
+					oop iteration 
+     266                                 
+     267 003C                           strcpy_ret:                     ; label
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-7
+                                                            
+
+					 for begin return to caller  
+     268                                 
+     269 003C  8B C6                    	mov ax,si               ; return char 
+					count in ax 
+     270 003E  5E                       	pop si 
+     271 003F  5B                       	pop bx 
+     272 0040  5A                       	pop dx 
+     273 0041  5D                       	pop bp 
+     274 0042  C3                       	ret 
+     275                                 
+     276                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     277                                ; strcmp (char *s, char *t) - return vi
+					a ax 0 if s and t are identical,  ; 
+     278                                ;                             -1 if s <
+					 t and 1 if s > t                  ; 
+     279                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     280                                 
+     281 0043                           my_strcmp: 
+     282                                 
+     283 0043  55                       	push bp 
+     284 0044  8B EC                    	mov bp,sp 
+     285 0046  53                       	push bx 
+     286 0047  56                       	push si 
+     287 0048  8B 5E 04                 	mov bx,[bp+4]           ; addr of firs
+					t char of t --> bx 
+     288 004B  8B 46 06                 	mov ax,[bp+6]           ; addr of firs
+					t char of s --> bp 
+     289 004E  8B E8                    	mov bp,ax 
+     290 0050  BE 0000                  	mov si,0      		; initialize counter 
+     291                                 
+     292 0053                           strcmp_loop:                    ; loop 
+					to scan strings 
+     293                                 
+     294 0053  8A 00                    	mov al,[bx + si]        ; How does the
+					 next byte of s 
+     295 0055  3E: 8A 22                	mov ah,DS:[bp + si]     ; compare with
+					 the  
+     296 0058  3A E0                    	cmp ah,al               ; the next byt
+					e of t? 
+     297 005A  72 0A                    	jb strcmp_below         ; s < t so jum
+					p to -1 return  
+     298 005C  77 0E                    	ja strcmp_above         ; s > t so jum
+					p to  1 return 
+     299 005E  80 FC 00                 	cmp ah,0                ; Have we reac
+					hed end of s (hence also t)? 
+     300 0061  74 0F                    	jz strcmp_equal         ; If so then s
+					 = t 
+     301 0063  46                       	inc si                  ; increment co
+					unter and 
+     302 0064  EB ED                    	jmp strcmp_loop         ; begin next l
+					oop iteration 
+     303                                 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-8
+                                                            
+
+     304 0066                           strcmp_below: 
+     305 0066  B8 FFFF                  	mov ax,0FFFFH           ; unsigned for
+					m of -1 
+     306 0069  EB 0A 90                 	jmp strcmp_ret 
+     307                                 
+     308 006C                           strcmp_above: 
+     309 006C  B8 0001                  	mov ax,1 
+     310 006F  EB 04 90                 	jmp strcmp_ret 
+     311                                 
+     312 0072                           strcmp_equal: 
+     313 0072  B8 0000                  	mov ax,0 
+     314                                 
+     315 0075                           strcmp_ret:                     ; label
+					 for begin return to caller  
+     316                                 
+     317 0075  5E                       	pop si                 ; restore regis
+					ters used 
+     318 0076  5B                       	pop bx 
+     319 0077  5D                       	pop bp 
+     320 0078  C3                       	ret 
+     321                                	 
+     322                                 
+     323                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     324                                ; strncmp (char *s, char *t, int n)    
+					                                   ; 
+     325                                ; return via ax 0 if first n chars of s
+					 and t are identical,             ;    
+					 ; -1 if s < t and 1 if s > t          
+					               
+     326                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     327                                 
+     328 0079                           my_strncmp: 
+     329                                 
+     330 0079  55                       	push bp 
+     331 007A  8B EC                    	mov bp,sp 
+     332 007C  53                       	push bx 
+     333 007D  51                       	push cx 
+     334 007E  52                       	push dx 
+     335 007F  56                       	push si 
+     336 0080  8B 4E 08                 	mov cx,[bp+8]        ; initialize coun
+					ter 
+     337 0083  8B 56 06                 	mov dx,[bp+6]        ; addr of first c
+					har of t --> dx 
+     338 0086  8B 5E 04                 	mov bx,[bp+4]        ; addr of first c
+					har of s --> bx 
+     339 0089  8B EA                    	mov bp,dx 
+     340                                 
+     341 008B  33 F6                    	xor si,si             ; zero out index
+					 
+     342                                 
+     343 008D                           strncmp_loop:                    ; loop
+					 to scan strings 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-9
+                                                            
+
+     344                                 
+     345 008D  83 F9 00                 	cmp cx,0               ; Have we check
+					ed all necessary chars ? 
+     346 0090  74 22                    	je strncmp_equal        ; if so then s
+					 = t 
+     347                                 
+     348 0092  8A 00                    	mov al,[bx + si]      ; How does the n
+					ext byte of s 
+     349 0094  8B DA                    	mov bx,dx 
+     350 0096  3E: 8A 22                	mov ah,DS:[bp + si]      ; compare wit
+					h the  
+     351 0099  3A E0                    	cmp ah,al               ; the next byt
+					e of t? 
+     352 009B  72 0B                    	jb strncmp_below        ; s < t so jum
+					p to -1 return  
+     353 009D  77 0F                    	ja strncmp_above        ; s > t so jum
+					p to  1 return 
+     354 009F  80 FC 00                 	cmp ah,0                ; Have we reac
+					hed end of s (hence also t)? 
+     355 00A2  74 10                    	je strncmp_equal        ; If so then s
+					 = t 
+     356 00A4  46                       	inc si                 ; increment ind
+					ex  
+     357 00A5  49                       	dec cx                 ; decrement cou
+					nter 
+     358 00A6  EB E5                    	jmp strncmp_loop        ; begin next l
+					oop iteration 
+     359                                 
+     360 00A8                           strncmp_below: 
+     361 00A8  B8 FFFF                  	mov ax,0FFFFH      ; unsigned form of 
+					-1 
+     362 00AB  EB 0A 90                 	jmp strncmp_ret 
+     363                                 
+     364 00AE                           strncmp_above: 
+     365 00AE  B8 0001                  	mov ax,1 
+     366 00B1  EB 04 90                 	jmp strncmp_ret 
+     367                                 
+     368 00B4                           strncmp_equal: 
+     369 00B4  B8 0000                  	mov ax,0 
+     370                                 
+     371 00B7                           strncmp_ret:                    ; label
+					 for begin return to caller  
+     372                                 
+     373 00B7  5E                       	pop si                 ; restore regis
+					ters used 
+     374 00B8  5A                       	pop dx 
+     375 00B9  59                       	pop cx 
+     376 00BA  5B                       	pop bx 
+     377 00BB  5D                       	pop bp 
+     378 00BC  C3                       	ret 
+     379                                 
+     380                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     381                                ;  char *mygetenv(char *): return point
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-10
+                                                            
+
+					er to bar when called with       ; 
+     382                                ;  pointer to foo and foo=bar is in the
+					 environment. Return null pointer; 
+     383                                ;  when foo is not defined in the envir
+					onment                           ; 
+     384                                ;  Also return in si the index of the f
+					ound environment string         ; 
+     385                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     386                                 
+     387 00BD                           mygetenv:  
+     388 00BD  55                       	push bp 
+     389 00BE  8B EC                    	mov bp,sp       ; set up stack frame 
+     390                                 
+     391 00C0  53                       	push bx          ; preserve all regist
+					ers used 
+     392 00C1  51                       	push cx 
+     393 00C2  57                       	push di 
+     394                                 
+     395 00C3  8B 0E 0000 E             	mov cx,envc    ; load counter for sear
+					ch loop over environment 
+     396 00C7  33 F6                    	xor si,si       ; initialize index to 
+					dword pointer 
+     397                                 
+     398 00C9                           mygetenv_loop: 
+     399                                 
+     400 00C9  83 F9 00                 	cmp cx,00H      ; have we searched the
+					 whole environment yet? 
+     401 00CC  74 30                    	je mygetenv_nfd  ; jump to not found c
+					ode if so 
+     402                                 
+     403 00CE  8B 9C 0000 E             	mov bx,environment[si] ; load pointer 
+					to current env string in bx 
+     404                                 
+     405                                ; we need to find the byte offset of th
+					e "=" sign in the env string 
+     406                                 
+     407 00D2  33 FF                    	xor di,di       ; zero out byte counte
+					r for search for = sign 
+     408                                 
+     409 00D4                           mygetenv_sch:             ; the = searc
+					h loop start 
+     410                                 
+     411 00D4  8A 01                    	mov al,[bx + di]  ; fetch di-th byte 
+     412 00D6  3C 3D                    	cmp al,3DH        ; is it ascii code f
+					or = sign 
+     413 00D8  74 03                    	je mygetenv_efnd  ; yes, so break out 
+					loop with found bit offset in di  
+     414 00DA  47                       	inc di            ; else increase bit 
+					offset and  
+     415 00DB  EB F7                    	jmp mygetenv_sch  ; back to start of l
+					oop 
+     416                                 
+     417 00DD                           mygetenv_efnd:            ; we have fou
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-11
+                                                            
+
+					nd the = offset by di 
+     418                                 
+     419 00DD  C6 01 00                 	mov BYTE PTR [bx + di], 00H ; temporar
+					ily change = to null char	 
+     420 00E0  53                       	push bx           ; pointer to before 
+					= part of current env string  
+     421 00E1  FF 76 04                 	push [bp + 4]           ; pointer to f
+					oo string 
+     422 00E4  E8 0043 R                	call my_strcmp     ; call compare stri
+					ngs  
+     423 00E7  83 C4 04                 	add sp,4          ; clean up from call
+					 
+     424 00EA  C6 01 3D                 	mov BYTE PTR [bx + di], 3DH  ; yes, I 
+					did remember to put = back! 
+     425 00ED  3D 0000                  	cmp ax,0          ; did we find foo= i
+					n env? 
+     426 00F0  74 06                    	je mygetenv_fnd    ; yes, so break out
+					 of main loop with found result 
+     427 00F2  83 C6 02                 	add si,2          ; else increment env
+					 string pointer offset 
+     428 00F5  49                       	dec cx            ; decrement environm
+					ent counter 
+     429 00F6  EB D1                    	jmp mygetenv_loop  ; and restart main 
+					search loop 
+     430                                	 
+     431 00F8                           mygetenv_fnd:              ; when found
+					, return address of bar in ax 
+     432 00F8  47                       	inc di 
+     433 00F9  8D 01                    	lea ax,[bx + di]; store address of bar
+					 part in ax  
+     434 00FB  EB 04 90                         jmp mygetenv_rtr   ; and prepar
+					e to return 
+     435                                 
+     436 00FE                           mygetenv_nfd: 
+     437 00FE  B8 0000                  	mov ax,00H       ; return zero address
+					 when not found 
+     438                                 
+     439 0101                           mygetenv_rtr: 
+     440                                			   ; prepare to return: restore regi
+					sters 
+     441 0101  5F                       	pop di 
+     442 0102  59                       	pop cx 
+     443 0103  5B                       	pop bx 
+     444 0104  5D                       	pop bp  
+     445                                 
+     446 0105  C3                       	ret                ; result in ax 
+     447                                	 
+     448                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     449                                ;  print_i( unsigned ) convert 32 bit t
+					o ascii string and print it   ; 
+     450                                ;  in decimal format                   
+					                              ; 
+     451                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-12
+                                                            
+
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+     452                                 
+     453                                 
+     454 0106                           _print_i:  
+     455                                	 
+     456 0106  55                       	push bp               ; set up stack f
+					rame 
+     457 0107  8B EC                    	mov bp,sp 
+     458 0109  53                       	push bx 
+     459 010A  51                       	push cx 
+     460 010B  52                       	push dx 
+     461                                 
+     462 010C  BB 000A                  	mov bx,10 
+     463                                 
+     464 010F                           buffer_clear_loop: 
+     465                                 
+     466 010F  4B                       	dec bx 
+     467 0110  C6 87 0000 R 20          	mov BYTE PTR my_buf[bx],020H  
+     468 0115  83 FB 00                 	cmp bx,0 
+     469 0118  74 02                    	je  buffer_clear_done 
+     470 011A  EB F3                    	jmp buffer_clear_loop 
+     471                                 
+     472 011C                           buffer_clear_done: 
+     473                                	 
+     474 011C  BB 0009                  	mov bx,9              ; set up bx for 
+					byte position 
+     475 011F  B9 000A                          mov cx,10             ; divisor
+					 for div by 10   	 
+     476 0122  8B 46 04                 	mov ax, [bp + 4]     ; load divisor in
+					to ax 
+     477                                 
+     478 0125                           digit_loop: 
+     479                                	 
+     480 0125  33 D2                    	xor dx,dx            ; clear dx for re
+					mainder 
+     481 0127  F7 F1                    	div cx                ; divide by 10 
+     482 0129  80 C2 30                 	add dl,48              ; convert remai
+					nder in dl into digit 
+     483 012C  88 97 0000 R             	mov my_buf[bx],dl  ; copy digit into p
+					lace 
+     484 0130  4B                       	dec bx                ; adjust byte po
+					sition 
+     485 0131  83 FB 00                 	cmp bx,0 
+     486 0134  74 05                    	je convert_done  
+     487 0136  3D 0000                  	cmp ax,0              ; see if anythin
+					g left of binary number 
+     488 0139  75 EA                    	jne digit_loop         ; back to start
+					 of loop if so  
+     489                                	 
+     490                                 
+     491 013B                           convert_done: 
+     492                                 
+     493                                        PRINT_STRING my_buf 
+     494 013B  50                     1 	push ax
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-13
+                                                            
+
+     495 013C  53                     1 	push bx
+     496 013D  51                     1 	push cx
+     497 013E  52                     1 	push dx
+     498 013F  06                     1 	push es
+     499 0140  55                     1 	push bp
+     500 0141  B4 0F                  1 	mov ah,0FH
+     501 0143  CD 10                  1 	int 10H
+     502 0145  B4 03                  1 	mov ah,03H
+     503 0147  CD 10                  1 	int 10H
+     504 0149  B8 0000 R              1 	mov ax,OFFSET DGROUP:my_buf
+     505 014C  50                     1 	push ax
+     506 014D  E8 0000 R              1 	call my_strlen
+     507 0150  83 C4 02               1 	add sp,2
+     508 0153  8B C8                  1 	mov cx,ax
+     509 0155  8C D8                  1 	mov ax,ds
+     510 0157  8E C0                  1 	mov es,ax
+     511 0159  B8 0000 R              1 	mov ax,OFFSET DGROUP:my_buf
+     512 015C  8B E8                  1 	mov bp,ax
+     513 015E  B3 17                  1 	mov bl,CHAR_ATTR
+     514 0160  B0 01                  1 	mov al,01H
+     515 0162  B4 13                  1 	mov ah,13H
+     516 0164  CD 10                  1 	int 10H
+     517 0166  5D                     1 	pop bp
+     518 0167  07                     1 	pop es
+     519 0168  5A                     1 	pop dx
+     520 0169  59                     1 	pop cx
+     521 016A  5B                     1 	pop bx
+     522 016B  58                     1 	pop ax
+     523                                 
+     524 016C  5A                       	pop dx 
+     525 016D  59                       	pop cx 
+     526 016E  5B                       	pop bx 
+     527 016F  5D                       	pop bp 
+     528 0170  C3                       	ret 
+     529                                 
+     530                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     531                                ;    char *my_strstr(char *haystack,cha
+					r *needle): return pointer of first; 
+     532                                ; occurrence of string needle in string
+					 haystack, or null if not found    ; 
+     533                                ; return haystack if needle is null    
+					                                   ; 
+     534                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     535                                 
+     536 0171                           my_strstr: 
+     537                                 
+     538 0171  55                       	push bp                ; set up a stac
+					k frame  
+     539 0172  8B EC                    	mov bp,sp 
+     540 0174  57                       	push di                ; save register
+					s used 
+     541 0175  53                       	push bx 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-14
+                                                            
+
+     542 0176  51                       	push cx 
+     543 0177  52                       	push dx 
+     544                                 
+     545 0178  33 C0                    	xor ax,ax             ; default return
+					 value is null 
+     546 017A  8B 5E 04                 	mov bx,[bp + 4]       ; store pointer 
+					to haystack in bx  
+     547 017D  8B 56 06                 	mov dx,[bp + 6]      ; store pointer t
+					o needle in dx 
+     548 0180  8B EA                    	mov bp,dx 
+     549 0182  83 FB 00                 	cmp bx,00H            ; if haystack is
+					 null return null since  
+     550 0185  74 2A                    	je my_strstr_ret        ; nothing can 
+					be found in a null haystack 
+     551 0187  8B C3                    	mov ax,bx             ; new default re
+					turn value is haystack 
+     552 0189  83 FA 00                 	cmp dx,00H            ; if needle is n
+					ull return haystack, since you 
+     553 018C  74 23                    	je my_strstr_ret        ; will find no
+					thing if you look for nothing 
+     554                                	 
+     555 018E  33 FF                    	xor di,di             ; initialize loo
+					p index 
+     556                                 
+     557 0190                           little_loop:                    ; this 
+					loops over needle 
+     558 0190  8A 09                    	mov cl,[bx+di]        ; load next byte
+					 of haystack in cl 
+     559 0192  3E: 8A 03                	mov al,DS:[bp+di]        ; load next b
+					yte of needle in al 
+     560 0195  3C 00                    	cmp al,00H             ; if we have re
+					ached null at end of needle 
+     561 0197  74 11                    	je my_strstr_found      ; then needle 
+					has been found! 
+     562 0199  80 F9 00                 	cmp cl,00H             ; if we have re
+					ached null at end of haystack 
+     563 019C  74 11                    	je my_strstr_notfound   ; then needle 
+					has not been found 
+     564 019E  3A C1                    	cmp al,cl               ; does needle 
+					char = haystack char? 
+     565 01A0  75 03                    	jne big_loop            ; no, so move 
+					to next haystack char 
+     566 01A2  47                       	inc di                 ; yes, so move 
+					to next needle char 
+     567 01A3  EB EB                    	jmp little_loop 
+     568 01A5                           big_loop:                      ; this l
+					oops over haystack 
+     569 01A5  43                       	inc bx                 ; move to next 
+					haystack char 
+     570 01A6  33 FF                    	xor di,di             ; and reset need
+					le index 
+     571 01A8  EB E6                    	jmp little_loop	        ; restart loop
+					 over needle 
+     572                                 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-15
+                                                            
+
+     573 01AA                           my_strstr_found: 
+     574                                 
+     575 01AA  8B C3                    	mov ax,bx             ; bx points at c
+					haracter in haystack where 
+     576 01AC  EB 03 90                 	jmp my_strstr_ret       ; needle match
+					ed, so return this value in ax 
+     577                                 
+     578 01AF                           my_strstr_notfound: 
+     579                                 
+     580 01AF  33 C0                    	xor ax,ax             ; needle not fou
+					nd, so return null pointer 
+     581                                 
+     582 01B1                           my_strstr_ret: 
+     583                                 
+     584 01B1  5A                       	pop dx                 ; restore regis
+					ters used 
+     585 01B2  59                       	pop cx 
+     586 01B3  5B                       	pop bx 
+     587 01B4  5F                       	pop di 
+     588 01B5  5D                       	pop bp  
+     589 01B6  C3                       	ret     ; Twizzle, Twazzle, Twuzzle, T
+					wom. Time for this one to come 
+     590                                	        ; home   -- Mr. Wizard 
+     591                                 
+     592                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     593                                ; unsigned my_atoi(char *) 
+     594                                ; convert string to unsigned integer 
+     595                                ; value returned in ax 
+     596                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     597                                 
+     598 01B7                           my_atoi: 
+     599                                 
+     600 01B7  55                       	push bp 
+     601 01B8  8B EC                    	mov bp,sp 
+     602 01BA  53                       	push bx 
+     603 01BB  51                       	push cx 
+     604 01BC  52                       	push dx 
+     605                                 
+     606 01BD  33 C0                    	xor ax,ax       ; ax will accumlate va
+					lue of string 
+     607 01BF  33 D2                    	xor dx,dx 
+     608 01C1  B1 0A                    	mov cl,10 
+     609 01C3  8B 5E 04                 	mov bx,[bp+4] 
+     610                                 
+     611 01C6                           atoi_loop: 
+     612                                 
+     613 01C6  8A 17                    	mov dl,[bx] 
+     614 01C8  80 FA 00                 	cmp dl,00H 
+     615 01CB  74 0A                    	je atoi_done 
+     616 01CD  83 EA 30                 	sub dx,48      ; convert digit to numb
+					er: 48 = ascii for '0' 
+     617 01D0  F6 E1                    	mul cl         ; multiply ax by 10 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Page     1-16
+                                                            
+
+     618 01D2  03 C2                    	add ax,dx 
+     619 01D4  43                       	inc bx 
+     620 01D5  EB EF                    	jmp atoi_loop 
+     621                                 
+     622 01D7                           atoi_done: 
+     623 01D7  5A                       	pop dx 
+     624 01D8  59                       	pop cx 
+     625 01D9  5B                       	pop bx 
+     626 01DA  5D                       	pop bp 
+     627 01DB  C3                       	ret 
+     628                                 
+     629 01DC                           _TEXT ENDS 
+     630 0000                           _DATA SEGMENT PUBLIC 'DATA' 
+     631                                ASSUME DS:DGROUP 
+     632 0000  20 20 20 20 20 20 20     my_buf db "          ",00H      ; leave
+					 room for up to 10 digits 
+     633       20 20 20 00              
+     634 000B                           _DATA ENDS 
+     635 0000                           _BSS SEGMENT PUBLIC 'BSS' 
+     636 0000                           _BSS ENDS 
+     637                                END 
+
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Symbols-1
+                                                             
+
+Macros:
+
+		N a m e			Lines
+
+PRINT_CHAR . . . . . . . . . . .  	  10
+PRINT_PTR  . . . . . . . . . . .  	  29
+PRINT_STRING . . . . . . . . . .  	  29
+READ_LINE  . . . . . . . . . . .  	  41
+SBRK . . . . . . . . . . . . . .  	   1
+TERMINATE  . . . . . . . . . . .  	   3
+
+Segments and Groups:
+
+                N a m e         	Size	Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _TEXT  . . . . . . . . . . . .  	01DC	PARA	PUBLIC	'CODE'
+  _DATA  . . . . . . . . . . . .  	000B	PARA	PUBLIC	'DATA'
+  _BSS . . . . . . . . . . . . .  	0000	PARA	PUBLIC	'BSS'
+
+Symbols:            
+
+                N a m e         	Type	Value	Attr         
+
+ATOI_DONE  . . . . . . . . . . .  	L NEAR	01D7	_TEXT
+ATOI_LOOP  . . . . . . . . . . .  	L NEAR	01C6	_TEXT
+
+BIG_LOOP . . . . . . . . . . . .  	L NEAR	01A5	_TEXT
+BIOS . . . . . . . . . . . . . .  	Text  		
+BUFFER_CLEAR_DONE  . . . . . . .  	L NEAR	011C	_TEXT
+BUFFER_CLEAR_LOOP  . . . . . . .  	L NEAR	010F	_TEXT
+BUF_SIZ  . . . . . . . . . . . .  	Number	0200	
+
+CHAR_ATTR  . . . . . . . . . . .  	Number	0017	
+COMMENT_CHAR . . . . . . . . . .  	Number	0023	
+CONVERT_DONE . . . . . . . . . .  	L NEAR	013B	_TEXT
+
+DIGIT_LOOP . . . . . . . . . . .  	L NEAR	0125	_TEXT
+
+ENVC . . . . . . . . . . . . . .  	V WORD 	0000		External
+ENVIRONMENT  . . . . . . . . . .  	V WORD 	0000		External
+ENV_SIZ  . . . . . . . . . . . .  	Number	0200	
+ESCAPE_CHAR  . . . . . . . . . .  	Number	005C	
+
+LITTLE_LOOP  . . . . . . . . . .  	L NEAR	0190	_TEXT
+
+MYGETENV . . . . . . . . . . . .  	L NEAR	00BD	_TEXT	Global
+MYGETENV_EFND  . . . . . . . . .  	L NEAR	00DD	_TEXT
+MYGETENV_FND . . . . . . . . . .  	L NEAR	00F8	_TEXT
+MYGETENV_LOOP  . . . . . . . . .  	L NEAR	00C9	_TEXT
+MYGETENV_NFD . . . . . . . . . .  	L NEAR	00FE	_TEXT
+MYGETENV_RTR . . . . . . . . . .  	L NEAR	0101	_TEXT
+MYGETENV_SCH . . . . . . . . . .  	L NEAR	00D4	_TEXT
+MY_ATOI  . . . . . . . . . . . .  	L NEAR	01B7	_TEXT	Global
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:12
+
+mylib                                                       Symbols-2
+                                                             
+
+MY_BUF . . . . . . . . . . . . .  	L BYTE 	0000	_DATA
+MY_STRCMP  . . . . . . . . . . .  	L NEAR	0043	_TEXT	Global
+MY_STRCPY  . . . . . . . . . . .  	L NEAR	001A	_TEXT	Global
+MY_STRLEN  . . . . . . . . . . .  	L NEAR	0000	_TEXT	Global
+MY_STRNCMP . . . . . . . . . . .  	L NEAR	0079	_TEXT	Global
+MY_STRSTR  . . . . . . . . . . .  	L NEAR	0171	_TEXT	Global
+MY_STRSTR_FOUND  . . . . . . . .  	L NEAR	01AA	_TEXT
+MY_STRSTR_NOTFOUND . . . . . . .  	L NEAR	01AF	_TEXT
+MY_STRSTR_RET  . . . . . . . . .  	L NEAR	01B1	_TEXT
+
+PROMPT_STRING  . . . . . . . . .  	Text  "Monitor>"		
+
+SCRIPT_SIZ . . . . . . . . . . .  	Number	1000	
+STRCMP_ABOVE . . . . . . . . . .  	L NEAR	006C	_TEXT
+STRCMP_BELOW . . . . . . . . . .  	L NEAR	0066	_TEXT
+STRCMP_EQUAL . . . . . . . . . .  	L NEAR	0072	_TEXT
+STRCMP_LOOP  . . . . . . . . . .  	L NEAR	0053	_TEXT
+STRCMP_RET . . . . . . . . . . .  	L NEAR	0075	_TEXT
+STRCPY_LOOP  . . . . . . . . . .  	L NEAR	0030	_TEXT
+STRCPY_RET . . . . . . . . . . .  	L NEAR	003C	_TEXT
+STRLEN_LOOP  . . . . . . . . . .  	L NEAR	000B	_TEXT
+STRLEN_RET . . . . . . . . . . .  	L NEAR	0014	_TEXT
+STRNCMP_ABOVE  . . . . . . . . .  	L NEAR	00AE	_TEXT
+STRNCMP_BELOW  . . . . . . . . .  	L NEAR	00A8	_TEXT
+STRNCMP_EQUAL  . . . . . . . . .  	L NEAR	00B4	_TEXT
+STRNCMP_LOOP . . . . . . . . . .  	L NEAR	008D	_TEXT
+STRNCMP_RET  . . . . . . . . . .  	L NEAR	00B7	_TEXT
+
+VARIABLE_CHAR  . . . . . . . . .  	Number	0024	
+
+_PRINT_I . . . . . . . . . . . .  	L NEAR	0106	_TEXT	Global
+
+
+    699 Source  Lines
+    729 Total   Lines
+     85 Symbols
+
+  47782 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

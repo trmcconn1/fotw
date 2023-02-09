@@ -1,0 +1,66 @@
+			Harvest 1.0 by Terry R. McConnell
+
+Harvest is the main building block of what I call my "poor man's Kermit." I
+wrote it as a tool for getting around my institution's firewall policy. They
+block access from outside the campus domain on all ports except port 80 - which
+obviously they can never block - unless you are running their VPN client.
+Unfortunately, in order to install their VPN client you need to let them 
+"manage" the machine it is installed on, which basically turns it into a
+brick.
+
+Nevertheless, I have a server in my office that I need to access from at home - outside the firewall. 
+
+Never fear. I run sshd on port 80 on my server. That at least lets me log in,
+but then I have no port left to run an ftp server on, so how do I upload
+and download files? 
+
+One solution, of course, is Kermit. I have C-kermit running on both my home
+machines and servers inside the firewall and this does provide a viable
+solution. Harvest provides another. Together with a few other almost
+universally available tools, it lets you upload and download files inside
+of a terminal session. The tools needed? script, harvest (this program),
+dos2unix, uuencode, and uudecode. (We include here our own implementations of
+uuencode, uudecode and dos2unix since these are less available than script.)
+ 
+
+As an example, suppose we want to download a file named foo.tgz from remote
+to local. We do:
+
+local> script
+local> ssh remote
+
+[ login and do whatever on remote, finishing by navigating to the
+directory containing foo.tgz ]
+
+remote> uuencode foo.tgz foo.tgz  
+
+[ garbage fills many screens. Ignore it. Finish your work on remote ]
+
+remote> logout
+local> ^D       # stop the script by exiting from its subshell
+local> harvest typescript
+foo.tgz local> dos2unix foo.tgz   # harvest prints filename 
+local> uudecode foo.tgz
+local> rm typescript              # clean up
+
+After this you should have a copy of foo.tgz in the current directory of
+local that is identical to the copy on remote. 
+  
+Theory:  the script program causes EVERYTHING that is written to your terminal
+to be copied to a file. This file is called typescript by default. (You
+can change the name if you want - see script(1).)  
+
+INSTALLATION
+
+Edit the makefile and then say make all and make install. This will make
+and install harvest, uuencode, uudecode, and dos2unix. (You could not
+install uuencode and/or dos2unix if you already have those installed on
+your site.) Copy the man page harvest.1 to the appropriate directory for
+your site, and edit the paths in the shell script reap and copy to a directory
+on your path if you want to use it. 
+
+Terry R. McConnell
+2458 Swift Rd.
+Lafayette, NY 13084
+trmcconn@syr.edu
+

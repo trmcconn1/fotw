@@ -1,0 +1,84 @@
+# Problem 6 of ACP test. All problems are multiple choice.
+# Students must simplify x - (ax+b) -a(x-b) 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 6", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Generate the numbers that will be used in the problem:
+
+$a = random(2,11,1);
+$b = random(1,10,1);
+
+# compute correct and incorrect answers to display (correct is first one)
+# (i) (1-2a)x + (a-1)b (ii) (1-2a)x (iii) (1-2a)x - (a-1)b
+# (iv) (1-2a)x - (a+1)b
+#
+# As long as a>1 and b>0  are integers these are all distinct. Clearly
+# (ii) can't be the same as any other. (i) is the only one with a positive
+# constant term. (iii)=(iv) iff ab - b = ab + b which cannot hold unless b = 0.
+
+@constants = ($b*($a-1),0,($a-1)*$b, ($a+1)*$b);  # constant terms
+$x_coeff = 1 - 2*$a;
+
+@ans = ("${x_coeff}x + $constants[0]","${x_coeff}x",
+	"${x_coeff}x - $constants[2]","${x_coeff}x - $constants[3]");
+
+# get a permutation of 0-3 to shuffle display
+@picks = myshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+
+# OL pg macro formats a list argument as an html ordered list counting A,B,...
+$answers = OL($ansA,$ansB,$ansC,$ansD);
+
+# display problem
+
+BEGIN_TEXT
+x - (${a}x + ${b}) - ${a}(x - ${b}) may be rewritten as: 
+$PAR
+$answers
+$PAR
+Enter your choice (A,B,C, or D.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

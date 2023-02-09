@@ -1,0 +1,23 @@
+# Connect Station Morgan to Station Fabius 2 with a great circle
+# and Fabius 2 to its Azimuth mark with a Rhumb Line
+
+Name Demo Input File Morgan to Fabius 2 to Fabius 2 AZ 
+Points  250   # use 250 points on each connector
+Method Great Circle
+
+# Station Morgan:
+N 42 46' 04.26224" ; 075 59' 51.16503 W
+
+# Station Fabius 2
+N 42 48' 41.38126" N; 076 01' 13.57767 W 
+
+# More fitting method for an azimuth 
+Method Loxodrome
+
+POINTS 50
+
+# Fabius 2 AZ mark (guesstimated from datasheet description)  
+42.800434N; -76.016446
+
+
+

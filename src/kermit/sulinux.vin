@@ -1,0 +1,97 @@
+echo
+output atz0\13
+pause 1
+echo
+echo Calling GAMERA
+pause 1
+echo
+
+:try
+clear
+do dial 4431320                  ;OS/2 MACRO - not command
+if failure goto retry
+
+input 60 Username:
+if failure goto connect
+output vefatica\13
+
+input 60 Password:
+if failure goto connect
+output password\13
+
+input 60 SUDIAL>             ;wait for sudial prompt
+if failure goto connect      ;
+output gamera\13             ;go Gamera
+
+input 200 login:             ;wait for login prompt
+if failure goto connect      ;
+output vefatica\13           ;login name
+
+input 200 Password:          ;wait for password prompt
+if failure goto connect      ;
+output password\13           ;PASSWORD
+
+:connect
+connect
+goto end
+
+:retry
+echo Call failed. Kermit will try again.
+echo Press any key to cancel dailing.
+echo
+pause 1
+if failure goto end
+goto try
+
+:end
+-------------------------------------------------------------------
+sudial (dos)
+
+com3
+echo
+output atz0\13
+pause 1
+echo
+echo Calling GAMERA
+pause 1
+echo
+
+:try
+clear
+do dial 4431320                  ;OS/2 MACRO - not command
+if failure goto retry
+
+input 60 Username:
+if failure goto connect
+output vefatica\13
+
+input 60 Password:
+if failure goto connect
+output password\13
+
+input 60 SUDIAL>             ;wait for sudial prompt
+if failure goto connect      ;
+output gamera\13             ;go Gamera
+
+input 200 login:             ;wait for login prompt
+if failure goto connect      ;
+output vefatica\13           ;login name
+
+input 200 Password:          ;wait for password prompt
+if failure goto connect      ;
+output password\13           ;PASSWORD
+
+
+:connect
+connect
+goto end
+
+:retry
+echo Call failed. Kermit will try again.
+echo Press any key to cancel dailing.
+echo
+pause 1
+if failure goto end
+goto try
+
+:end

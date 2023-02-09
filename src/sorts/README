@@ -1,0 +1,44 @@
+Sorts
+-----
+
+This contains various implementations of sorting algorithms. Each one should
+have exactly the same signature as the library routine:
+
+void qsort(void *base, size_t n, size_t size, 
+                       int (*cmp)(const void *, const void *));
+
+NB: base is not a pointer to start of an array of pointers. (Not void **).
+Thus, in your implementation you must access the ith element of the array
+that base points to the beginning of as base + i*size.  (I'm embarassed to
+say how long it took me to finally figure this out. For years I used my
+own version of the library sort with a void ** first argument.)
+
+As much as possible, operations on data should be implemented in util.c or
+compare.c, so that profiling data can be recorded.
+
+The overhead variable is not currently used. It could measure
+some resource usage in the sort routines if implemented there.
+
+The comments in each algorithm file explain how the algorithm works. The file
+testsort.c implements a "front-end" test platform that allows the 
+peformance of the different sorting algorithms to be studied on input
+consisting of integer values drawn from a limited range [lo ... hi]. The
+input can come from a file or be generated randomly. The command
+testsort -h gives a usage line that explains how to control the input 
+data. 
+
+You could use any of these sort.c files to provide a replacement for
+the standard library qsort, but you would need to provide a comparison
+routine when the data are not integers. (Our integer comparison routine
+is implemented in compare.c. It is pretty trivial.)  
+
+Counting sort is an exception in that its algorithm relies on
+having input data that lies within a fixed range. If it is going to
+be applied to data "in the wild" you would need to first apply a hash
+function mapping the data into integers within a fixed range.  
+
+Installation
+
+Edit the makefile for your system and say make. It is possible some names
+may need to be changed. For example, Freebsd already has mergesort and
+heapsort in stdlib.h, so I had to change the names of these slightly.

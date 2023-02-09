@@ -1,0 +1,93 @@
+Suggested tests to make sure longsqrt and longcurt will handle all possible
+variations in decimal notation correctly.
+
+longsqrt:
+
+Exact values: 
+9
+25
+100
+9.0
+25.0
+100.0
+(passed)
+
+Variations in both mantissa and characteristic length over at least
+two full periods:
+
+.2
+.23
+.234
+.2345
+.23456
+(passed)
+0.2
+0.23
+0.234
+0.2345
+0.23456
+(passed)
+5.2
+5.23
+5.234
+5.2345
+5.23456
+(passed)
+67.2
+67.23
+67.234
+67.2345
+67.23456
+(passed)
+353.2
+353.23
+353.234
+353.2345
+353.23456
+(passed)
+5589.2
+5589.23
+5589.234
+5589.2345
+5589.23456
+(passed)
+Leading zeros:
+
+047
+049
+0055.4
+(oassed)
+zero characteristic:
+
+0.02
+0.002
+0.0002
+0.00002
+0.000002
+(passed)
+0.075
+0.0075
+0.00075
+0.000075
+0.0000075
+(passed)
+0.0231
+0.00231
+0.000231
+0.0000231
+0.00000231
+(passed)
+(Same w/o leading zero)
+
+Negative numbers:
+-19
+-0
+(passed)
+Zero in various forms:
+
+0
+.0
+0.0
+00.00
+(passed)
+

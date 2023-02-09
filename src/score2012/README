@@ -1,0 +1,22 @@
+This is the README for the linux version of
+noontime league scoring program. 
+
+We assume the official installation is the one on my
+laptop, so whenver you change that version of score12 this
+one needs to be synced with the source and rebuilt with make score
+
+The official up to date data files are the ones in the league
+web directory. Run the shell script cpdata to update the ones in this
+directory. This strips scores from the results file and converts
+both it and roster to unix format.
+
+teams file needs to be maintained manually
+
+Don't use output from this score in the league web directory unless
+you process it through unix2dos
+
+Program settings are in .scorerc in $HOME
+
+score -help
+
+gives some info about command line flags

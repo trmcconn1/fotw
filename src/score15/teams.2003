@@ -1,0 +1,22 @@
+*****************************************************************************
+* Teams for the SU noontime running league                                  *
+* 2002-2003 competition year.                                                 *
+*****************************************************************************
+*
+* Format:
+* <Team abbreviation> <"Full Team Name"> <"Name of Team Captain">
+*
+* Abbreviation must be 3 letters. Full name and captain's name must be 
+* enclosed in quotes.
+*
+una "Unattached" "None"
+bsq "Black Squirrels" "Mickey Bush and Kevin Wall"
+bnb "Brains & Brawn" "Tracy Cromp and Sam Sampere"
+rrd "Race Ready" "Gary Radford and Mark Rybinski"
+* The following line is official, but the name is so long it screws up the
+* tabbing in scorall
+*bee "Beat Everyone in Every Race" "Don Hughes and Rick Cleary"
+bee "Beat 'Em Every Race" "Don Hughes and Rick Cleary"
+wnb "Wannabees" "Dave Miller and Robin Wheeless"
+
+

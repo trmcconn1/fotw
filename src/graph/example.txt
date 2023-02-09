@@ -1,0 +1,13 @@
+# Define some example graphs
+
+# The complete graph on 5 vertices
+K_5 { a b c d e; b c d e; c d e; d e }
+
+# A complete bipartite graph on 6 letters
+K_3,3 { a d e f; b d e f; c d e f }
+
+# The Petersen Graph
+Petersen { a b e f; b c g; c d h; d e i; e j; f h i; g i j; h j; }
+
+# current test thingy
+foo   { a b c; b c; d e; e f; g; }

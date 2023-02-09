@@ -1,0 +1,113 @@
+# Problem 36 of ACP test. 
+#
+# Parametric equations
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 36", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Returns a permutation of 0-4 as a list. Many problems on the second half
+# of the ACP test have 5 choices.
+
+sub mybigshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	my $d = random(0,4,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+
+	if( $d == 0 ){ return ( 4, $a,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 1 ){ return ( $a, 4,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 2 ){ return ( $a, $b, 4,  $c, 6 - $a - $b - $c); }
+	if( $d == 3 ){ return ( $a, $b, $c, 4,  6 - $a - $b - $c); }
+	if( $d == 4 ){ return ( $a, $b, $c, 6 - $a - $b - $c,  4); }
+
+}
+
+# We present the parametric equations x = at^m and y = bt and ask
+# for the cartesian version
+$a = random(2,6,1);
+$b = random(2,4,1);
+$m = random(2,3,1);
+$bm = $b**$m;
+$abm = $a*$bm;
+$m1 = $m+1;
+$ab = $a*$b;
+
+# Correct and incorrect answers to display. Correct is the first one:
+@ans = ("$bm x = $a y^{$m}", "$b y = $a x^{$m}","xy = $ab t^{$m1}",
+"$a x = $b y^{$m}","y = $abm x");
+ 
+
+
+# get a permutation of 0-3 to shuffle display
+@picks = mybigshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+$ansE = $ans[$picks[4]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+Consider the curve whose parametric equations are \( x = $a t^{$m} \) and
+\( y = $b t. \) An equation for this curve in rectangular coordinates is:
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$BR
+E) \( $ansE \)
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+$letter = "E" if $picks[4] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

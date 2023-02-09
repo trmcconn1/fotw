@@ -1,0 +1,4 @@
+1.0 --> 1.01: Fixed a fencepost error that caused us to always choose among
+n-1 children of a node rather than among the full set of n children. This
+sometimes led to a "loop" when a state with only two continuations was
+encountered. (Thanks to Chris Zawodny <Chris.Zawodny@moc.govt.nz>.)

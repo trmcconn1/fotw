@@ -1,0 +1,35 @@
+ Changes made during upgrade 1.0->1.1
+
+ 1.)Changed the definition of struct SlotList  so that the list
+ of timeslots, the name, and the description are now dynamically allocated
+ at runtime, thus saving about 70K of memory. This required rewriting the
+ creatslotlist routine, changing numerous structure references, and writing
+ a new routine in load.c to free a slotlist struct.
+
+ 2.) The index numbers that are displayed by dtimes, djobs, etc are now
+ what you must type in order to see a given datum (rather than off by 1.)
+
+ 3.) Now we dynamically allocate the name field of a TimeSlot. This is
+ only used by Holiday timeslots, so statically allocating 20 bytes for
+ each slot's name was very wasteful. As a bonus, there is now no limit
+ on the length of Holiday's name. A semester's worth of data now takes
+ about 80K, and with the schedule it comes to a total of about 130K. 
+
+ 4.) Added a people choice to the View menu to allow the user to display
+ ranges of people data.
+
+ 5.) Changed the dpeople printout to make it suitable to be distributed
+ to people.
+
+ 6.) Put version number in title.
+
+ 7.) Updated version number everywhere it appears (main.c, info.txt).
+
+ 8.) Added a set menu entry to set the MissingData entry. Fixed bug in
+ set command that kept MissingData from actually getting changed.
+
+ 9.) Added a LOADED shell variable that tells whether a semester is loaded.
+    Changed status bar to tell us the loaded state.
+
+10.) Edited all scripts so that they now save and restore semester and loaded
+states.

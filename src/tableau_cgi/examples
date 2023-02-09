@@ -1,0 +1,4 @@
+# This is from Smullyan, page 16. It has an interesting tableau
+ ( p OR q AND r )  ->  ( p OR q ) AND ( p OR r )  =F
+# Ibid, page 18
+ ( p -> ( q -> r ) ) -> ( ( p -> q ) -> ( p -> r ) ) =F

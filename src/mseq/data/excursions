@@ -1,0 +1,22 @@
+
+Distribution of times at excursion depths for 10000 terms (0 to 9999).
+
+depth:	count/total ( percent )
+------------------------------------
+0:	5204/10000 ( 52.04 )
+1:	4783/10000 ( 47.83 )
+2:	13/10000 ( 0.13 )
+3:	0/10000 ( 0 )
+4:	0/10000 ( 0 )
+
+
+Number of excursions from each depth for same range.
+
+depth:	count
+---------------------------
+0:	55
+1:	10
+2:	0
+3:	0
+4:	0
+

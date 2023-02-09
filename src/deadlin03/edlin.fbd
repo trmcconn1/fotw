@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+#
+#  edlin: Shell script to launch deadlin.
+# 
+#  Change the name of this script to edlin and move to a folder on your path
+#
+#  By Terry R. McConnell
+#  Example shell script to start deadlin using a custom key map
+#  This one works under FreeBsd 11.0 on my Dell Latitude D630 
+#
+
+# Change to the appropriate path if anything gets moved:
+DEADLIN=deadlin
+FREEBSDMAP=keymaps/freebsd.kbd    # keymap for freebsd vt
+XRESOURCES=keymaps/Xresources # key mappings for xterm
+DEFAULTMAP=/usr/share/vt/keymaps/us.kbd
+
+case $TERM in
+
+	xterm)  xrdb -merge $XRESOURCES  > /dev/null 2>&1
+		if [ $? == 0 ]
+		then
+			# Sorry about these colors. I like 'em.
+     			xterm -cr yellow -bg maroon -bd Plum1 -title \
+			"Deadlin: an edlin clone" -e $DEADLIN $*
+		else
+			# the freebsd console is also an xterm
+			kbdcontrol -l $FREEBSDMAP 
+			kbdcontrol -f 13 "W" # does not work but should :-(
+			kbdcontrol -f 14 "E"
+			kbdcontrol -f 15 "R"
+			kbdcontrol -f 16 "T"
+			kbdcontrol -f 17 "A"
+			kbdcontrol -f 18 "L"
+			$DEADLIN $*
+			kbdcontrol -l $DEFAULTMAP
+			kbdcontrol -F
+		fi 
+		;;
+	xterm-256color)  xrdb -merge $XRESOURCES
+		# Sorry about these colors. I like 'em.
+     		xterm -cr yellow -bg maroon -bd Plum1 -title \
+			"Deadlin: an edlin clone" -e $DEADLIN $*
+		;;
+
+	*) $DEADLIN $*      # Punt
+		;;
+esac
+exit

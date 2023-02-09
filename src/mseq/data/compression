@@ -1,0 +1,19 @@
+The first few compression numbers.
+
+c_1 = 1
+c_2 = 0.75
+c_3 = 0.75
+c_4 = 0.875
+c_5 = 0.9375
+c_6 = 0.9375
+c_7 = 0.945312
+c_8 = 0.96875
+c_9 = 0.974609
+c_10 = 0.990234
+c_11 = 0.969727
+c_12 = 0.996338
+c_13 = 0.98291
+c_14 = 0.994385           
+
+Unfortunately, this shoots the conjecture that compression must increase
+monotonically.

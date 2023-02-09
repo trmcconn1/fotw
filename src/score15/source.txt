@@ -1,0 +1,145 @@
+         An Overview of the General Structure of the Program.
+
+        This program manages a simple database which is initialized by
+information contained in several plain ascii files (the results file,
+the roster file and the teams file named in score.rc. ) The main results
+file supports a very simple language which is parsed by a parsing
+routine called ParseResults. This parser, and the parsers needed to read the
+other data files, are implemented in parsers.cpp.
+
+        The basic data structures are two structs called RunNode and
+RelayNode. These hold fields which contain all relevant information 
+about a given run or relay. Class Runner contains all relevant information
+about a given runner including date of birth, team affiliation and an
+array of pointers to RunNodes and RelayNodes, one for each run or relay
+the runner competed in. Class Team contains all relevant information
+about a team including an array of pointers to Runners ( one for each
+on the team ) and an array of pointers to RelayNodes. 
+
+        Classes Runner and Team also contain various useful member functions
+to access their data in addition to the usual constructors and destructors.
+Some of the member functions are left over from an earlier attempt to
+implement sorted array objects from the Borland classlib having these
+classes as array elements. As indicated in the classlib manual, such
+classes are expected to implement certain member functions -- many of
+these are probably actually superfluous in the present implementation, but
+I haven't bothered to delete them. 
+
+        Interactive constructors are left over from an early stage
+of development. ( They could be used to add special Runners or Teams
+to the database in core for debugging purposes.)
+
+        Class member function PrintAll() in Runner and Team produce a
+listing of a report on each runner and team. Overloaded instances of
+<< provide one-line reports suitable for assembling into the Standings
+report. For some reason, << doesn't seem to translate the tab character.
+For this reason I overloaded the obscure operator <<= to do the tab
+tranlsation and then pass the data to <<. This is in actions.cpp.
+
+        Class Interface implementations are given in runner.cpp and team.cpp,
+and runner.h and team.h contain the class declarations and a few 
+related declarations. The header global.h contains declarations which
+are needed to compile all modules. 
+
+        The program also maintains an array of pointers to Runners, one
+for each runner in the competitionn so that runners can be looked up with
+a binary search. The program includes generic sort and binsearch routines
+(culled essentially from K&R) which can be passed a pointer to a 
+comparison function. For example, two comparison functions used are one
+which compares runners alphabetically by last name, and teams by total
+score. There is also a front end to the sort routine called MySort which
+takes an integer argument whose purpose is to select one of the comparison
+functions. This is implemented in actions.cpp.
+
+        Module atosecs.c contains code for routines which parse time
+strings and convert them to seconds, and vice-versa. I have reused these
+many different places and they are pretty tried-and-true. Internally,
+all times are represented as doubles. 
+
+        The main module performs the following actions:
+
+- Opens the rc file and initializes user customizable variables (e.g, 
+competition year, names of input files.)
+
+-Processes command line options (Cf. manpage.)
+
+-Runs the load() module which does the following:
+
+--Parses the team information file and allocates a Team object for each
+team described therein.
+
+--Reads the roster file and allocates a Runner for each person in it. Sets
+the pointers in each team to point to its runners.
+
+--Parses the results file, allocates RelayNodes and RunNodes, and sets
+the corresponding pointers in each Runner and Team.
+
+--Displays the main menu and implements a basic menu-driven user interface.
+
+Optionally, the program then calls gui() which implements a menu-driven
+user interface. The interface is implemented in gui.cpp. It is a fairly
+standard DOS interface with menu of pull-down menus across the top of the
+screen, and a status bar along the bottom. There is one open file at all
+times whose contents are displayed in the main part of the screen. This file
+is open read-only. All the standard cursor-movement keys are enabled to allow
+browsing the open file. The open file may be saved under a different name or
+printed.
+
+Some of the more elaborate menu choice items are implemented in actions.cpp.
+All 3 of score13.cpp ( the main module ), actions.cpp, and gui.cpp have
+extensive declaration headers since they must all access the database and
+global configuration variables.
+
+The gui module first initializes all of the various menu item windows, the
+main window, the title window, and the status bar window. Then it goes
+into a main polling loop which waits for the user to strike a key. How a
+keystroke is responded to is controlled by 3 independent switch statements
+which are selected depending on the value of a global FOCUS variable. In
+Main Window focus the keys are assumed to be cursor movement keys. In
+Menu focus the keys are also assumed to be cursor movement keys which select
+and highlight various parts of the menu. For example, the down arrow key
+opens a pull down and changes focus to submenu. In submenu focus, the return
+key causes the action associated with that menu item to be performed. The
+escape key is used to change from one focus to another. There is a
+DialogueBox() routine to allow the program to get data from the user. It
+uses a structure called DialogueData to store its title and messages.
+A prompt is displayed to the user and primitive editing of the input is
+enabled.
+
+The status bar is updated by a routine called Status which accesses its
+own data structure called STATUSINFO. Error messages are displayed on
+the status bar and removed each time there is a new keystroke.
+
+If the user invokes the program with the quick option, the gui is skipped
+and the program just writes the file Scorall named in score.rc and exits.
+
+Compiling.
+
+Simply say, make score.exe.
+
+Adding a totally new event.
+
+To add a new event  ( rather than just remove an exclusion from score.rc )
+the source code must be edited and the program recompiled. Do the following
+( and hope for the best ):
+
+- Insert the standards for the new event in scortabl.asc.
+- In mkstnds.c: Edit NOEVENTS and then compile it via 
+  bcc mkstnds.c atosecs.c
+- touch atosecs.c ( WARNING: omitting this step will result in a very
+  nasty bug. The module atosecs.c is also used in score, but is compiled
+  from the score makefile with a different memory model than in mkstnds.
+  Failure to touch atosecs.c will result in a stale small memory model
+  atosecs.obj which will cause catastrophe if it gets linked into score. )
+- Run mkstnds.exe to create the new table of standards, table.c
+- In global.h: change the dimension in the declaration of extern double 
+  table. 
+- In runner.cpp: edit the declarations of NOEVENTS, NORELAYS ( as needed ),
+  EventFieldWidths. 
+- In runner.cpp(3 places): Edit the lines which set RelayLegEventNumber
+  if the added event is a relay.
+- In runner.h edit the declaration of BestRuns.
+- In events.h: Add the name of the new run to the initialization list
+  of EventNames. It must be inserted in the same order as in scortabl.asc.
+- Recompile score.
+

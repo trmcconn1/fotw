@@ -1,0 +1,21 @@
+*****************************************************************************
+* Teams for the SU noontime running league                                  *
+* 2003-2004 competition year.                                                 *
+*****************************************************************************
+*
+* Format:
+* <Team abbreviation> <"Full Team Name"> <"Name of Team Captain">
+*
+* Abbreviation must be 3 letters. Full name and captain's name must be 
+* enclosed in quotes.
+*
+wdk "We Don't Know" "E. Nordman and P. Stelmaszyk"
+spt "2nd Place Team" "S. Kelly and S. More"
+hfa "Half Fast" "M. Fitzpatrick and D. Springer"
+icp "I Cappuccini" "N. Coffey and J. Ucci"
+dwi "Dancing with Injuries" "R. Nicholson and R. Yanai"
+una "Unattached" "None"
+* example entry from last year
+*bee "Beat 'Em Every Race" "Don Hughes and Rick Cleary"
+
+

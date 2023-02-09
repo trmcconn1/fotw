@@ -1,0 +1,86 @@
+##############################################################################
+# Makefile for bootmon (DOS 16 bit version) An academic exercise admittedly.
+#
+#          By Terry McConnell, Chicken Haven Software (2018)
+#
+# Adapted from my Linux version written in NASM syntax
+##############################################################################
+VERSION = "1.2"
+PROG_NAME = bootmon
+#
+# Edit other settings in macros.a
+##########################################
+
+############# One should not have to edit below this line #####################
+
+# Build monitor as a .com. Also, use only tools available in very old
+# DOS versions: MASM, LINK, and EXE2BIN. EXE2BIN converts the .exe produced
+# by LINK to a .com. This requires the tiny memory model. Note that some
+# further steps will be needed to make bootmon a true boot monitor: (1) DOS
+# system calls in macros.asm must be converted to use only BIOS calls. (2) The
+# offset of the entry point must be made compatible with the boot loader. 
+# (3) A bblock target that can be written to disk partition where
+# bootmon.com lives to be used as boot block. It will need to have actual
+# disc address of bootmon.com patched in, as well the offset to its save
+# data area. 
+
+all: bootmon wrboot fdbblk hdbblk mbrblk
+
+bootmon: monitor.asm lib.asm internal.asm extern.asm macros.asm 
+	MASM /DBIOS monitor.asm,,,,
+	MASM /DBIOS lib.asm,,,,
+	MASM /DBIOS internal.asm,,,,
+	MASM /DBIOS extern.asm,,,,
+	LINK monitor.obj internal.obj extern.obj lib.obj,bootmon,,,
+	EXE2BIN bootmon.exe
+	move bootmon.bin bootmon.com
+	del bootmon.exe
+
+# Build wrboot, which writes the bootblock to floppy a: and then
+# copies bootmon.com to given offset (compiled into wrboot)
+
+wrboot: wrboot.c
+	bcc wrboot.c
+
+# Build the monitor boot loader (floppy disk version)
+
+fdbblk: fdbblk.asm wrboot bootmon
+	MASM fdbblk.asm,,,,
+	LINK fdbblk.obj,fdbblk,,,
+	EXE2BIN fdbblk.exe
+	del fdbblk.exe
+ 	echo do	wrboot to install monitor on floppy a:
+
+# Build the master boot loader
+
+mbrblk: mbrblk.asm wrboot bootmon
+	MASM mbrblk.asm,,,,
+	LINK mbrblk.obj,mbrblk,,,
+	EXE2BIN mbrblk.exe
+	del mbrblk.exe
+
+# Build the monitor boot loader (hd partition 1 version)
+
+hdbblk: hdbblk.asm wrboot bootmon
+	MASM hdbblk.asm,,,,
+	LINK hdbblk.obj,hdbblk,,,
+	EXE2BIN hdbblk.exe
+	del hdbblk.exe
+	echo do wrboot -d to install the monitor and mbr on hard drive
+
+clean:
+	del *.obj
+	del *.map
+	del *.lst
+	del *.crf
+
+distclean:
+	del *.obj
+	del *.map
+	del *.lst
+	del *.crf
+	del *.bin
+	del *.com
+	del *.exe
+	
+

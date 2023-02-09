@@ -1,0 +1,61 @@
+# Final Exam Schedule for Fall 1996 Semester (f97)
+#
+# This file allows you to associate courses with final exam blocks. The 
+# blocks themselves are defined in the time file for the current semester.
+
+
+# Entries in this file are in groups where each group has the form
+# finalblock xxx
+# ...
+# ...
+# finalblock end
+#
+# where xxx can be either the word auto or else the name of a block. In 
+# between are lines which associate particular classes to the given block.
+# The given block is either a particular block if xxx is the name of a block,
+# or the block associated with the class's meeting time if xxx is the word
+# auto. 
+
+# The format of the lines between finalblock xxx ... finalblock end are one
+# of the following:
+
+# crse room     --  assigns all classes of the course to take final exam in
+#                   the given room in the current block.
+
+# crse class room - assigns only the specified class of the given course.
+# class room      - used when class is stand-alone.
+
+
+##############################################################################
+#   Blocks assigned by Class Meeting Time
+##############################################################################
+
+finalblock auto
+605 C-313
+221 C-222
+finalblock end
+
+
+##############################################################################
+#   Blocks assigned by Name
+##############################################################################
+
+finalblock 19a
+183 Heroy
+531 C-316
+finalblock end
+
+finalblock 19b
+222 C-313
+295 001 C-316
+finalblock end
+
+finalblock 19c
+171 C-313
+121 Heroy
+518 C-219
+finalblock end
+
+
+# The file should end with the line below. Don't ask why, just do it.
+end ECHO ON

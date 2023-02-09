@@ -1,0 +1,118 @@
+# Problem 45 of ACP test. 
+#
+# Integration "theory"
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 45", $EBOLD, $BR);
+
+
+# This problem is quite different from all of the others. This time we pick
+# at random which of the 5 (fixed) answers is correct, and choose from among
+# the following 6 possible statements ones which make the chosen answer the
+# correct one.
+
+# The first three are true:
+$T1 = "\int_a^b F^{\prime}(x)\,dx = F(b) - F(a)";
+$T2 = "\frac{d}{dx}\int_a^x F(t)\,dt = F(x), a < x < b";
+$T3 = "\int_a^b F(x)\,dx + \int_b^c F(x)\,dx = \int_a^c F(x)\,dx";
+
+# These three are false:
+$F1 = "\int_a^b F(x)\,dx = \int_b^a F(x)\, dx";
+$F2 = "\int_a^b F(x)^2\,dx = \left( \int_a^b F(x)\,dx \right)^2";
+$F3 = "\frac{d}{dx}\int_a^b F(x)\,dx = \int_a^b F^{\prime}(x)\,dx";
+
+@TRUE = ($T1,$T2,$T3,$T1,$T2);
+@FALSE = ($F1,$F2,$F3,$F1,$F2);
+
+$j = random(0,4,1);
+if($j == 0){ # Answer A is correct. Make I false and II and III true 
+
+	$i = random(0,2,1);
+	$DI = $FALSE[$i];
+	$i = random(0,2,1);
+	$DII = $TRUE[$i];
+	$DIII = $TRUE[$i+1];
+}
+if($j == 1){ # Answer B is correct. Make II false and I and III true 
+
+	$i = random(0,2,1);
+	$DII = $FALSE[$i];
+	$i = random(0,2,1);
+	$DI = $TRUE[$i];
+	$DIII = $TRUE[$i+1];
+}
+if($j == 2){ # Answer C is correct. Make all 3 true
+
+	$i = random(0,2,1);
+	$DI = $TRUE[$i];
+	$DII = $TRUE[$i+1];
+	$DIII = $TRUE[$i+2];
+}
+if($j == 3){ # Answer D is correct. Make III false and I and II true 
+
+	$i = random(0,2,1);
+	$DIII = $FALSE[$i];
+	$i = random(0,2,1);
+	$DI = $TRUE[$i];
+	$DII = $TRUE[$i+1];
+}
+
+if($j == 4){ # Answer E is correct. Make III true and I and II false 
+
+	$i = random(0,2,1);
+	$DIII = $TRUE[$i];
+	$i = random(0,2,1);
+	$DI = $FALSE[$i];
+	$DII = $FALSE[$i+1];
+}
+
+
+# display problem
+
+BEGIN_TEXT
+If F and its derivative are continuous and \( a < b < c \), which of the following are  necessarily true?
+$PAR
+I. \( $DI \)
+$BR
+II. \( $DII \)
+$BR
+III. \( $DIII \)
+$PAR
+A)  II and III only. 
+$BR
+B)  I and III only. 
+$BR
+C)  I,II, and III. 
+$BR
+D)  I and II only.
+$BR
+E)  III only. 
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $j == 0;
+$letter = "B" if $j == 1;
+$letter = "C" if $j == 2;
+$letter = "D" if $j == 3;
+$letter = "E" if $j == 4;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

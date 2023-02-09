@@ -1,0 +1,54 @@
+.TH MONKEY 1  "February 9, 1997" "FOO" "VERY LOCAL USER COMMANDS"
+.SH NAME
+monkey \- Markov chain model random text generator
+.SH SYNOPSIS
+.B "monkey "
+[ \-d depth ] [ \-s size ] [\-seed integer] [ \-help ]
+.SH DESCRIPTION
+.I Monkey 
+generates a stream of random characters whose statistical distribution
+depends on one or more previous characters, depending on the depth setting.
+If no command line arguments are given
+.I monkey
+will print 1000 characters chosen independently according to a compiled-in
+statistical distribution. Newlines are printed every 80th character.
+If the depth is specified as n, then  each
+letter will be chosen according to the conditional distribution 
+given the most recently occuring n letters in the sequence. (This is modified
+in the obvious way for the first few letters generated.) The statistical
+distributions are based upon an analysis of the frequencies of strings of
+characters in a sample text using the
+.I mkmatrix
+utility.
+.LP
+.SH OPTIONS
+.sp 1
+.TP 0.5i
+.B \-d depth
+Set the internal depth parameter, whose significance is described above. There
+is a maximum depth setting chosen at building. Any request for a larger depth
+will cause the program to exit with an error message.
+.TP 0.5i
+.B \-s size
+Print size number of random characters.
+.TP 0.5i
+.B \-seed integer
+Use the integer to seed the random number generator. If this option is not
+used the process id is used as seed.
+.SH "SEE ALSO"
+.PD 0
+.TP 2.0i
+mkmatrix(1).
+.PD
+.TP
+This program was inspired by the article
+.TP 1.0i
+W.R. Bennett, Jr., "How Artificial is Intelligence?",
+.I Amer. Scientist,
+.B 65
+(1977), 694-702.
+.SH BUGS
+This program has no useful applications.
+
+.SH AUTHOR
+Terry McConnell, trmcconn@syr.edu

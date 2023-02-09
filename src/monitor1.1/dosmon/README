@@ -1,0 +1,25 @@
+
+This is a port of my monitor program to 16 bit DOS. You should consult the
+README in the larger monitor package for operational details, since this
+version is supposed to operate pretty much the same as the 32 bit Linux version.
+The .asm files here are compatible with MASM, and the .c files should compile
+with anything (I used Borland Turbo C). You may have to edit the makefile
+if you are using another assember, compiler, or linker.
+
+If you say make all then one target will be built:
+
+- monitor.exe:  a small model program that should be identical in operation
+                to the Linux version. Use -h option to see usage info.
+
+Additionally, the bootmon directory contains source code for a stand-alone
+version of the monitor that runs in the absence of an operating system. Also
+included are boot blocks for floppy disk and a hard drive partition that find
+and boot the monitor in this setting, and a master boot record that can be
+used if the monitor is installed in the hidden blocks of the hard drive. The
+boot monitor can be used to set up a multi-boot menu, similar to the
+Minix 2 boot monitor, a program on which it is loosely based. To build the
+boot monitor, change to the bootmon directory and say make all. Be very 
+careful with the wrboot.exe program since it can overwrite the boot blocks
+of the current hard drive!
+
+

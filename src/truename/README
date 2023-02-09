@@ -1,0 +1,11 @@
+To install truename:
+
+1. Edit the makefile to your satisfaction.
+2. Do make truename
+3. Do make install
+
+This will install the program and man page.
+truename -help will give a brief usage message.
+
+Written by Terry McConnell
+trmcconn@syr.edu

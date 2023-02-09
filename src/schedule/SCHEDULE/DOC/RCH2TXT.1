@@ -1,0 +1,48 @@
+.TH RCH2TXT 1
+.SH NAME
+Rch2txt \- Convert a roomchart description file to a text-mode roomchart.
+.SH SYNOPSIS
+.B rch2txt <room chart description file>
+
+.SH DESCRIPTION
+.I rch2txt
+converts a file containing a description of a roomchart into a text-mode
+roomchart which is printed on stdout. The description file is created by
+using the roomchart command at the command shell prompt of the schedule
+program. The output file should be printed in landscape mode with a
+compressed (e.g. 16.67 cpi) font. If the chart is too big to fit on one
+page the program pages the output in a reasonable way, by inserting form feed
+characters and repeating the heading on each page. 
+
+.SH DESCRIPTION FILE
+The description file begins with a line of the form
+x y
+where x and y describe the vertical and horizontal sizes of the file.
+The numbers only have meaning in relation to other sizes given in the
+description file, since this program will scale everything to fit the page. 
+The remaining lines all assume one of the following forms:
+.TP
+.I label n string
+Describes a label having text given by string at vertical offset n.
+.TP
+.I title string
+Descripes a heading that appears on each page.
+.TP
+.I timeorigin n
+Gives the starting time for a time ruler that will appear at the top of each
+page. The starting time is measured in seconds as in the standard C-library.
+.TP
+.I Box a b c d string
+Describes a box containing the centered string. The first two numbers give
+the vertical of the top and bottom sides, and the last two give the horizontal
+offsets of the vertical sides.
+
+.SH AUTHOR
+.I Terry McConnell
+215 Carnegie
+Syracuse University
+Syracuse, NY 13244-1150
+trmcconn@syr.edu
+
+.SH BUGS
+The program is not as defensive as it should be.

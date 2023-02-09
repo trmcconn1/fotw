@@ -1,0 +1,73 @@
+*******************************************************************************
+* Score.rc: User customizable settings                                        *
+* Lines starting with asterisk are comments                                   
+* This file should be in the current directory or in the search path
+* (On KornKrib I'm keeping a copy in \bin)
+*******************************************************************************
+*
+* The competition year is the year in which the season ends.
+CompetitionYear 1997
+*
+*
+* The Working Directory for the program after startup. Should contain
+* all working files except possibly this one, which must be in the
+* current directory or in the search path ( Any Drive Letter supplied becomes
+* the default drive when the program is running.)
+*
+WorkingDirectory C:\src\score15
+*
+*
+* File containing the current standings and individual results
+Scorall C:\eddie\scorall.asc
+
+*
+* File containing name, date of birth, sex, and team of each competitor.
+RosterFile C:\eddie\roster.asc
+*
+* File containing all results so far.
+ResultsFile C:\eddie\results.asc
+
+*
+* File containing 3-letter code, full name and captain's name for each team.
+TeamsFile teams.97
+*
+*
+* Name of a temporary scratch file. The g: drive is my ramdrive.
+TempFile g:\score13.tmp
+*
+* Printer Initialization String. This puts the printer in landscape mode with
+* CR -> CR + LF translation and 16.67 cpi font 
+* For the HP 500 using Courier 10 pt.
+* (The escape character is created by hitting <CTL><SHIFT>P
+* followed by the escape key in DOS Edit.)
+PrinterInitString &k2G&l1O(10U(s0p16.67h10V
+*
+* Printer Reset String. Restores printer to its default state.
+PrinterResetString E
+*
+*
+* PrinterNormalString. Sets the printer to print text in portrait mode.
+* The following just enables CR -> CR+LF translation:
+PrinterNormalString &k2G
+*
+* This program has standards for 100m 200m 400m 800m 1500m 3k 5k 8k 10k
+* 15k mar 800r 1600r 3200r dmr. But not all of these events are done
+* each year. The next section allows you to exclude events and relays
+* which are not being done this competition year.
+* To add an additional event beyond the ones listed above requires
+* modifying the source code and recompiling. For more information on how
+* to do this see source.txt.
+*
+* Put the Name of each relay which is not being done this year on a 
+* separate line below
+ExcludedRelay dmr
+ExcludedRelay 400r
+*ExcludedRelay 800r
+*
+* Put the name of each individual event which is not being done this year on
+* separate line below
+ExcludedEvent 8k
+*ExcludedEvent 100m
+ExcludedEvent mar
+ExcludedEvent 1600m
+ExcludedEvent 1500m

@@ -1,0 +1,21 @@
+*****************************************************************************
+* Teams for the SU noontime running league                                  *
+* 2003-2004 competition year.                                                 *
+*****************************************************************************
+*
+* Format:
+* <Team abbreviation> <"Full Team Name"> <"Name of Team Captain">
+*
+* Abbreviation must be 3 letters. Full name and captain's name must be 
+* enclosed in quotes.
+*
+the "Texas Hold 'Em" "Karen Connely and Sean Kelley"
+bst "Blue Staters" "Terry McConnell and Chris Read"
+sas "Slow and Slower" "Jerry Bisson and Kevin Hanlon"
+lsc "Lightspeed c" "Al Magri and Sam Sampere"
+ata "A-Team @" "John Allen and Larry Abrahamson"
+una "Unattached" "None"
+* example entry from last year
+*bee "Beat 'Em Every Race" "Don Hughes and Rick Cleary"
+
+

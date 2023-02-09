@@ -1,0 +1,112 @@
+Suggested keyboard mappings 
+
+The following keymaps should be made to make keys function as much as
+possible like they do in DOS:
+
+F1 --> ^W
+F2 --> ^L
+F3 --> ^A
+F4 --> ^R
+F5 --> ^T
+F6 --> ^D
+Esc -> ^[
+Backspace -> ^H (or ^? on some systems)
+Control-Break -> ^C
+Del -> ^? (or ^H on some systems)
+Control-PrintScrn -> ^P
+Ins -> ^E
+Alt -> ^U
+
+The philosophy behind the following is that if the user has mapped the
+function keys to the control character operations, then she will want to
+get the actual control characters rather than their actions when the
+characters themselves are entered from the keyboard. 
+
+Control-E --> ^VE
+Control-W --> ^VW
+Control-L --> ^VL
+Control-A --> ^VA
+Control-R --> ^VR
+Control-T --> ^VT
+Control-U --> ^VU
+Control-Alt -> Alt
+
+For example, pressing the control key and the U key simultaneously 
+should send the two-character string ^VU. When entered in edlin
+this will store ^U internally.
+
+************************************************************************
+                     (Notes on Keymaps provided)
+
+Linux or FreeBsd US keyboard (For Text Console)
+==========================================================================
+
+To use the keymap provided in this directory use the loadkeys -s command.
+(In FreeBsd use the kbdcontrol -l command) 
+This may be included in a script as illustrated in the files edlin.sh (linux)
+and edlin.fbd for freebsd. These should be edited and moved as edlin to
+an appropriate place on your path.) Note that ^T and
+^U print as alternate OEM characters, but this is impossible to emulate
+here. This includes all of the above keymaps. Note that many keys are
+mapped in the default keymaps to do special things. These mappings
+have not been removed. Because of the mapping of ALT --> ^U you won't
+be able to switch virtual consoles using the alt key.  Instead, the
+map has been set up so you can use Control-Alt instead to switch VTs.
+
+All of this is very much keyboard dependent so these maps should only be
+regarded as examples. (I made these maps using a laptop so, for
+example there is no numpad at all and ins/del are in a weird
+place. There are utilities that can give scancodes for keys
+you strike (in freebsd, e.g., there is a useful port named kbdscan for this
+purpose. Linux has showkeys(1) and a dumpkeys(1) routine, which you can also use
+to capture a current keymap to use for restoring the original
+keymap when edlin exits. ) 
+
+Unfortunately loading the keymap under linux seems to require root
+priveleges. Loading function key strings does not require root priveleges
+but any reassignment of key codes most likely will. (On my laptop, for
+example, the del key sends a scan code that is associated with the
+keypad period character, and this code needs to be reassigned to send the
+appropriate delete character.) There are two fixes, neither completely
+satisfactory: 1) run edlin as su root; 2) make loadkeys suid root. 
+
+Xresources 
+=========================================================================
+
+These provide keymapping resources for the standard Xterm. They should
+be loaded using xrdb, e.g.
+xrdb -merge Xresources
+before launching an xterm from which edlin will be run. (See the example
+shell script "edlin.lnx" in the directory above this one.)
+
+Minix.map (For Minix 2. Haven't tried with Minix 3.)
+=========================================================================
+
+This is a binary which must be produced from the source file minix.src.
+The method is the following(if you want to make changes):
+1) copy the file /usr/src/kernel/keymaps/genmap.c to the current directory.
+2) give the commands
+
+cc -DKEYSRC\"minix.src\" genmap.c
+a.out > minix.map
+  
+Note that minix does not support mapping keys to emit strings. Thus the
+method outlined above for remapping control characters to enter strings
+beginning with LITERAL (^V) will not work. We have opted instead to turn
+off the control character production altogether so that the user won't get
+surprising results. Thus, e.g., striking CTRL-A will just produce A rather
+than ^A and its attendant action. 
+
+I had no success figuring out how to map Control-Break and Control-PrintScr
+in Minix. Of course, the normal minix "Hot Keys" F1-F3 will no longer
+work. (You might fix this, if it annoys you, by mapping F7-F9 to function
+as hot keys.)
+
+Be sure to read the keymap(5) man page. 
+
+Of course, almost nobody uses minix 2, but those who do might be more inclined
+to use edlin than a normal person :-)
+
+======================================================
+Terry R. McConnell
+trmcconn@syr.edu

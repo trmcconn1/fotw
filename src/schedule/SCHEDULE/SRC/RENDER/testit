@@ -1,0 +1,4 @@
+5 20
+title "A test file"
+label 1 first
+box 1 5 4 10 "foo"

@@ -1,0 +1,56 @@
+		MSEQ: C-code for studying the "M-sequence"
+
+	The M-sequence is a psuedo random sequence introduced by 
+A. Ehrenfeucht and J. Mycielski in "A psuedo-random sequence -- how random
+is it?", Amer. Math. Monthly 99(1992),373-375. In brief, the sequence of
+binary digits starts 010. Thereafter, one determines the next digit as
+follows: find the longest sequence occuring at the end which also occurs 
+previously. If there is more than one previous occurrence, consider the last
+one. The next digit is the opposite of the one following that last previous
+occurrence. Thus, the sequence "avoids repetition." 
+
+	This package contains code for studying the M-sequence. The file
+mseq.c contains the main program and a routine that calculates terms of
+the m-sequence and builds a database containing information about its
+properties. The number of terms generated can be controlled at compile
+time by editing the settings of MAX_NODES and MAX_LEVEL which are #defined
+in mseq.h. (It is time to mention that in order to use this package you
+need to be a C programmer.) In addition, smaller build sizes can be
+selected at run time using the -n option. (The main program is designed
+to report usage information and exit if it is invoked with the flag -h.)
+
+	As distributed, the main program is designed to do nothing but
+build the requested number of terms and report that fact to the user. To
+do something useful you will need to select report generating routines from
+util.c and include them in the obvious place in main. For example, the
+line 
+
+print_mseq(20);
+
+included at the appropriate place will print the first 20 terms of the
+m-sequence to the program's standard output.  
+
+Documentation for the routines in util.c is included with the source code.
+
+You can of course add your own routines to util.c. You will need to read
+the supporting code in main.c first in order to understand the "API." I have
+tried to make the code as readable as possible.
+
+Bear in mind that the run time of this program increases rapidly with
+the number of terms requested. For example, on my 550 MHZ pentium III Xeon
+it took under 1 second to build 10000 terms, but almost 24 hours to build
+1 million. 
+
+For further information on the m-sequence consult my web page:
+
+http://barnyard.syr.edu/mseq/mseq.shtml.
+
+I would be pleased to discuss this program or the m-sequence itself. I
+can be reached at the email address tmc@barnyard.syr.edu.
+
+
+Terry R. McConnell
+215 Carnegie
+Syracuse, NY 13244-1150
+(315)443-1491(work)
+

@@ -1,0 +1,1739 @@
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-1
+                                                            
+
+       1                                 
+       2                                NAME EXTERNAL 
+       3                                TITLE EXTERNAL 
+       4                                 
+       5                                ; External.a: implementation of externa
+					l monitor commands   
+       6                                ; the stand-alone version.  
+       7                                 
+       8                                PUBLIC _n_externals,_external_entry_poi
+					nts,_external_help,_external_usage 
+       9                                PUBLIC _external_names 
+      10                                PUBLIC save_disk,save_cyl,save_sec,save
+					_head,save_seg,save_off,save_size 
+      11                                EXTRN my_strlen:NEAR 
+      12                                EXTRN my_strcmp:NEAR 
+      13                                EXTRN _print_i:NEAR 
+      14                                EXTRN my_atoi:NEAR 
+      15                                EXTRN _rcscript:BYTE 
+      16                                 
+      17                             C  INCLUDE macros.asm 
+      18                             C   
+      19 = 0200                      C  BUF_SIZ EQU 512 
+      20 = 0200                      C  ENV_SIZ EQU 512 
+      21 = 1000                      C  SCRIPT_SIZ EQU 4096 
+      22 =                           C  PROMPT_STRING EQU "Monitor>" 
+      23 = 005C                      C  ESCAPE_CHAR EQU 05CH 
+      24 = 0023                      C  COMMENT_CHAR EQU 023H 
+      25 = 0024                      C  VARIABLE_CHAR EQU 024H 
+      26                             C   
+      27                             C  ; If the bios is used to print strings 
+					to the console, the following sets 
+      28                             C  ; the attribute, with high nibble = rgb
+					 value of background, low nibble = 
+      29                             C  ; rgb value of foreground. I like white
+					 on blue background 
+      30                             C  ; Standard white on black is 07H 
+      31                             C   
+      32 = 0017                      C  CHAR_ATTR EQU 17H      
+      33                             C   
+      34                             C  ;; Note: all system calls should be cal
+					led from inside macros, for portability
+					 
+      35                             C   
+      36                             C  ; Every system call is implemented in a
+					 separate macro. There are two  
+      37                             C  ; implementations of each one - one usi
+					ng only BIOS interrupts so that 
+      38                             C  ; monitor could be run in the absence o
+					f an operating system, say, as a  
+      39                             C  ; boot monitor. This is selected by def
+					ining BIOS on the assember command 
+      40                             C  ; line. Otherwise, DOS int21H system ca
+					lls are used 
+      41                             C   
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-2
+                                                            
+
+      42                             C  ; BE VERY CAREFUL USING REGISTERS AS MA
+					CRO ARGUMENTS!!! 
+      43                             C   
+      44                             C  IFDEF BIOS 
+      45                             C   
+      46                             C  ; Read a line of text from the terminal
+					 using Bios 00H int 16H service 
+      47                             C  ; Leaves number of characters read in a
+					x.  
+      48                             C   
+      49                             C  READ_LINE MACRO mybuf 
+      50                             C  LOCAL loop,done,do_backsp 
+      51                             C  	push si 
+      52                             C  	push bx 
+      53                             C  	push bp 
+      54                             C  	mov ax,mybuf 
+      55                             C  	mov bp,ax 
+      56                             C  	mov ah,0FH 
+      57                             C          int 10H 
+      58                             C          mov bl,CHAR_ATTR 
+      59                             C  	xor si,si 
+      60                             C  	jmp loop 
+      61                             C   
+      62                             C  do_backsp: 
+      63                             C   
+      64                             C  	cmp si,0 
+      65                             C  	jbe loop 
+      66                             C  	dec si 
+      67                             C  	mov ah,0EH 
+      68                             C  	int 10H 
+      69                             C  	mov al,20H 
+      70                             C  	int 10H 
+      71                             C  	mov al,08H 
+      72                             C  	int 10H 
+      73                             C   
+      74                             C  loop: 
+      75                             C  	mov ax,00H 
+      76                             C  	int 16H 
+      77                             C  	cmp al,1AH 
+      78                             C  	je done 
+      79                             C  	cmp al,08H 
+      80                             C  	je do_backsp  
+      81                             C  	mov BYTE PTR DS:[bp+si],al 
+      82                             C  	inc si 
+      83                             C          mov ah,0EH 
+      84                             C          int 10H 
+      85                             C  	cmp al,0DH 
+      86                             C  	jne loop 
+      87                             C   
+      88                             C  done: 
+      89                             C   
+      90                             C  	mov al,0AH 
+      91                             C  	mov ah,0EH 
+      92                             C  	int 10H 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-3
+                                                            
+
+      93                             C  	mov ax,si 
+      94                             C  	pop bp 
+      95                             C  	pop bx 
+      96                             C  	pop si 
+      97                             C  ENDM 
+      98                             C   
+      99                             C  ; Print a single character to the termi
+					nal using int 10H service 0EH 
+     100                             C   
+     101                             C  PRINT_CHAR MACRO mychar  
+     102                             C  		     push ax 
+     103                             C  	             push bx 
+     104                             C  		     mov ah,0FH 
+     105                             C  		     int 10H 
+     106                             C  	             mov bl,CHAR_ATTR 
+     107                             C  		     mov ah,0EH 
+     108                             C  	             mov al,mychar 
+     109                             C  	             int 10H 
+     110                             C  		     pop bx 
+     111                             C  	             pop ax 
+     112                             C  ENDM 
+     113                             C   
+     114                             C  ; Macro: use BIOS 10H service to write 
+					a string to the screen 
+     115                             C  ; string must be null terminated 
+     116                             C   
+     117                             C  PRINT_STRING MACRO mystring  
+     118                             C  	push ax 
+     119                             C  	push bx 
+     120                             C  	push cx 
+     121                             C  	push dx 
+     122                             C  	push es 
+     123                             C  	push bp 
+     124                             C  	mov ah,0FH 
+     125                             C  	int 10H 
+     126                             C  	mov ah,03H 
+     127                             C  	int 10H 
+     128                             C  	mov ax,OFFSET DGROUP:mystring 
+     129                             C  	push ax 
+     130                             C  	call my_strlen 
+     131                             C  	add sp,2 
+     132                             C  	mov cx,ax 
+     133                             C  	mov ax,ds 
+     134                             C  	mov es,ax 
+     135                             C  	mov ax,OFFSET DGROUP:mystring 
+     136                             C  	mov bp,ax 
+     137                             C  	mov bl,CHAR_ATTR 
+     138                             C  	mov al,01H 
+     139                             C  	mov ah,13H 
+     140                             C  	int 10H 
+     141                             C  	pop bp 
+     142                             C  	pop es 
+     143                             C  	pop dx 
+     144                             C  	pop cx 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-4
+                                                            
+
+     145                             C  	pop bx 
+     146                             C  	pop ax 
+     147                             C  ENDM 
+     148                             C   
+     149                             C  ; A version of the previous using a reg
+					ister passed as argument 
+     150                             C   
+     151                             C  PRINT_PTR MACRO my_ptr  
+     152                             C  	push ax 
+     153                             C  	push bx 
+     154                             C  	push cx 
+     155                             C  	push dx 
+     156                             C  	push es 
+     157                             C  	push bp 
+     158                             C  	mov ah,0FH 
+     159                             C  	int 10H 
+     160                             C  	mov ah,03H 
+     161                             C  	int 10H 
+     162                             C  	mov ax,my_ptr 
+     163                             C  	push ax 
+     164                             C  	call my_strlen 
+     165                             C  	add sp,2 
+     166                             C  	mov cx,ax 
+     167                             C  	mov ax,ds 
+     168                             C  	mov es,ax 
+     169                             C  	mov ax,my_ptr 
+     170                             C  	mov bp,ax 
+     171                             C  	mov bl,CHAR_ATTR 
+     172                             C  	mov al,01H 
+     173                             C  	mov ah,13H 
+     174                             C  	int 10H 
+     175                             C  	pop bp 
+     176                             C  	pop es 
+     177                             C  	pop dx 
+     178                             C  	pop cx 
+     179                             C  	pop bx 
+     180                             C  	pop ax 
+     181                             C  ENDM 
+     182                             C   
+     183                             C  ; Try to return to whatever might have 
+					called us. For a true boot monitor 
+     184                             C  ; we might want to try int 19H, which d
+					oes a warm reboot 
+     185                             C   
+     186                             C  TERMINATE MACRO rval 
+     187                             C  	mov al,rval	       
+     188                             C  	ret 
+     189                             C  	;int 19H    
+     190                             C  ENDM 
+     191                             C   
+     192                             C  ; SBRK  return in ax the number of K of
+					 total memory as returned 
+     193                             C  ; by the BIOS. It is not clear this is 
+					meaningful    
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-5
+                                                            
+
+     194                             C   
+     195                             C  SBRK MACRO   
+     196                             C  	int 12H 
+     197                             C  ENDM 
+     198                             C   
+     199                             C  ENDIF 
+     200                                 
+     201                                 
+     202                                DGROUP GROUP _TEXT,_DATA,_BSS 
+     203                                 
+     204 0000                           _DATA SEGMENT PUBLIC 'DATA'  
+     205                                ASSUME DS:DGROUP 
+     206                                 
+     207 0000  69 6E 66 6F 00           info_name db "info",00H 
+     208 0005  69 6E 66 6F 0D 0A 00     info_usage db "info",0DH,0AH,00H 
+     209 000C  70 72 69 6E 74 20 61     info_help db "print author and other in
+					fo",0DH,0AH,00H 
+     210       75 74 68 6F 72 20 61     
+     211       6E 64 20 6F 74 68 65     
+     212       72 20 69 6E 66 6F 0D     
+     213       0A 00                    
+     214 002A  62 6F 6F 74 00           boot_name db "boot",00H 
+     215 002F  62 6F 6F 74 20 3C 63     boot_usage db "boot <cylinder head sect
+					or> | boot <a|b|c|d>",0DH,0AH,00H 
+     216       79 6C 69 6E 64 65 72     
+     217       20 68 65 61 64 20 73     
+     218       65 63 74 6F 72 3E 20     
+     219       7C 20 62 6F 6F 74 20     
+     220       3C 61 7C 62 7C 63 7C     
+     221       64 3E 0D 0A 00           
+     222 005E  72 75 6E 20 73 65 63     boot_help db "run sector of boot drive 
+					or mbr of fd/hd as boot code",0DH,0AH,0
+					0H 
+     223       74 6F 72 20 6F 66 20     
+     224       62 6F 6F 74 20 64 72     
+     225       69 76 65 20 6F 72 20     
+     226       6D 62 72 20 6F 66 20     
+     227       66 64 2F 68 64 20 61     
+     228       73 20 62 6F 6F 74 20     
+     229       63 6F 64 65 0D 0A 00     
+     230 0096  70 61 72 74 69 6E 66     partinfo_name db "partinfo",00H 
+     231       6F 00                    
+     232 009F  70 61 72 74 69 6E 66     partinfo_usage db "partinfo [80H | 81H]
+					",0DH,0AH,00H 
+     233       6F 20 5B 38 30 48 20     
+     234       7C 20 38 31 48 5D 0D     
+     235       0A 00                    
+     236 00B6  70 61 72 74 69 6E 66     partinfo_help db "partinfo: Give partit
+					ion information about boot or given dri
+					ve",0DH,0AH,00H 
+     237       6F 3A 20 47 69 76 65     
+     238       20 70 61 72 74 69 74     
+     239       69 6F 6E 20 69 6E 66     
+     240       6F 72 6D 61 74 69 6F     
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-6
+                                                            
+
+     241       6E 20 61 62 6F 75 74     
+     242       20 62 6F 6F 74 20 6F     
+     243       72 20 67 69 76 65 6E     
+     244       20 64 72 69 76 65 0D     
+     245       0A 00                    
+     246 00F7  73 61 76 65 00           save_name db "save",00H 
+     247 00FC  73 61 76 65 0D 0A 00     save_usage db "save",0DH,0AH,00H 
+     248 0103  73 61 76 65 20 70 72     save_help db "save program state to dis
+					k",0DH,0AH,00H 
+     249       6F 67 72 61 6D 20 73     
+     250       74 61 74 65 20 74 6F     
+     251       20 64 69 73 6B 0D 0A     
+     252       00                       
+     253 0120  0004                     _n_externals dw 4 
+     254 0122  0100 R                   _external_entry_points dw OFFSET DGROUP
+					:_info + 0100H 
+     255 0124  0132 R                   dw OFFSET DGROUP:_boot + 0100H 
+     256 0126  022B R                   dw OFFSET DGROUP:_partinfo + 0100H 
+     257 0128  0695 R                   dw OFFSET DGROUP:_save + 0100H 
+     258 012A  000C R                   _external_help dw OFFSET DGROUP:info_he
+					lp 
+     259 012C  005E R                   dw OFFSET DGROUP:boot_help 
+     260 012E  00B6 R                   dw OFFSET DGROUP:partinfo_help 
+     261 0130  0103 R                   dw OFFSET DGROUP:save_help 
+     262 0132  0005 R                   _external_usage dw OFFSET DGROUP:info_u
+					sage 
+     263 0134  002F R                   dw OFFSET DGROUP:boot_usage 
+     264 0136  009F R                   dw OFFSET DGROUP:partinfo_usage 
+     265 0138  00FC R                   dw OFFSET DGROUP:save_usage 
+     266 013A  0000 R                   _external_names dw OFFSET DGROUP:info_n
+					ame 
+     267 013C  002A R                   dw OFFSET DGROUP:boot_name 
+     268 013E  0096 R                   dw OFFSET DGROUP:partinfo_name 
+     269 0140  00F7 R                   dw OFFSET DGROUP:save_name 
+     270                                 
+     271                                ; Below you can put data used by indivi
+					dual external commands 
+     272                                 
+     273 0142  42 6F 6F 74 20 4D 6F     info_msg db "Boot Monitor 1.2 by Terry 
+					R. McConnell (2018)",0DH,0AH,00H 
+     274       6E 69 74 6F 72 20 31     
+     275       2E 32 20 62 79 20 54     
+     276       65 72 72 79 20 52 2E     
+     277       20 4D 63 43 6F 6E 6E     
+     278       65 6C 6C 20 28 32 30     
+     279       31 38 29 0D 0A 00        
+     280 0172  50 61 72 74 69 74 69     partinfo_heading db "Partition Table En
+					trys",0DH,0AH,00H 
+     281       6F 6E 20 54 61 62 6C     
+     282       65 20 45 6E 74 72 79     
+     283       73 0D 0A 00              
+     284 018B  2D 2D 2D 2D 2D 2D 2D     partinfo_sep db "----------------------
+					-------------------------------------",
+					0DH,0AH,00H 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-7
+                                                            
+
+     285       2D 2D 2D 2D 2D 2D 2D     
+     286       2D 2D 2D 2D 2D 2D 2D     
+     287       2D 2D 2D 2D 2D 2D 2D     
+     288       2D 2D 2D 2D 2D 2D 2D     
+     289       2D 2D 2D 2D 2D 2D 2D     
+     290       2D 2D 2D 2D 2D 2D 2D     
+     291       2D 2D 2D 2D 2D 2D 2D     
+     292       2D 2D 2D 0D 0A 00        
+     293 01C9  62 65 67 69 6E 3A 20     partinfo_header db "begin:   cylinder  
+					head      sector  end: ",0DH,0AH,00H 
+     294       20 20 63 79 6C 69 6E     
+     295       64 65 72 20 20 68 65     
+     296       61 64 20 20 20 20 20     
+     297       20 73 65 63 74 6F 72     
+     298       20 20 65 6E 64 3A 20     
+     299       0D 0A 00                 
+     300 01F6  76 6F 6C 75 6D 65 20     boot_error db "volume boot failed",0DH,
+					0AH,00H 
+     301       62 6F 6F 74 20 66 61     
+     302       69 6C 65 64 0D 0A 00     
+     303                                 
+     304                                 
+     305                                PARTENTRY STRUC 
+     306 0000  ??                       	peBootable db ?     ; 80h = bootable, 
+					00h = nonbootable 
+     307 0001  ??                       	peBeginHead db ?    ; beginning head 
+     308 0002  ??                       	peBeginSector db ?  ; beginning sector
+					 
+     309 0003  ??                       	peBeginCylinder db ?; beginning cylind
+					er 
+     310 0004  ??                       	peFileSystem db  ? ; name of file syst
+					em 
+     311 0005  ??                       	peEndHead db ? 
+     312 0006  ??                       	peEndSector db ? 
+     313 0007  ??                       	peEndCylinder db ? 
+     314 0008  ????                     	peStartSectorLo dw ? 
+     315 000A  ????                     	peStartSectorHi dw ? 
+     316 000C  ????                     	peSectorsLo dw ? 
+     317 000E  ????                     	peSectorsHi dw ? 
+     318 0010                           PARTENTRY ENDS 
+     319                                 
+     320 020B  01BE[                    _bblock db 446 dup (0) 
+     321            00                  
+     322                         ]      
+     323                                
+     324 03C9  ??                       part_entry0 PARTENTRY <> 
+     325 03CA  ??                       
+     326 03CB  ??                       
+     327 03CC  ??                       
+     328 03CD  ??                       
+     329 03CE  ??                       
+     330 03CF  ??                       
+     331 03D0  ??                       
+     332 03D1  ????                     
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-8
+                                                            
+
+     333 03D3  ????                     
+     334 03D5  ????                     
+     335 03D7  ????                     
+     336                                
+     337 03D9  ??                       part_entry1 PARTENTRY <> 
+     338 03DA  ??                       
+     339 03DB  ??                       
+     340 03DC  ??                       
+     341 03DD  ??                       
+     342 03DE  ??                       
+     343 03DF  ??                       
+     344 03E0  ??                       
+     345 03E1  ????                     
+     346 03E3  ????                     
+     347 03E5  ????                     
+     348 03E7  ????                     
+     349                                
+     350 03E9  ??                       part_entry2 PARTENTRY <> 
+     351 03EA  ??                       
+     352 03EB  ??                       
+     353 03EC  ??                       
+     354 03ED  ??                       
+     355 03EE  ??                       
+     356 03EF  ??                       
+     357 03F0  ??                       
+     358 03F1  ????                     
+     359 03F3  ????                     
+     360 03F5  ????                     
+     361 03F7  ????                     
+     362                                
+     363 03F9  ??                       part_entry3 PARTENTRY <> 
+     364 03FA  ??                       
+     365 03FB  ??                       
+     366 03FC  ??                       
+     367 03FD  ??                       
+     368 03FE  ??                       
+     369 03FF  ??                       
+     370 0400  ??                       
+     371 0401  ????                     
+     372 0403  ????                     
+     373 0405  ????                     
+     374 0407  ????                     
+     375                                
+     376                                	 
+     377                                 
+     378 0409                           _DATA ENDS 
+     379                                 
+     380 0000                           _TEXT SEGMENT PUBLIC 'CODE' 
+     381                                ASSUME CS:DGROUP,DS:DGROUP 
+     382                                 
+     383 0000                           _info: 
+     384                                 
+     385                                	PRINT_STRING info_msg 
+     386 0000  50                     1 	push ax
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-9
+                                                            
+
+     387 0001  53                     1 	push bx
+     388 0002  51                     1 	push cx
+     389 0003  52                     1 	push dx
+     390 0004  06                     1 	push es
+     391 0005  55                     1 	push bp
+     392 0006  B4 0F                  1 	mov ah,0FH
+     393 0008  CD 10                  1 	int 10H
+     394 000A  B4 03                  1 	mov ah,03H
+     395 000C  CD 10                  1 	int 10H
+     396 000E  B8 0142 R              1 	mov ax,OFFSET DGROUP:info_msg
+     397 0011  50                     1 	push ax
+     398 0012  E8 0000 E              1 	call my_strlen
+     399 0015  83 C4 02               1 	add sp,2
+     400 0018  8B C8                  1 	mov cx,ax
+     401 001A  8C D8                  1 	mov ax,ds
+     402 001C  8E C0                  1 	mov es,ax
+     403 001E  B8 0142 R              1 	mov ax,OFFSET DGROUP:info_msg
+     404 0021  8B E8                  1 	mov bp,ax
+     405 0023  B3 17                  1 	mov bl,CHAR_ATTR
+     406 0025  B0 01                  1 	mov al,01H
+     407 0027  B4 13                  1 	mov ah,13H
+     408 0029  CD 10                  1 	int 10H
+     409 002B  5D                     1 	pop bp
+     410 002C  07                     1 	pop es
+     411 002D  5A                     1 	pop dx
+     412 002E  59                     1 	pop cx
+     413 002F  5B                     1 	pop bx
+     414 0030  58                     1 	pop ax
+     415 0031  C3                       	ret 
+     416                                 
+     417 0032                           _boot: 
+     418                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     419                                ;   This loader copies the boot sector 
+					at start of cylinder argv[0]  
+     420                                ;   into memory at offset 7c00h  
+     421                                ;   Then we do a far return to 00H:7c00
+					H to run the code 
+     422                                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+     423                                 
+     424 = 7C00                         BOOTCODE	=	7c00h		; boot code entry (se
+					t by BIOS) 
+     425 = 07C0                         BOOTSEG		=	7c0h		; boot segment 
+     426 = 0000                         CODE_SEG        =       00H            
+					 ; segment to load code into 
+     427 = 7C00                         CODE_OFF        =       7C00H          
+					 ; offset to load code into 
+     428                                 
+     429 0032  55                       	push bp 
+     430 0033  8B EC                    	mov bp,sp 
+     431 0035  53                       	push bx 
+     432 0036  51                       	push cx 
+     433 0037  52                       	push dx 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-10
+                                                            
+
+     434 0038  06                       	push es 
+     435                                 
+     436 0039  8A 16 056A R                     mov     dl, save_disk         ;
+					 default drive number 
+     437                                 
+     438 003D  8B 46 04                 	mov ax, [bp+4]          ; argc into ax
+					 
+     439 0040  3D 0003                  	cmp ax,3 
+     440 0043  74 40                    	je boot_hd_sector 
+     441 0045  3D 0001                  	cmp ax,1 
+     442 0048  74 03                    	je not_boot_default_hd 
+     443 004A  E9 00DE R                	jmp error 
+     444                                 
+     445 004D                           not_boot_default_hd: 
+     446                                 
+     447                                ; mbr sector 
+     448 004D  B5 00                    	mov ch,00H              ; load track n
+					umber for int 13H below 
+     449 004F  B6 00                    	mov dh,00H              ; load head nu
+					mber for int 13H below 
+     450 0051  B1 01                    	mov cl,01H              ; load sector 
+					number for int 13H below 
+     451                                 
+     452 0053  8B 5E 06                 	mov bx,[bp+6]           ; argv into bx
+					 
+     453 0056  8B 07                    	mov ax,[bx]             ; argv[0] into
+					 ax 
+     454 0058  8B D8                    	mov bx,ax 
+     455 005A  80 3F 61                 	cmp BYTE PTR [bx],61H              ; I
+					s it the letter a? 
+     456 005D  74 1C                    	je boot_fd_a 
+     457 005F  80 3F 62                 	cmp BYTE PTR [bx],62H 
+     458 0062  74 1C                    	je boot_fd_b 
+     459 0064  80 3F 63                 	cmp BYTE PTR [bx],63H 
+     460 0067  74 0D                    	je boot_80H 
+     461 0069  80 3F 64                 	cmp BYTE PTR [bx],64H 
+     462 006C  74 03                    	je boot_81H 
+     463 006E  EB 6E 90                 	jmp error 
+     464                                 
+     465                                 
+     466                                 
+     467 0071                           boot_81H: 
+     468 0071  B2 81                    	mov dl,81H 
+     469 0073  EB 36 90                 	jmp drive_reset 
+     470 0076                           boot_80H: 
+     471 0076  B2 80                    	mov dl,80H 
+     472 0078  EB 31 90                 	jmp drive_reset 
+     473                                	 
+     474 007B                           boot_fd_a: 
+     475 007B  B2 00                    	mov dl,00H              ; 00H is numbe
+					r of first floppy drive 
+     476 007D  EB 2C 90                 	jmp drive_reset 
+     477                                 
+     478 0080                           boot_fd_b: 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-11
+                                                            
+
+     479 0080  B2 01                    	mov dl,01H              ; 01H is numbe
+					r of second floppy drive 
+     480 0082  EB 27 90                 	jmp drive_reset 
+     481                                 
+     482                                 
+     483 0085                           boot_hd_sector: 
+     484 0085  8B 5E 06                 	mov bx,[bp+6]           ; argv into bx
+					 
+     485 0088  8B 07                    	mov ax,[bx]             ; argv[0] into
+					 ax 
+     486 008A  50                       	push ax                 ; convert stri
+					ng pointed to by ax to number 
+     487 008B  E8 0000 E                	call my_atoi            ; to number in
+					 ax 
+     488 008E  83 C4 02                 	add sp,2 
+     489 0091  8A E8                    	mov ch,al               ; load cylinde
+					r number for int 13H below 
+     490 0093  8B 47 02                 	mov ax,[bx+2]           ; argv[1] into
+					 ax            
+     491 0096  50                       	push ax 
+     492 0097  E8 0000 E                	call my_atoi 
+     493 009A  83 C4 02                 	add sp,2 
+     494 009D  8A F0                    	mov dh,al               ; load head nu
+					mber for int 13H below 
+     495 009F  8B 47 04                 	mov ax,[bx+4]           ; argv[2] into
+					 ax 
+     496 00A2  50                               push ax 
+     497 00A3  E8 0000 E                	call my_atoi 
+     498 00A6  83 C4 02                 	add sp,2 
+     499 00A9  8A C8                    	mov cl,al               ; load sector 
+					number for int 13H below 
+     500                                         
+     501 00AB                           drive_reset: 
+     502                                 
+     503 00AB  B8 0000                          mov     ax, 0           ; reset
+					 disk controller 
+     504 00AE  CD 13                            int     13h             ; this 
+					is recommended by BIOS docs 
+     505                                 
+     506 00B0                           read_bb: 
+     507                                 
+     508                                ; The BIOS disk read operation limits t
+					he transfer to one track 
+     509                                ; at a time. We assume one track is big
+					 enough to hold everything 
+     510                                 
+     511 00B0  B8 0000                  	mov     ax,CODE_SEG     ; 
+     512 00B3  8E C0                    	mov     es,ax           ; segment of m
+					emory to read into 
+     513 00B5  BB 7C00                          mov     bx,CODE_OFF     ; es:bx
+					 = base of mem to read into 
+     514 00B8  B4 02                            mov     ah, 2           ; selec
+					t int 13h read command  
+     515 00BA  B0 01                    	mov     al, 1           ; read 1 block
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-12
+                                                            
+
+					 
+     516 00BC  CD 13                            int     13h             ; BIOS 
+					disk service 
+     517 00BE  72 1E                            jc      error           ; if er
+					ror, jump to message 
+     518                                 
+     519                                ; check to make sure block has the prop
+					er signature: 55AAH at the end 
+     520                                 
+     521 00C0  B8 07C0                  	mov ax,7C0H 
+     522 00C3  8E C0                    	mov es,ax 
+     523 00C5  26: A0 01FE              	mov al,es:[510] 
+     524 00C9  3C 55                    	cmp al,55H 
+     525 00CB  75 11                    	jne error 
+     526 00CD  26: A0 01FF              	mov al,es:[511] 
+     527 00D1  3C AA                    	cmp al,0AAH 
+     528 00D3  75 09                    	jne error 
+     529                                 
+     530                                ; Call the bootcode by doing a far retu
+					rn to 00H:7C00H 
+     531                                 
+     532 00D5  B8 0000                  	mov ax,00H 
+     533 00D8  50                       	push ax 
+     534 00D9  B8 7C00                  	mov ax,7C00H 
+     535 00DC  50                       	push ax 
+     536 00DD  CB                       db      0CBH                    ; far r
+					eturn machine instruction 
+     537                                 
+     538 00DE                           error: 
+     539                                	PRINT_STRING boot_error 
+     540 00DE  50                     1 	push ax
+     541 00DF  53                     1 	push bx
+     542 00E0  51                     1 	push cx
+     543 00E1  52                     1 	push dx
+     544 00E2  06                     1 	push es
+     545 00E3  55                     1 	push bp
+     546 00E4  B4 0F                  1 	mov ah,0FH
+     547 00E6  CD 10                  1 	int 10H
+     548 00E8  B4 03                  1 	mov ah,03H
+     549 00EA  CD 10                  1 	int 10H
+     550 00EC  B8 01F6 R              1 	mov ax,OFFSET DGROUP:boot_error
+     551 00EF  50                     1 	push ax
+     552 00F0  E8 0000 E              1 	call my_strlen
+     553 00F3  83 C4 02               1 	add sp,2
+     554 00F6  8B C8                  1 	mov cx,ax
+     555 00F8  8C D8                  1 	mov ax,ds
+     556 00FA  8E C0                  1 	mov es,ax
+     557 00FC  B8 01F6 R              1 	mov ax,OFFSET DGROUP:boot_error
+     558 00FF  8B E8                  1 	mov bp,ax
+     559 0101  B3 17                  1 	mov bl,CHAR_ATTR
+     560 0103  B0 01                  1 	mov al,01H
+     561 0105  B4 13                  1 	mov ah,13H
+     562 0107  CD 10                  1 	int 10H
+     563 0109  5D                     1 	pop bp
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-13
+                                                            
+
+     564 010A  07                     1 	pop es
+     565 010B  5A                     1 	pop dx
+     566 010C  59                     1 	pop cx
+     567 010D  5B                     1 	pop bx
+     568 010E  58                     1 	pop ax
+     569 010F  07                       	pop es 
+     570 0110  5A                       	pop dx 
+     571 0111  59                       	pop cx 
+     572 0112  5B                       	pop bx 
+     573 0113  5D                       	pop bp 
+     574 0114  C3                       	ret 
+     575                                 
+     576 0115  80                       partinfo_disk db 80H 
+     577 0116  38 30 48 00              H80str db "80H",00H 
+     578 011A  38 31 48 00              H81str db "81H",00H 
+     579 011E  42 69 6F 73 20 64 69     partinfo_msg1 db "Bios disk = ",00H 
+     580       73 6B 20 3D 20 00        
+     581                                 
+     582 012B                           _partinfo: 
+     583                                 
+     584                                 
+     585 012B  55                       	push bp 
+     586 012C  8B EC                    	mov bp,sp 
+     587 012E  53                       	push bx 
+     588 012F  51                       	push cx 
+     589 0130  52                       	push dx 
+     590 0131  06                       	push es 
+     591                                 
+     592 0132  A0 056A R                	mov al, save_disk 
+     593 0135  A2 0115 R                	mov partinfo_disk,al 
+     594                                 
+     595 0138  8B 46 04                 	mov ax, [bp+4]          ; argc into ax
+					 
+     596                                ; if there is an arg, see if it is 80H 
+					or 81H  
+     597 013B  3D 0000                  	cmp ax,0 
+     598 013E  74 34                    	je read_boot 
+     599 0140  8B 5E 06                 	mov bx, [bp+6] 
+     600 0143  8B 07                    	mov ax, [bx] ; should be pointing to s
+					tring 80H or 81H  
+     601 0145  50                       	push ax 
+     602 0146  B8 0116 R                	mov ax, OFFSET DGROUP:H80str 
+     603 0149  50                       	push ax 
+     604 014A  E8 0000 E                	call my_strcmp 
+     605 014D  83 C4 04                 	add sp,4 
+     606 0150  3D 0000                  	cmp ax,00H 
+     607 0153  75 08                    	jne chk81H 
+     608 0155  C6 06 0115 R 80          	mov partinfo_disk,80H 
+     609 015A  EB 18 90                 	jmp read_boot 
+     610                                	  
+     611 015D                           chk81H: 
+     612 015D  8B 07                    	mov ax,[bx] 
+     613 015F  50                       	push ax 
+     614 0160  B8 011A R                	mov ax, OFFSET DGROUP:H81str 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-14
+                                                            
+
+     615 0163  50                       	push ax 
+     616 0164  E8 0000 E                	call my_strcmp 
+     617 0167  83 C4 04                 	add sp,4 
+     618 016A  3D 0000                  	cmp ax,00H 
+     619 016D  75 05                    	jne read_boot 
+     620 016F  C6 06 0115 R 81          	mov partinfo_disk,81H 
+     621                                  
+     622                                ; read the bootblock into memory 
+     623 0174                           read_boot: 
+     624                                 
+     625 0174  8C D8                    	mov     ax,DS           ; 
+     626 0176  8E C0                    	mov     es,ax           ; segment of m
+					emory to read into 
+     627 0178  BB 020B R                        mov     bx,OFFSET DGROUP:_bbloc
+					k     ; es:bx = base of mem to read int
+					o 
+     628 017B  8A 16 0115 R                     mov     dl, partinfo_disk      
+					   ; first hard drive 
+     629 017F  B4 02                            mov     ah, 2           ; selec
+					t int 13h read command  
+     630 0181  B5 00                    	mov     ch, 00H         ; cylinder 0  
+     631 0183  B1 01                    	mov     cl,1            ; sector 1 
+     632 0185  B6 00                            mov     dh, 0           ; head 
+					0 
+     633 0187  B0 01                    	mov     al, 1 ;         ; read 1 secto
+					r 
+     634 0189  CD 13                            int     13h             ; BIOS 
+					disk service 
+     635 018B  73 03                    	jnc     read_ok 
+     636 018D  E9 00DE R                        jmp     error           ; if er
+					ror, jump to message 
+     637                                 
+     638 0190                           read_ok: 
+     639                                 
+     640                                	PRINT_STRING partinfo_heading 
+     641 0190  50                     1 	push ax
+     642 0191  53                     1 	push bx
+     643 0192  51                     1 	push cx
+     644 0193  52                     1 	push dx
+     645 0194  06                     1 	push es
+     646 0195  55                     1 	push bp
+     647 0196  B4 0F                  1 	mov ah,0FH
+     648 0198  CD 10                  1 	int 10H
+     649 019A  B4 03                  1 	mov ah,03H
+     650 019C  CD 10                  1 	int 10H
+     651 019E  B8 0172 R              1 	mov ax,OFFSET DGROUP:partinfo_heading
+     652 01A1  50                     1 	push ax
+     653 01A2  E8 0000 E              1 	call my_strlen
+     654 01A5  83 C4 02               1 	add sp,2
+     655 01A8  8B C8                  1 	mov cx,ax
+     656 01AA  8C D8                  1 	mov ax,ds
+     657 01AC  8E C0                  1 	mov es,ax
+     658 01AE  B8 0172 R              1 	mov ax,OFFSET DGROUP:partinfo_heading
+     659 01B1  8B E8                  1 	mov bp,ax
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-15
+                                                            
+
+     660 01B3  B3 17                  1 	mov bl,CHAR_ATTR
+     661 01B5  B0 01                  1 	mov al,01H
+     662 01B7  B4 13                  1 	mov ah,13H
+     663 01B9  CD 10                  1 	int 10H
+     664 01BB  5D                     1 	pop bp
+     665 01BC  07                     1 	pop es
+     666 01BD  5A                     1 	pop dx
+     667 01BE  59                     1 	pop cx
+     668 01BF  5B                     1 	pop bx
+     669 01C0  58                     1 	pop ax
+     670                                	PRINT_STRING partinfo_msg1 
+     671 01C1  50                     1 	push ax
+     672 01C2  53                     1 	push bx
+     673 01C3  51                     1 	push cx
+     674 01C4  52                     1 	push dx
+     675 01C5  06                     1 	push es
+     676 01C6  55                     1 	push bp
+     677 01C7  B4 0F                  1 	mov ah,0FH
+     678 01C9  CD 10                  1 	int 10H
+     679 01CB  B4 03                  1 	mov ah,03H
+     680 01CD  CD 10                  1 	int 10H
+     681 01CF  B8 011E R              1 	mov ax,OFFSET DGROUP:partinfo_msg1
+     682 01D2  50                     1 	push ax
+     683 01D3  E8 0000 E              1 	call my_strlen
+     684 01D6  83 C4 02               1 	add sp,2
+     685 01D9  8B C8                  1 	mov cx,ax
+     686 01DB  8C D8                  1 	mov ax,ds
+     687 01DD  8E C0                  1 	mov es,ax
+     688 01DF  B8 011E R              1 	mov ax,OFFSET DGROUP:partinfo_msg1
+     689 01E2  8B E8                  1 	mov bp,ax
+     690 01E4  B3 17                  1 	mov bl,CHAR_ATTR
+     691 01E6  B0 01                  1 	mov al,01H
+     692 01E8  B4 13                  1 	mov ah,13H
+     693 01EA  CD 10                  1 	int 10H
+     694 01EC  5D                     1 	pop bp
+     695 01ED  07                     1 	pop es
+     696 01EE  5A                     1 	pop dx
+     697 01EF  59                     1 	pop cx
+     698 01F0  5B                     1 	pop bx
+     699 01F1  58                     1 	pop ax
+     700 01F2  A0 0115 R                	mov al, partinfo_disk 
+     701 01F5  3C 81                    	cmp al,81H 
+     702 01F7  75 54                    	jne first_disk 
+     703                                	PRINT_STRING H81str 
+     704 01F9  50                     1 	push ax
+     705 01FA  53                     1 	push bx
+     706 01FB  51                     1 	push cx
+     707 01FC  52                     1 	push dx
+     708 01FD  06                     1 	push es
+     709 01FE  55                     1 	push bp
+     710 01FF  B4 0F                  1 	mov ah,0FH
+     711 0201  CD 10                  1 	int 10H
+     712 0203  B4 03                  1 	mov ah,03H
+     713 0205  CD 10                  1 	int 10H
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-16
+                                                            
+
+     714 0207  B8 011A R              1 	mov ax,OFFSET DGROUP:H81str
+     715 020A  50                     1 	push ax
+     716 020B  E8 0000 E              1 	call my_strlen
+     717 020E  83 C4 02               1 	add sp,2
+     718 0211  8B C8                  1 	mov cx,ax
+     719 0213  8C D8                  1 	mov ax,ds
+     720 0215  8E C0                  1 	mov es,ax
+     721 0217  B8 011A R              1 	mov ax,OFFSET DGROUP:H81str
+     722 021A  8B E8                  1 	mov bp,ax
+     723 021C  B3 17                  1 	mov bl,CHAR_ATTR
+     724 021E  B0 01                  1 	mov al,01H
+     725 0220  B4 13                  1 	mov ah,13H
+     726 0222  CD 10                  1 	int 10H
+     727 0224  5D                     1 	pop bp
+     728 0225  07                     1 	pop es
+     729 0226  5A                     1 	pop dx
+     730 0227  59                     1 	pop cx
+     731 0228  5B                     1 	pop bx
+     732 0229  58                     1 	pop ax
+     733                                	PRINT_CHAR 0DH 
+     734 022A  50                     1 		     push ax
+     735 022B  53                     1 	             push bx
+     736 022C  B4 0F                  1 		     mov ah,0FH
+     737 022E  CD 10                  1 		     int 10H
+     738 0230  B3 17                  1 	             mov bl,CHAR_ATTR
+     739 0232  B4 0E                  1 		     mov ah,0EH
+     740 0234  B0 0D                  1 	             mov al,0DH
+     741 0236  CD 10                  1 	             int 10H
+     742 0238  5B                     1 		     pop bx
+     743 0239  58                     1 	             pop ax
+     744                                	PRINT_CHAR 0AH 
+     745 023A  50                     1 		     push ax
+     746 023B  53                     1 	             push bx
+     747 023C  B4 0F                  1 		     mov ah,0FH
+     748 023E  CD 10                  1 		     int 10H
+     749 0240  B3 17                  1 	             mov bl,CHAR_ATTR
+     750 0242  B4 0E                  1 		     mov ah,0EH
+     751 0244  B0 0A                  1 	             mov al,0AH
+     752 0246  CD 10                  1 	             int 10H
+     753 0248  5B                     1 		     pop bx
+     754 0249  58                     1 	             pop ax
+     755 024A  EB 52 90                 	jmp print_table 
+     756 024D                           first_disk: 
+     757                                	PRINT_STRING H80str 
+     758 024D  50                     1 	push ax
+     759 024E  53                     1 	push bx
+     760 024F  51                     1 	push cx
+     761 0250  52                     1 	push dx
+     762 0251  06                     1 	push es
+     763 0252  55                     1 	push bp
+     764 0253  B4 0F                  1 	mov ah,0FH
+     765 0255  CD 10                  1 	int 10H
+     766 0257  B4 03                  1 	mov ah,03H
+     767 0259  CD 10                  1 	int 10H
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-17
+                                                            
+
+     768 025B  B8 0116 R              1 	mov ax,OFFSET DGROUP:H80str
+     769 025E  50                     1 	push ax
+     770 025F  E8 0000 E              1 	call my_strlen
+     771 0262  83 C4 02               1 	add sp,2
+     772 0265  8B C8                  1 	mov cx,ax
+     773 0267  8C D8                  1 	mov ax,ds
+     774 0269  8E C0                  1 	mov es,ax
+     775 026B  B8 0116 R              1 	mov ax,OFFSET DGROUP:H80str
+     776 026E  8B E8                  1 	mov bp,ax
+     777 0270  B3 17                  1 	mov bl,CHAR_ATTR
+     778 0272  B0 01                  1 	mov al,01H
+     779 0274  B4 13                  1 	mov ah,13H
+     780 0276  CD 10                  1 	int 10H
+     781 0278  5D                     1 	pop bp
+     782 0279  07                     1 	pop es
+     783 027A  5A                     1 	pop dx
+     784 027B  59                     1 	pop cx
+     785 027C  5B                     1 	pop bx
+     786 027D  58                     1 	pop ax
+     787                                	PRINT_CHAR 0DH 
+     788 027E  50                     1 		     push ax
+     789 027F  53                     1 	             push bx
+     790 0280  B4 0F                  1 		     mov ah,0FH
+     791 0282  CD 10                  1 		     int 10H
+     792 0284  B3 17                  1 	             mov bl,CHAR_ATTR
+     793 0286  B4 0E                  1 		     mov ah,0EH
+     794 0288  B0 0D                  1 	             mov al,0DH
+     795 028A  CD 10                  1 	             int 10H
+     796 028C  5B                     1 		     pop bx
+     797 028D  58                     1 	             pop ax
+     798                                	PRINT_CHAR 0AH 
+     799 028E  50                     1 		     push ax
+     800 028F  53                     1 	             push bx
+     801 0290  B4 0F                  1 		     mov ah,0FH
+     802 0292  CD 10                  1 		     int 10H
+     803 0294  B3 17                  1 	             mov bl,CHAR_ATTR
+     804 0296  B4 0E                  1 		     mov ah,0EH
+     805 0298  B0 0A                  1 	             mov al,0AH
+     806 029A  CD 10                  1 	             int 10H
+     807 029C  5B                     1 		     pop bx
+     808 029D  58                     1 	             pop ax
+     809                                 
+     810 029E                           print_table: 
+     811                                	PRINT_STRING partinfo_sep 
+     812 029E  50                     1 	push ax
+     813 029F  53                     1 	push bx
+     814 02A0  51                     1 	push cx
+     815 02A1  52                     1 	push dx
+     816 02A2  06                     1 	push es
+     817 02A3  55                     1 	push bp
+     818 02A4  B4 0F                  1 	mov ah,0FH
+     819 02A6  CD 10                  1 	int 10H
+     820 02A8  B4 03                  1 	mov ah,03H
+     821 02AA  CD 10                  1 	int 10H
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-18
+                                                            
+
+     822 02AC  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+     823 02AF  50                     1 	push ax
+     824 02B0  E8 0000 E              1 	call my_strlen
+     825 02B3  83 C4 02               1 	add sp,2
+     826 02B6  8B C8                  1 	mov cx,ax
+     827 02B8  8C D8                  1 	mov ax,ds
+     828 02BA  8E C0                  1 	mov es,ax
+     829 02BC  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+     830 02BF  8B E8                  1 	mov bp,ax
+     831 02C1  B3 17                  1 	mov bl,CHAR_ATTR
+     832 02C3  B0 01                  1 	mov al,01H
+     833 02C5  B4 13                  1 	mov ah,13H
+     834 02C7  CD 10                  1 	int 10H
+     835 02C9  5D                     1 	pop bp
+     836 02CA  07                     1 	pop es
+     837 02CB  5A                     1 	pop dx
+     838 02CC  59                     1 	pop cx
+     839 02CD  5B                     1 	pop bx
+     840 02CE  58                     1 	pop ax
+     841                                 
+     842                                	PRINT_STRING partinfo_header 
+     843 02CF  50                     1 	push ax
+     844 02D0  53                     1 	push bx
+     845 02D1  51                     1 	push cx
+     846 02D2  52                     1 	push dx
+     847 02D3  06                     1 	push es
+     848 02D4  55                     1 	push bp
+     849 02D5  B4 0F                  1 	mov ah,0FH
+     850 02D7  CD 10                  1 	int 10H
+     851 02D9  B4 03                  1 	mov ah,03H
+     852 02DB  CD 10                  1 	int 10H
+     853 02DD  B8 01C9 R              1 	mov ax,OFFSET DGROUP:partinfo_header
+     854 02E0  50                     1 	push ax
+     855 02E1  E8 0000 E              1 	call my_strlen
+     856 02E4  83 C4 02               1 	add sp,2
+     857 02E7  8B C8                  1 	mov cx,ax
+     858 02E9  8C D8                  1 	mov ax,ds
+     859 02EB  8E C0                  1 	mov es,ax
+     860 02ED  B8 01C9 R              1 	mov ax,OFFSET DGROUP:partinfo_header
+     861 02F0  8B E8                  1 	mov bp,ax
+     862 02F2  B3 17                  1 	mov bl,CHAR_ATTR
+     863 02F4  B0 01                  1 	mov al,01H
+     864 02F6  B4 13                  1 	mov ah,13H
+     865 02F8  CD 10                  1 	int 10H
+     866 02FA  5D                     1 	pop bp
+     867 02FB  07                     1 	pop es
+     868 02FC  5A                     1 	pop dx
+     869 02FD  59                     1 	pop cx
+     870 02FE  5B                     1 	pop bx
+     871 02FF  58                     1 	pop ax
+     872                                 
+     873 0300  33 C0                    	xor ax,ax 
+     874 0302  A0 03CC R                	mov al,part_entry0.peBeginCylinder 
+     875 0305  50                       	push ax 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-19
+                                                            
+
+     876 0306  E8 0000 E                	call _print_i 
+     877 0309  83 C4 02                 	add sp,2 
+     878                                 
+     879 030C  33 C0                    	xor ax,ax 
+     880 030E  A0 03CA R                	mov al,part_entry0.peBeginHead 
+     881 0311  50                       	push ax 
+     882 0312  E8 0000 E                	call _print_i 
+     883 0315  83 C4 02                 	add sp,2	 
+     884                                 
+     885 0318  33 C0                    	xor ax,ax 
+     886 031A  A0 03CB R                	mov al,part_entry0.peBeginSector 
+     887 031D  50                       	push ax 
+     888 031E  E8 0000 E                	call _print_i 
+     889 0321  83 C4 02                 	add sp,2 
+     890                                 
+     891 0324  33 C0                    	xor ax,ax 
+     892 0326  A0 03D0 R                	mov al,part_entry0.peEndCylinder 
+     893 0329  50                       	push ax 
+     894 032A  E8 0000 E                	call _print_i 
+     895 032D  83 C4 02                 	add sp,2 
+     896                                 
+     897 0330  33 C0                    	xor ax,ax 
+     898 0332  A0 03CE R                	mov al,part_entry0.peEndHead 
+     899 0335  50                       	push ax 
+     900 0336  E8 0000 E                	call _print_i 
+     901 0339  83 C4 02                 	add sp,2 
+     902                                 
+     903 033C  33 C0                    	xor ax,ax 
+     904 033E  A0 03CF R                	mov al,part_entry0.peEndSector 
+     905 0341  50                       	push ax 
+     906 0342  E8 0000 E                	call _print_i 
+     907 0345  83 C4 02                 	add sp,2 
+     908                                 
+     909                                	PRINT_CHAR 0DH 
+     910 0348  50                     1 		     push ax
+     911 0349  53                     1 	             push bx
+     912 034A  B4 0F                  1 		     mov ah,0FH
+     913 034C  CD 10                  1 		     int 10H
+     914 034E  B3 17                  1 	             mov bl,CHAR_ATTR
+     915 0350  B4 0E                  1 		     mov ah,0EH
+     916 0352  B0 0D                  1 	             mov al,0DH
+     917 0354  CD 10                  1 	             int 10H
+     918 0356  5B                     1 		     pop bx
+     919 0357  58                     1 	             pop ax
+     920                                	PRINT_CHAR 0AH 
+     921 0358  50                     1 		     push ax
+     922 0359  53                     1 	             push bx
+     923 035A  B4 0F                  1 		     mov ah,0FH
+     924 035C  CD 10                  1 		     int 10H
+     925 035E  B3 17                  1 	             mov bl,CHAR_ATTR
+     926 0360  B4 0E                  1 		     mov ah,0EH
+     927 0362  B0 0A                  1 	             mov al,0AH
+     928 0364  CD 10                  1 	             int 10H
+     929 0366  5B                     1 		     pop bx
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-20
+                                                            
+
+     930 0367  58                     1 	             pop ax
+     931                                 
+     932                                	PRINT_STRING partinfo_sep 
+     933 0368  50                     1 	push ax
+     934 0369  53                     1 	push bx
+     935 036A  51                     1 	push cx
+     936 036B  52                     1 	push dx
+     937 036C  06                     1 	push es
+     938 036D  55                     1 	push bp
+     939 036E  B4 0F                  1 	mov ah,0FH
+     940 0370  CD 10                  1 	int 10H
+     941 0372  B4 03                  1 	mov ah,03H
+     942 0374  CD 10                  1 	int 10H
+     943 0376  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+     944 0379  50                     1 	push ax
+     945 037A  E8 0000 E              1 	call my_strlen
+     946 037D  83 C4 02               1 	add sp,2
+     947 0380  8B C8                  1 	mov cx,ax
+     948 0382  8C D8                  1 	mov ax,ds
+     949 0384  8E C0                  1 	mov es,ax
+     950 0386  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+     951 0389  8B E8                  1 	mov bp,ax
+     952 038B  B3 17                  1 	mov bl,CHAR_ATTR
+     953 038D  B0 01                  1 	mov al,01H
+     954 038F  B4 13                  1 	mov ah,13H
+     955 0391  CD 10                  1 	int 10H
+     956 0393  5D                     1 	pop bp
+     957 0394  07                     1 	pop es
+     958 0395  5A                     1 	pop dx
+     959 0396  59                     1 	pop cx
+     960 0397  5B                     1 	pop bx
+     961 0398  58                     1 	pop ax
+     962                                 
+     963                                 
+     964 0399  33 C0                    	xor ax,ax 
+     965 039B  A0 03DC R                	mov al,part_entry1.peBeginCylinder 
+     966 039E  50                       	push ax 
+     967 039F  E8 0000 E                	call _print_i 
+     968 03A2  83 C4 02                 	add sp,2 
+     969                                 
+     970 03A5  33 C0                    	xor ax,ax 
+     971 03A7  A0 03DA R                	mov al,part_entry1.peBeginHead 
+     972 03AA  50                       	push ax 
+     973 03AB  E8 0000 E                	call _print_i 
+     974 03AE  83 C4 02                 	add sp,2	 
+     975                                 
+     976 03B1  33 C0                    	xor ax,ax 
+     977 03B3  A0 03DB R                	mov al,part_entry1.peBeginSector 
+     978 03B6  50                       	push ax 
+     979 03B7  E8 0000 E                	call _print_i 
+     980 03BA  83 C4 02                 	add sp,2 
+     981                                 
+     982 03BD  33 C0                    	xor ax,ax 
+     983 03BF  A0 03E0 R                	mov al,part_entry1.peEndCylinder 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-21
+                                                            
+
+     984 03C2  50                       	push ax 
+     985 03C3  E8 0000 E                	call _print_i 
+     986 03C6  83 C4 02                 	add sp,2 
+     987                                 
+     988 03C9  33 C0                    	xor ax,ax 
+     989 03CB  A0 03DE R                	mov al,part_entry1.peEndHead 
+     990 03CE  50                       	push ax 
+     991 03CF  E8 0000 E                	call _print_i 
+     992 03D2  83 C4 02                 	add sp,2 
+     993                                 
+     994 03D5  33 C0                    	xor ax,ax 
+     995 03D7  A0 03DF R                	mov al,part_entry1.peEndSector 
+     996 03DA  50                       	push ax 
+     997 03DB  E8 0000 E                	call _print_i 
+     998 03DE  83 C4 02                 	add sp,2 
+     999                                 
+    1000                                	PRINT_CHAR 0DH 
+    1001 03E1  50                     1 		     push ax
+    1002 03E2  53                     1 	             push bx
+    1003 03E3  B4 0F                  1 		     mov ah,0FH
+    1004 03E5  CD 10                  1 		     int 10H
+    1005 03E7  B3 17                  1 	             mov bl,CHAR_ATTR
+    1006 03E9  B4 0E                  1 		     mov ah,0EH
+    1007 03EB  B0 0D                  1 	             mov al,0DH
+    1008 03ED  CD 10                  1 	             int 10H
+    1009 03EF  5B                     1 		     pop bx
+    1010 03F0  58                     1 	             pop ax
+    1011                                	PRINT_CHAR 0AH 
+    1012 03F1  50                     1 		     push ax
+    1013 03F2  53                     1 	             push bx
+    1014 03F3  B4 0F                  1 		     mov ah,0FH
+    1015 03F5  CD 10                  1 		     int 10H
+    1016 03F7  B3 17                  1 	             mov bl,CHAR_ATTR
+    1017 03F9  B4 0E                  1 		     mov ah,0EH
+    1018 03FB  B0 0A                  1 	             mov al,0AH
+    1019 03FD  CD 10                  1 	             int 10H
+    1020 03FF  5B                     1 		     pop bx
+    1021 0400  58                     1 	             pop ax
+    1022                                 
+    1023                                	PRINT_STRING partinfo_sep 
+    1024 0401  50                     1 	push ax
+    1025 0402  53                     1 	push bx
+    1026 0403  51                     1 	push cx
+    1027 0404  52                     1 	push dx
+    1028 0405  06                     1 	push es
+    1029 0406  55                     1 	push bp
+    1030 0407  B4 0F                  1 	mov ah,0FH
+    1031 0409  CD 10                  1 	int 10H
+    1032 040B  B4 03                  1 	mov ah,03H
+    1033 040D  CD 10                  1 	int 10H
+    1034 040F  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+    1035 0412  50                     1 	push ax
+    1036 0413  E8 0000 E              1 	call my_strlen
+    1037 0416  83 C4 02               1 	add sp,2
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-22
+                                                            
+
+    1038 0419  8B C8                  1 	mov cx,ax
+    1039 041B  8C D8                  1 	mov ax,ds
+    1040 041D  8E C0                  1 	mov es,ax
+    1041 041F  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+    1042 0422  8B E8                  1 	mov bp,ax
+    1043 0424  B3 17                  1 	mov bl,CHAR_ATTR
+    1044 0426  B0 01                  1 	mov al,01H
+    1045 0428  B4 13                  1 	mov ah,13H
+    1046 042A  CD 10                  1 	int 10H
+    1047 042C  5D                     1 	pop bp
+    1048 042D  07                     1 	pop es
+    1049 042E  5A                     1 	pop dx
+    1050 042F  59                     1 	pop cx
+    1051 0430  5B                     1 	pop bx
+    1052 0431  58                     1 	pop ax
+    1053                                 
+    1054                                 
+    1055 0432  33 C0                    	xor ax,ax 
+    1056 0434  A0 03EC R                	mov al,part_entry2.peBeginCylinder 
+    1057 0437  50                       	push ax 
+    1058 0438  E8 0000 E                	call _print_i 
+    1059 043B  83 C4 02                 	add sp,2 
+    1060                                 
+    1061 043E  33 C0                    	xor ax,ax 
+    1062 0440  A0 03EA R                	mov al,part_entry2.peBeginHead 
+    1063 0443  50                       	push ax 
+    1064 0444  E8 0000 E                	call _print_i 
+    1065 0447  83 C4 02                 	add sp,2	 
+    1066                                 
+    1067 044A  33 C0                    	xor ax,ax 
+    1068 044C  A0 03EB R                	mov al,part_entry2.peBeginSector 
+    1069 044F  50                       	push ax 
+    1070 0450  E8 0000 E                	call _print_i 
+    1071 0453  83 C4 02                 	add sp,2 
+    1072                                 
+    1073 0456  33 C0                    	xor ax,ax 
+    1074 0458  A0 03F0 R                	mov al,part_entry2.peEndCylinder 
+    1075 045B  50                       	push ax 
+    1076 045C  E8 0000 E                	call _print_i 
+    1077 045F  83 C4 02                 	add sp,2 
+    1078                                 
+    1079 0462  33 C0                    	xor ax,ax 
+    1080 0464  A0 03EE R                	mov al,part_entry2.peEndHead 
+    1081 0467  50                       	push ax 
+    1082 0468  E8 0000 E                	call _print_i 
+    1083 046B  83 C4 02                 	add sp,2 
+    1084                                 
+    1085 046E  33 C0                    	xor ax,ax 
+    1086 0470  A0 03EF R                	mov al,part_entry2.peEndSector 
+    1087 0473  50                       	push ax 
+    1088 0474  E8 0000 E                	call _print_i 
+    1089 0477  83 C4 02                 	add sp,2 
+    1090                                 
+    1091                                	PRINT_CHAR 0DH 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-23
+                                                            
+
+    1092 047A  50                     1 		     push ax
+    1093 047B  53                     1 	             push bx
+    1094 047C  B4 0F                  1 		     mov ah,0FH
+    1095 047E  CD 10                  1 		     int 10H
+    1096 0480  B3 17                  1 	             mov bl,CHAR_ATTR
+    1097 0482  B4 0E                  1 		     mov ah,0EH
+    1098 0484  B0 0D                  1 	             mov al,0DH
+    1099 0486  CD 10                  1 	             int 10H
+    1100 0488  5B                     1 		     pop bx
+    1101 0489  58                     1 	             pop ax
+    1102                                	PRINT_CHAR 0AH 
+    1103 048A  50                     1 		     push ax
+    1104 048B  53                     1 	             push bx
+    1105 048C  B4 0F                  1 		     mov ah,0FH
+    1106 048E  CD 10                  1 		     int 10H
+    1107 0490  B3 17                  1 	             mov bl,CHAR_ATTR
+    1108 0492  B4 0E                  1 		     mov ah,0EH
+    1109 0494  B0 0A                  1 	             mov al,0AH
+    1110 0496  CD 10                  1 	             int 10H
+    1111 0498  5B                     1 		     pop bx
+    1112 0499  58                     1 	             pop ax
+    1113                                 
+    1114                                	PRINT_STRING partinfo_sep 
+    1115 049A  50                     1 	push ax
+    1116 049B  53                     1 	push bx
+    1117 049C  51                     1 	push cx
+    1118 049D  52                     1 	push dx
+    1119 049E  06                     1 	push es
+    1120 049F  55                     1 	push bp
+    1121 04A0  B4 0F                  1 	mov ah,0FH
+    1122 04A2  CD 10                  1 	int 10H
+    1123 04A4  B4 03                  1 	mov ah,03H
+    1124 04A6  CD 10                  1 	int 10H
+    1125 04A8  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+    1126 04AB  50                     1 	push ax
+    1127 04AC  E8 0000 E              1 	call my_strlen
+    1128 04AF  83 C4 02               1 	add sp,2
+    1129 04B2  8B C8                  1 	mov cx,ax
+    1130 04B4  8C D8                  1 	mov ax,ds
+    1131 04B6  8E C0                  1 	mov es,ax
+    1132 04B8  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+    1133 04BB  8B E8                  1 	mov bp,ax
+    1134 04BD  B3 17                  1 	mov bl,CHAR_ATTR
+    1135 04BF  B0 01                  1 	mov al,01H
+    1136 04C1  B4 13                  1 	mov ah,13H
+    1137 04C3  CD 10                  1 	int 10H
+    1138 04C5  5D                     1 	pop bp
+    1139 04C6  07                     1 	pop es
+    1140 04C7  5A                     1 	pop dx
+    1141 04C8  59                     1 	pop cx
+    1142 04C9  5B                     1 	pop bx
+    1143 04CA  58                     1 	pop ax
+    1144                                 
+    1145                                 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-24
+                                                            
+
+    1146 04CB  33 C0                    	xor ax,ax 
+    1147 04CD  A0 03FC R                	mov al,part_entry3.peBeginCylinder 
+    1148 04D0  50                       	push ax 
+    1149 04D1  E8 0000 E                	call _print_i 
+    1150 04D4  83 C4 02                 	add sp,2 
+    1151                                 
+    1152 04D7  33 C0                    	xor ax,ax 
+    1153 04D9  A0 03FA R                	mov al,part_entry3.peBeginHead 
+    1154 04DC  50                       	push ax 
+    1155 04DD  E8 0000 E                	call _print_i 
+    1156 04E0  83 C4 02                 	add sp,2	 
+    1157                                 
+    1158 04E3  33 C0                    	xor ax,ax 
+    1159 04E5  A0 03FB R                	mov al,part_entry3.peBeginSector 
+    1160 04E8  50                       	push ax 
+    1161 04E9  E8 0000 E                	call _print_i 
+    1162 04EC  83 C4 02                 	add sp,2 
+    1163                                 
+    1164 04EF  33 C0                    	xor ax,ax 
+    1165 04F1  A0 0400 R                	mov al,part_entry3.peEndCylinder 
+    1166 04F4  50                       	push ax 
+    1167 04F5  E8 0000 E                	call _print_i 
+    1168 04F8  83 C4 02                 	add sp,2 
+    1169                                 
+    1170 04FB  33 C0                    	xor ax,ax 
+    1171 04FD  A0 03FE R                	mov al,part_entry3.peEndHead 
+    1172 0500  50                       	push ax 
+    1173 0501  E8 0000 E                	call _print_i 
+    1174 0504  83 C4 02                 	add sp,2 
+    1175                                 
+    1176 0507  33 C0                    	xor ax,ax 
+    1177 0509  A0 03FF R                	mov al,part_entry3.peEndSector 
+    1178 050C  50                       	push ax 
+    1179 050D  E8 0000 E                	call _print_i 
+    1180 0510  83 C4 02                 	add sp,2 
+    1181                                 
+    1182                                	PRINT_CHAR 0DH 
+    1183 0513  50                     1 		     push ax
+    1184 0514  53                     1 	             push bx
+    1185 0515  B4 0F                  1 		     mov ah,0FH
+    1186 0517  CD 10                  1 		     int 10H
+    1187 0519  B3 17                  1 	             mov bl,CHAR_ATTR
+    1188 051B  B4 0E                  1 		     mov ah,0EH
+    1189 051D  B0 0D                  1 	             mov al,0DH
+    1190 051F  CD 10                  1 	             int 10H
+    1191 0521  5B                     1 		     pop bx
+    1192 0522  58                     1 	             pop ax
+    1193                                	PRINT_CHAR 0AH 
+    1194 0523  50                     1 		     push ax
+    1195 0524  53                     1 	             push bx
+    1196 0525  B4 0F                  1 		     mov ah,0FH
+    1197 0527  CD 10                  1 		     int 10H
+    1198 0529  B3 17                  1 	             mov bl,CHAR_ATTR
+    1199 052B  B4 0E                  1 		     mov ah,0EH
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-25
+                                                            
+
+    1200 052D  B0 0A                  1 	             mov al,0AH
+    1201 052F  CD 10                  1 	             int 10H
+    1202 0531  5B                     1 		     pop bx
+    1203 0532  58                     1 	             pop ax
+    1204                                 
+    1205                                	PRINT_STRING partinfo_sep 
+    1206 0533  50                     1 	push ax
+    1207 0534  53                     1 	push bx
+    1208 0535  51                     1 	push cx
+    1209 0536  52                     1 	push dx
+    1210 0537  06                     1 	push es
+    1211 0538  55                     1 	push bp
+    1212 0539  B4 0F                  1 	mov ah,0FH
+    1213 053B  CD 10                  1 	int 10H
+    1214 053D  B4 03                  1 	mov ah,03H
+    1215 053F  CD 10                  1 	int 10H
+    1216 0541  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+    1217 0544  50                     1 	push ax
+    1218 0545  E8 0000 E              1 	call my_strlen
+    1219 0548  83 C4 02               1 	add sp,2
+    1220 054B  8B C8                  1 	mov cx,ax
+    1221 054D  8C D8                  1 	mov ax,ds
+    1222 054F  8E C0                  1 	mov es,ax
+    1223 0551  B8 018B R              1 	mov ax,OFFSET DGROUP:partinfo_sep
+    1224 0554  8B E8                  1 	mov bp,ax
+    1225 0556  B3 17                  1 	mov bl,CHAR_ATTR
+    1226 0558  B0 01                  1 	mov al,01H
+    1227 055A  B4 13                  1 	mov ah,13H
+    1228 055C  CD 10                  1 	int 10H
+    1229 055E  5D                     1 	pop bp
+    1230 055F  07                     1 	pop es
+    1231 0560  5A                     1 	pop dx
+    1232 0561  59                     1 	pop cx
+    1233 0562  5B                     1 	pop bx
+    1234 0563  58                     1 	pop ax
+    1235                                 
+    1236 0564  07                       	pop es 
+    1237 0565  5A                       	pop dx 
+    1238 0566  59                       	pop cx 
+    1239 0567  5B                       	pop bx 
+    1240 0568  5D                       	pop bp 
+    1241 0569  C3                       	ret 
+    1242                                 
+    1243                                ; save: write image of monitor program 
+					back to disk whence it was loaded. This
+					 
+    1244                                ;       allows for program state (envir
+					onment, e.g.) to be preserved between 
+    1245                                ;       invocations of the program. The
+					 write to disk is done using the BIOS 
+    1246                                ;       int 13H call, and the following
+					 parameters needed by the interrupt 
+    1247                                ;       are filled in by monitor when i
+					t is first started 
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-26
+                                                            
+
+    1248                                 
+    1249 056A  ??                       save_disk db ?     ; 80H or 81H = BIOS 
+					disk number 
+    1250 056B  ??                       save_cyl  db ?     ;  
+    1251 056C  ??                       save_sec  db ? 
+    1252 056D  ??                       save_head db ? 
+    1253 056E  ??                       save_seg  db ?     ; value of cs when m
+					onitor was called 
+    1254 056F  ??                       save_off  db ?     ; value of pc when m
+					onitor was called 
+    1255 0570  ??                       save_size db ?     ; upper bound on num
+					ber of sectors in program image 
+    1256                                 
+    1257 0571  55 6E 61 62 6C 65 20     save_error_msg db "Unable to save: disk
+					 write failed",0DH,0AH,00H 
+    1258       74 6F 20 73 61 76 65     
+    1259       3A 20 64 69 73 6B 20     
+    1260       77 72 69 74 65 20 66     
+    1261       61 69 6C 65 64 0D 0A     
+    1262       00                       
+    1263                                 
+    1264 0595                           _save: 
+    1265 0595  55                       	push bp    ; set up stack frame and sa
+					ve registers 
+    1266 0596  8B EC                    	mov bp,sp 
+    1267 0598  06                       	push es 
+    1268 0599  53                       	push bx 
+    1269 059A  51                       	push cx 
+    1270 059B  52                       	push dx 
+    1271 059C  33 C0                    	xor ax,ax 
+    1272 059E  A0 056E R                	mov al,save_seg 
+    1273 05A1  8E C0                    	mov es,ax 
+    1274 05A3  33 DB                    	xor bx,bx 
+    1275 05A5  8A 1E 056F R             	mov bl,save_off     ; es:bx = buffer t
+					o write from 
+    1276 05A9  B4 03                    	mov ah,03H          ; select write dis
+					k sectors 13H function 
+    1277 05AB  8A 2E 056B R             	mov ch, save_cyl    ; 3D coordinates o
+					f image on disk 
+    1278 05AF  8A 0E 056C R             	mov cl, save_sec 
+    1279 05B3  8A 16 056A R             	mov dl, save_disk 
+    1280 05B7  8A 36 056D R             	mov dh, save_head 
+    1281 05BB  A0 0570 R                	mov al, save_size   ; size of image in
+					 blocks (overestimate) 
+    1282 05BE  CD 13                    	int 13H             ; BIOS hard disk s
+					ervice 
+    1283 05C0  72 03                    	jc save_error 
+    1284 05C2  EB 32 90                 	jmp save_return 
+    1285                                 
+    1286 05C5                           save_error: 
+    1287                                	PRINT_STRING save_error_msg 
+    1288 05C5  50                     1 	push ax
+    1289 05C6  53                     1 	push bx
+    1290 05C7  51                     1 	push cx
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Page     1-27
+                                                            
+
+    1291 05C8  52                     1 	push dx
+    1292 05C9  06                     1 	push es
+    1293 05CA  55                     1 	push bp
+    1294 05CB  B4 0F                  1 	mov ah,0FH
+    1295 05CD  CD 10                  1 	int 10H
+    1296 05CF  B4 03                  1 	mov ah,03H
+    1297 05D1  CD 10                  1 	int 10H
+    1298 05D3  B8 0571 R              1 	mov ax,OFFSET DGROUP:save_error_msg
+    1299 05D6  50                     1 	push ax
+    1300 05D7  E8 0000 E              1 	call my_strlen
+    1301 05DA  83 C4 02               1 	add sp,2
+    1302 05DD  8B C8                  1 	mov cx,ax
+    1303 05DF  8C D8                  1 	mov ax,ds
+    1304 05E1  8E C0                  1 	mov es,ax
+    1305 05E3  B8 0571 R              1 	mov ax,OFFSET DGROUP:save_error_msg
+    1306 05E6  8B E8                  1 	mov bp,ax
+    1307 05E8  B3 17                  1 	mov bl,CHAR_ATTR
+    1308 05EA  B0 01                  1 	mov al,01H
+    1309 05EC  B4 13                  1 	mov ah,13H
+    1310 05EE  CD 10                  1 	int 10H
+    1311 05F0  5D                     1 	pop bp
+    1312 05F1  07                     1 	pop es
+    1313 05F2  5A                     1 	pop dx
+    1314 05F3  59                     1 	pop cx
+    1315 05F4  5B                     1 	pop bx
+    1316 05F5  58                     1 	pop ax
+    1317                                 
+    1318 05F6                           save_return: 
+    1319 05F6  5A                       	pop dx 
+    1320 05F7  59                       	pop cx 
+    1321 05F8  5B                       	pop bx 
+    1322 05F9  07                       	pop es              ; restore register
+					s used 
+    1323 05FA  5D                       	pop bp 
+    1324 05FB  C3                       	ret 
+    1325                                 
+    1326 05FC                           _TEXT ENDS 
+    1327 0000                           _BSS SEGMENT PUBLIC 'BSS' 
+    1328                                ASSUME DS:DGROUP 
+    1329 0000                           _BSS ENDS 
+    1330                                END 
+
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Symbols-1
+                                                             
+
+Macros:
+
+		N a m e			Lines
+
+PRINT_CHAR . . . . . . . . . . .  	  10
+PRINT_PTR  . . . . . . . . . . .  	  29
+PRINT_STRING . . . . . . . . . .  	  29
+READ_LINE  . . . . . . . . . . .  	  41
+SBRK . . . . . . . . . . . . . .  	   1
+TERMINATE  . . . . . . . . . . .  	   3
+
+Structures and Records:
+
+                N a m e                 Width   # fields
+                                        Shift   Width   Mask    Initial
+
+PARTENTRY  . . . . . . . . . . .  	0010	000C
+  PEBOOTABLE . . . . . . . . . .  	0000
+  PEBEGINHEAD  . . . . . . . . .  	0001
+  PEBEGINSECTOR  . . . . . . . .  	0002
+  PEBEGINCYLINDER  . . . . . . .  	0003
+  PEFILESYSTEM . . . . . . . . .  	0004
+  PEENDHEAD  . . . . . . . . . .  	0005
+  PEENDSECTOR  . . . . . . . . .  	0006
+  PEENDCYLINDER  . . . . . . . .  	0007
+  PESTARTSECTORLO  . . . . . . .  	0008
+  PESTARTSECTORHI  . . . . . . .  	000A
+  PESECTORSLO  . . . . . . . . .  	000C
+  PESECTORSHI  . . . . . . . . .  	000E
+
+Segments and Groups:
+
+                N a m e         	Size	Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _TEXT  . . . . . . . . . . . .  	05FC	PARA	PUBLIC	'CODE'
+  _DATA  . . . . . . . . . . . .  	0409	PARA	PUBLIC	'DATA'
+  _BSS . . . . . . . . . . . . .  	0000	PARA	PUBLIC	'BSS'
+
+Symbols:            
+
+                N a m e         	Type	Value	Attr         
+
+BIOS . . . . . . . . . . . . . .  	Text  		
+BOOTCODE . . . . . . . . . . . .  	Number	7C00	
+BOOTSEG  . . . . . . . . . . . .  	Number	07C0	
+BOOT_80H . . . . . . . . . . . .  	L NEAR	0076	_TEXT
+BOOT_81H . . . . . . . . . . . .  	L NEAR	0071	_TEXT
+BOOT_ERROR . . . . . . . . . . .  	L BYTE 	01F6	_DATA
+BOOT_FD_A  . . . . . . . . . . .  	L NEAR	007B	_TEXT
+BOOT_FD_B  . . . . . . . . . . .  	L NEAR	0080	_TEXT
+BOOT_HD_SECTOR . . . . . . . . .  	L NEAR	0085	_TEXT
+BOOT_HELP  . . . . . . . . . . .  	L BYTE 	005E	_DATA
+BOOT_NAME  . . . . . . . . . . .  	L BYTE 	002A	_DATA
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Symbols-2
+                                                             
+
+BOOT_USAGE . . . . . . . . . . .  	L BYTE 	002F	_DATA
+BUF_SIZ  . . . . . . . . . . . .  	Number	0200	
+
+CHAR_ATTR  . . . . . . . . . . .  	Number	0017	
+CHK81H . . . . . . . . . . . . .  	L NEAR	015D	_TEXT
+CODE_OFF . . . . . . . . . . . .  	Number	7C00	
+CODE_SEG . . . . . . . . . . . .  	Number	0000	
+COMMENT_CHAR . . . . . . . . . .  	Number	0023	
+
+DRIVE_RESET  . . . . . . . . . .  	L NEAR	00AB	_TEXT
+
+ENV_SIZ  . . . . . . . . . . . .  	Number	0200	
+ERROR  . . . . . . . . . . . . .  	L NEAR	00DE	_TEXT
+ESCAPE_CHAR  . . . . . . . . . .  	Number	005C	
+
+FIRST_DISK . . . . . . . . . . .  	L NEAR	024D	_TEXT
+
+H80STR . . . . . . . . . . . . .  	L BYTE 	0116	_TEXT
+H81STR . . . . . . . . . . . . .  	L BYTE 	011A	_TEXT
+
+INFO_HELP  . . . . . . . . . . .  	L BYTE 	000C	_DATA
+INFO_MSG . . . . . . . . . . . .  	L BYTE 	0142	_DATA
+INFO_NAME  . . . . . . . . . . .  	L BYTE 	0000	_DATA
+INFO_USAGE . . . . . . . . . . .  	L BYTE 	0005	_DATA
+
+MY_ATOI  . . . . . . . . . . . .  	L NEAR	0000		External
+MY_STRCMP  . . . . . . . . . . .  	L NEAR	0000		External
+MY_STRLEN  . . . . . . . . . . .  	L NEAR	0000		External
+
+NOT_BOOT_DEFAULT_HD  . . . . . .  	L NEAR	004D	_TEXT
+
+PARTINFO_DISK  . . . . . . . . .  	L BYTE 	0115	_TEXT
+PARTINFO_HEADER  . . . . . . . .  	L BYTE 	01C9	_DATA
+PARTINFO_HEADING . . . . . . . .  	L BYTE 	0172	_DATA
+PARTINFO_HELP  . . . . . . . . .  	L BYTE 	00B6	_DATA
+PARTINFO_MSG1  . . . . . . . . .  	L BYTE 	011E	_TEXT
+PARTINFO_NAME  . . . . . . . . .  	L BYTE 	0096	_DATA
+PARTINFO_SEP . . . . . . . . . .  	L BYTE 	018B	_DATA
+PARTINFO_USAGE . . . . . . . . .  	L BYTE 	009F	_DATA
+PART_ENTRY0  . . . . . . . . . .  	L 0010	03C9	_DATA
+PART_ENTRY1  . . . . . . . . . .  	L 0010	03D9	_DATA
+PART_ENTRY2  . . . . . . . . . .  	L 0010	03E9	_DATA
+PART_ENTRY3  . . . . . . . . . .  	L 0010	03F9	_DATA
+PRINT_TABLE  . . . . . . . . . .  	L NEAR	029E	_TEXT
+PROMPT_STRING  . . . . . . . . .  	Text  "Monitor>"		
+
+READ_BB  . . . . . . . . . . . .  	L NEAR	00B0	_TEXT
+READ_BOOT  . . . . . . . . . . .  	L NEAR	0174	_TEXT
+READ_OK  . . . . . . . . . . . .  	L NEAR	0190	_TEXT
+
+SAVE_CYL . . . . . . . . . . . .  	L BYTE 	056B	_TEXT	Global
+SAVE_DISK  . . . . . . . . . . .  	L BYTE 	056A	_TEXT	Global
+SAVE_ERROR . . . . . . . . . . .  	L NEAR	05C5	_TEXT
+SAVE_ERROR_MSG . . . . . . . . .  	L BYTE 	0571	_TEXT
+Microsoft (R) Macro Assembler  Version 4.00                 3/13/20 15:32:13
+
+EXTERNAL                                                    Symbols-3
+                                                             
+
+SAVE_HEAD  . . . . . . . . . . .  	L BYTE 	056D	_TEXT	Global
+SAVE_HELP  . . . . . . . . . . .  	L BYTE 	0103	_DATA
+SAVE_NAME  . . . . . . . . . . .  	L BYTE 	00F7	_DATA
+SAVE_OFF . . . . . . . . . . . .  	L BYTE 	056F	_TEXT	Global
+SAVE_RETURN  . . . . . . . . . .  	L NEAR	05F6	_TEXT
+SAVE_SEC . . . . . . . . . . . .  	L BYTE 	056C	_TEXT	Global
+SAVE_SEG . . . . . . . . . . . .  	L BYTE 	056E	_TEXT	Global
+SAVE_SIZE  . . . . . . . . . . .  	L BYTE 	0570	_TEXT	Global
+SAVE_USAGE . . . . . . . . . . .  	L BYTE 	00FC	_DATA
+SCRIPT_SIZ . . . . . . . . . . .  	Number	1000	
+
+VARIABLE_CHAR  . . . . . . . . .  	Number	0024	
+
+_BBLOCK  . . . . . . . . . . . .  	L BYTE 	020B	_DATA	Length = 01BE
+_BOOT  . . . . . . . . . . . . .  	L NEAR	0032	_TEXT
+_EXTERNAL_ENTRY_POINTS . . . . .  	L WORD 	0122	_DATA	Global
+_EXTERNAL_HELP . . . . . . . . .  	L WORD 	012A	_DATA	Global
+_EXTERNAL_NAMES  . . . . . . . .  	L WORD 	013A	_DATA	Global
+_EXTERNAL_USAGE  . . . . . . . .  	L WORD 	0132	_DATA	Global
+_INFO  . . . . . . . . . . . . .  	L NEAR	0000	_TEXT
+_N_EXTERNALS . . . . . . . . . .  	L WORD 	0120	_DATA	Global
+_PARTINFO  . . . . . . . . . . .  	L NEAR	012B	_TEXT
+_PRINT_I . . . . . . . . . . . .  	L NEAR	0000		External
+_RCSCRIPT  . . . . . . . . . . .  	V BYTE 	0000		External
+_SAVE  . . . . . . . . . . . . .  	L NEAR	0595	_TEXT
+
+
+    809 Source  Lines
+   1307 Total   Lines
+    124 Symbols
+
+  44986 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

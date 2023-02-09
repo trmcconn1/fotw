@@ -1,0 +1,134 @@
+# Problem 48 of ACP test. 
+#
+# Arc length
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 48", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Returns a permutation of 0-4 as a list. Many problems on the second half
+# of the ACP test have 5 choices.
+
+sub mybigshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	my $d = random(0,4,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+
+	if( $d == 0 ){ return ( 4, $a,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 1 ){ return ( $a, 4,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 2 ){ return ( $a, $b, 4,  $c, 6 - $a - $b - $c); }
+	if( $d == 3 ){ return ( $a, $b, $c, 4,  6 - $a - $b - $c); }
+	if( $d == 4 ){ return ( $a, $b, $c, 6 - $a - $b - $c,  4); }
+
+}
+
+# We ask for the length of the curve x = (t+b)^2, y = a(t+b)^2 from t=c to
+# t=d.
+
+# It is simplest to introduce the new parameter s = (t+b)^2. The correct
+# answer is then sqrt(1+a^2) times the length of the new interval of
+# integration, which is l(d+c+2b) 
+
+# These choices of a ensure that the radicals are irrational 
+$a = random(2,6,2);
+
+$b = random(1,4,1);  
+$l = random(1,3,1);   # length of original interval of integration
+$c = random(1,4,1);
+$d = $c + $l;
+$newl = $l*($d + $c + 2*$b);
+$wrong = (1+$a**2)*$newl;
+$wrongrad = 1 + $a;
+$rightrad = 1 + $a**2;
+
+# Correct and incorrect answers to display. Correct is the first one:
+if($l == 1){
+@ans = ("$newl\sqrt{$rightrad}","$wrong","$newl\sqrt{$wrongrad}",
+"\sqrt{$rightrad}","$l");
+}
+else {
+@ans = ("$newl\sqrt{$rightrad}","$wrong","$newl\sqrt{$wrongrad}",
+"$l\sqrt{$rightrad}","$l");
+}
+
+# The choices are:
+# l(d+c+2b)sqrt(1+a^2) (correct)
+# l(d+c+2b)(1+a^2)     (forgot the square root in formula)
+# l(d+c+2b)sqrt(1+a)   (forgot squares under the radical)
+# l sqrt(1+a^2)        (didn't handle shift properly)
+# l                    (length of interval of integration)
+
+
+# get a permutation of 0-3 to shuffle display
+@picks = mybigshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+$ansE = $ans[$picks[4]]; 
+
+# display problem
+
+BEGIN_TEXT
+What is the length of the curve with parametric equations \( x = (t + $b )^2,
+y = $a (t + $b )^2 \) between the points corresponding to \( t = $c \) and
+\( t = $d \) ?
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$BR
+E) \( $ansE \)
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+$letter = "E" if $picks[4] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

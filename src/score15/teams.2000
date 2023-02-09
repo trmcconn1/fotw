@@ -1,0 +1,18 @@
+*****************************************************************************
+* Teams for the SU noontime running league                                  *
+* 1999-2000 competition year.                                                 *
+*****************************************************************************
+*
+* Format:
+* <Team abbreviation> <"Full Team Name"> <"Name of Team Captain">
+*
+* Abbreviation must be 3 letters. Full name and captain's name must be 
+* enclosed in quotes.
+*
+una  "Unattached" "No Captain"
+ctl  "Constantly Laughing" "Stevie Famulari and Wally McRae"
+prs  "PRS"  "Phil Driscoll and Randy Elder"
+sak  "SAKS" "Kevin Reynolds and Sam Sampere"
+rro  "Red Robbins" "Mike Fitzpatrick and Don Robbins"
+mtg  "Motrin Gang" "Kevin Hanlon and Gary Radford"
+

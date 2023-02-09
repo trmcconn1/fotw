@@ -1,0 +1,1078 @@
+\documentstyle{article}
+\begin{document}
+
+\title{Mathematics Department Schedule Program User's Guide}
+\author{Terry McConnell}
+\date{\today}
+\maketitle
+\tableofcontents
+\sf
+
+\section{Requirements}
+Schedule requires 2 Megabytes of hard drive space and 470 Kbytes of 
+conventional memory in order to run. It runs under DOS 6.22 or higher.
+(It will probably even run under DOS 3.0, but who cares?) It will also
+run in a DOS box under MS windows 3.1 and 95. In fact, this is the
+preferred way to run the program. Since schedule has no built-in editor,
+running it in a multi-tasking environment allows the user to run the
+editor of her choice, either under Windows directly, or in another DOS
+session. The program can also be compiled for Unix, but only a command line
+interface is currently available there. The Unix version has been 
+thorougly tested under NextStep 3.2 and Linux 2.0.6. The DOS version 
+can be built from the source code provided using Borland C/C++ 4.5. It will
+probably build under any reasonable compiler, but the Makefile may need
+to be edited.
+In some of the discussion below we assume that the root directory of drive
+C: is on the command search path. This is not necessarily true, but usually
+is.
+
+\section{DOS Installation}
+Installing the schedule program is very simple. The program is distributed
+in the form of a {\it zip archive,} as created, e.g., by the shareware
+program {\it pkzip.} A zip archive is a single file that contains, in
+a compressed form, an entire directory structure including all subdirectories
+and their files. In order to be used for anything these directories and
+files need to be extracted from the archive, either using the {\it pkzip}
+program itself, or with some compatible program. Assuming you have
+{\it pkzip} properly installed on your computer, and  disk1
+in your floppy drive a:, you would begin the
+installation by by following this dialogue: \smallskip
+\begin{verbatim}C:\> COPY A:SCHEDULE.ZIP C:\
+C:\> PKUNZIP -d SCHEDULE.ZIP
+C:\>DEL SCHEDULE.ZIP
+\end{verbatim}
+\smallskip
+This will result in the creation of a new directory called ``schedule''
+in the root directory of your C: drive. The schedule directory should
+contain a number of subdirectories which in turn contain other directories
+and files. To verify that all is well, do the following: \smallskip
+\begin{verbatim}
+C:\>cd schedule
+C:\>dir
+
+Volume in drive C is MS-DOS_62
+Volume Serial Number is 3B31-07E1
+Directory of C:\SCHEDULE
+
+.           <DIR>          07-01-96     1:45p
+..          <DIR>          07-01-96     1:45p
+INCLUDE     <DIR>          07-01-96     1:45p
+SRC         <DIR>          07-01-96     1:45p
+README           2,503     06-22-96     6:25p
+DATA        <DIR>          07-01-96     1:45p
+DOC         <DIR>          07-01-96     1:45p
+EXAMPLES    <DIR>          07-01-96     1:45p
+BACKUPS     <DIR>          07-01-96     1:45p
+SCRIPTS     <DIR>          07-01-96     1:45p
+       10 file(s)               2,503 bytes
+                        377,208,832 bytes free
+\end{verbatim}
+\smallskip 
+If you see this listing, or something similar, then everything is OK so far.
+
+If you do not have or cannot install {\it pkzip} or a compatible program, or if the above fails for some reason, you should be able to copy all of the
+necessary files from disk2. Create the schedule 
+directory yourself using the MKDIR command. Then use, e.g., the XCOPY
+command to copy the contents of each of the above directories from 
+disk2. See your DOS documentation for details on the MKDIR
+and XCOPY commands.
+
+The only thing that remains to be done is to create the program's configuration
+file. Schedule refers to a file called the {\it configuration file} when it first
+starts up to learn various pieces of information it needs in order to run
+properly. The easiest way to create this file is just to copy the file
+called rcfile in the examples directory to the root directory of your
+C drive:
+\smallskip
+\begin{verbatim}
+C:\SCHEDULE>copy examples\rcfile \schedule.rc
+\end{verbatim}
+\smallskip
+You don't really have to put schedule.rc in the root directory -- it can
+be placed in any directory on the command search path. (Consult your
+DOS documentation to learn about the command search path and how to
+change it if necessary. If you don't mind leaving schedule.rc in the
+root directory then don't worry about the search path.) 
+Use an editor to examine the contents of schedule.rc. You will notice that it
+contains many lines beginning with the \# character, and other lines beginning
+with the word ``set''. Lines beginning with \# are completely ignored by the
+program (they are called {\it comments.}) They are put in the file to explain
+what the various entries mean. You can add additional ones if you wish. 
+The other lines set the values of  internal variables the program
+uses. For example, the line
+\smallskip
+\begin{verbatim}
+set CWD  C:\schedule
+\end{verbatim}
+\smallskip
+informs the program that it should begin its operations by changing to the
+directory C:$\backslash${schedule} (its {\bf C}urrent {\bf W}orking {\bf D}irectory )
+before doing anything else. You would need to change this line only if
+you had changed the name of the schedule directory or moved it somewhere other
+than the root directory ( you didn't, did you ?) In fact, you can probably leave
+this file untouched except for the line that sets the value of SEM, the
+current semester. You should change the default entry, ``f97'', which 
+describes the Fall 1996 semester (that's right, 96, not 97,) to whatever
+the current semester is. Use "s" for a spring semester and the last two
+digits of the current academic year. ( The program uses the convention that
+the academic year is the year in which the Spring semester occurs -- that
+explains the ``97'' above.)
+
+That's it! The program is now installed. All you have do is type ``Schedule''
+in order to run it at the DOS prompt, right? Wrong. Unfortunately, right
+now the program is named C:$\backslash${SCHEDULE}$\backslash${SRC}$\backslash${SCHEDULE}$\backslash${SCHEDULE.EXE}. In order
+to run it, you can either type out that mouthful each time, or else change
+to the Schedule$\backslash${src}$\backslash${schedule} directory
+ and then type ``schedule''. To
+avoid all this typing every time you want to run the program, you could 
+move the executable (schedule.exe) to any directory on the command search
+path. For example, if you say
+\smallskip
+\begin{verbatim}
+C:\SCHEDULE> copy src\schedule\schedule.exe \
+\end{verbatim}
+\smallskip
+then all you will ever have to do to run the schedule program is type ``schedule''. Actually, it's not such a good idea to clutter up your root
+directory with files. A better plan would be to create a new directory
+called C:$\backslash${bin} if it doesn't already exist, move the schedule executable there,
+and then make sure that bin is on the command search path. If you don't know
+how to do that and don't care to learn, then get somebody who is well versed
+in DOS to help you.
+
+Finally, the schedule program (we'll just call it ``schedule'' from now
+on) can be invoked with a number of command line switches that affect its
+mode of operation. If you have ever given the DOS command dir /p then you
+have used a command line switch: the /p is a switch that causes dir to pause after
+each screenfull of information. Schedule uses the Unix convention of 
+prefixing each switch with the hyphen character rather than the / character.
+To see a list of available switches, give the command schedule -help. It is
+unlikely that you will ever need to use any switches, but you should be
+aware that they exist.
+
+\section{Overview}
+Despite its name, the schedule program does not actually create a departmental
+schedule. Rather, it helps to organize and assist the process of creating
+and managing a schedule. In this section we shall give an overview of the
+process of creating a schedule of classes and how this program can be used
+to help. Throughout, we shall consider the practices and policies of the
+Syracuse University Mathematics Department as they were at the time the
+program was written. However, the program is designed to be adaptable to 
+almost any reasonable academic scheduling situation.
+
+Schedule is a database management program: it reads a set of data from files
+on a disk drive into the computer's memory, and then allows the user to
+organize and display that data in various ways. Unlike many databases, all
+the data for schedule are kept in plain ascii (i.e., human readable) format.
+Also unlike many databases,  schedule  itself cannot be used to
+modify the data -- it is up to user to maintain the data files using the
+editor program of her choice. Schedule has no built-in editor ( although
+it is possible to escape to an editor program temporarily using the edit
+command of the shell.) If a word-processor is used to edit the data
+files it is very important that the files be re-saved in plain ascii format.
+Otherwise, most word processors will put special formatting symbols in the
+file that will confuse the program. 
+
+The data for each semester is located in a subdirectory of the data 
+subdirectory. For example, the data for the fall semester of 1996 will be
+found in C:$\backslash${schedule}$\backslash${data}$\backslash${f97}. There are
+4 data files named {\bf people}, {\bf jobs}, {\bf rooms}, and {\bf time.}
+The main building block of an academic schedule is the class, and
+describing a class involves naming the person who is in charge, the job
+that person does ( lecturer, recitation leader, ...), the room in which
+the class meets, and the times the class meets. Each of the data files
+describes the possible values each of these components of a class can take
+on in a given semester. (There is one additional component of a class
+that is not described here -- students -- but schedule does not attempt
+to keep track of student enrollments.) All of these data files are
+described in detail in section 3 below.
+
+If these 4 data files are the only data files, then how does schedule know
+which teacher goes with which class, and more importantly, how classes
+are organized into courses, etc? The answer is that there is one additional
+file that goes with each semester, a file  that describes the {\it structure} of
+the schedule for that semester. These files are also found in the data
+directory. For example, the file for the Fall 1996 semester is called
+sched.f97. (This explains why we use 3 letter names for a semester: DOS only
+allows 3 letters for filename extensions.) Without going into great detail
+at this point, let us look at a short piece of sched.f97:
+\smallskip
+\begin{verbatim}
+course 521 TBA
+class 001 C-313 Kim tth10 Lecturer
+class 002 C-313 Watkins mwf9 Lecturer
+\end{verbatim}
+\smallskip
+
+These lines define a course named ``521'' which is comprised of two
+sections named ``001'' and ``002''. The first word on each line is an
+example of a {\it command.} For example, the class command causes an
+internal data structure to be created and fills that structure with
+information gotten from the remaining words on the command line. The word
+immediately following the word class provides a name for the class, and
+the remaining words refer to actual entries in the rooms, people, time, and
+jobs files respectively. Actually, any of the
+commands can be given directly to schedule while is running. In one of its
+modes, the program provides a command-line interface at which the user
+types a command in response to a prompt. (See the ``Actions/shell'' menu
+ choice.) All of the above lines could be entered at the prompt, but it
+would be extremely cumbersome to do this every time the program is run. 
+Schedule allows you to collect any set of commands into a file which it will
+then read and interpret exactly as if you had typed them at the prompt. (In
+programming parlance, such a file of commands is called a {\it script} or
+{\it batch file.})
+
+The act of creating a schedule, then, consists of creating the 4 data files
+and the schedule batch file for a given semester. Since large parts of
+the these files remain the same from one semester to the next, this process
+is not as tedious as it sounds. Indeed, the program automates a large part
+of it. (See the description of the Actions/New Sem menu choice below. )
+
+Let us now outline the entire process of creating a schedule, from its inception
+up to the time students show up for the first day of class. The first step
+is to determine {\it which } courses should be offered. In the case of
+undergraduate courses the course offerings are completely determined by the
+academic catalogue  and will be the same every semester. A number of
+graduate courses must also be offered each semester. Beyond this, the
+decision of which courses to offer is made by a committee of faculty. 
+
+The next step is to determine how many sections of each course should be
+offered in order to meet expected student demand. After this is done, the
+schedule program should be used to set up a ``blank'' schedule for the
+semester: All of the courses and classes are defined in the batch file, but
+classrooms, teachers, and times are left as TBA. The data files should be
+brought up to date as much as possible. At this point the audit feature of
+schedule can be used to check whether there are sufficient personnel to
+cover the budgeted classes, and  corrective action may be taken if necessary. 
+
+A committee of faculty next determines which faculty should teach which 
+classes, and the Associate chair of the department then  decides
+rooms and times
+for the faculty-taught courses and sections. These decisions are based upon
+faculty preferences gleaned from a questionaire. They are not easily 
+automated since they involve issues of fairness and a knowledge of the
+recent teaching history of each faculty member. Once this step is done the
+batch file and the data files should again be brought up to date. 
+
+Next, rooms and times are assigned to all the TA-taught courses and classes.
+The schedule program can be used to assist in this process by checking for
+room and time conflicts and by using the roomchart feature. Finally, teaching
+assistants are assigned to teach  the remaining courses or classes
+at the designated times. They are also polled for their time and course
+preferences but are less likely to receive their first choice than are the
+faculty.  Once again, schedule can be used to check for appropriateness of
+assignents  and for conflicts, and to produce various written reports 
+describing the
+state of the schedule.  
+
+\section{Managing the Data}
+
+In this section we describe in detail the content of the data files and the
+schedule batch file. Each of these files is a plain ascii file with the 
+following common features: Comments may be included by making the first
+character of the line the \# character. Long lines may be continued by
+making the last character on the line a $\backslash$. For example,
+the lines
+\smallskip
+\begin{verbatim}
+These are the times\
+that try men's souls. 
+\end{verbatim}
+\smallskip
+would be interpreted by the program as the single line ``These are the
+times that try men's souls.'' In general, the content lines of the
+data files (i.e., those lines which are not comments) consist of a number
+of fields separated by whitespace (spaces and tabs.) If whitespace must
+be included within a field then the field must be surrounded with quotes.
+For example, if the name of a faculty member is considered to be a single
+field, then the name Terry R. McConnell should be entered as ``Terry R. McConnell''. 
+
+The \$ symbol has a special significance. Recall that the configuration
+file contained various lines similar to the line ``set MSDOS ON''. The
+function of such a line is to define an internal variable (  a 
+{\it shell variable}) called, in this case, ``MSDOS'' and
+to set the value of this variable. As soon as such a variable is defined,
+any subsequent references of the form \$NAME in data files, scripts, or
+at the command line, get replaced by the value of the variable called
+NAME. Thus, if
+the line
+\smallskip
+\begin{verbatim}
+Operating System is $MSDOS 
+\end{verbatim}
+\smallskip
+occurs in a data file, the program actually interprets the line as
+``Operating System is ON''. One of the common uses of shell variables is
+to define {\it macros} -- short sequences of letters that stand for longer
+sequences, thus saving typing. For example, if one defines a shell variable
+MGK by set MGK ``Maynard G. Krebs'' then \$MGK can be used subsequently 
+instead of typing out Maynard G. Krebs. 
+
+Suppose we wanted to give the program the line ``ONES, TWOS, AND THREES''
+by entering ``\$MSDOSES, TWOS, AND THREES'', thinking that the variable
+MSDOS in \$MSDOSES would get expanded to ON. Unfortunately, this will
+not work because the program will think you are trying to refer to
+a variable named MSDOSES. For this reason, brackets are allowed set off the
+name of a shell variable embedded in a larger word. If the variable NAME
+having value VALUE occurs as \$\{NAME\}foo, then this will be expanded as
+VALUEfoo. 
+
+As we have seen so far, the characters \$, \{, \}, and " have special
+significance. Another character in this class is the carriage return character
+that occurs at the end of each line of text. Suppose you actually wanted
+to include one of these characters in a data file. For example, suppose
+that you wanted to express an amount of money in a data file (there is
+currently no reason to do this ) and entered \$100. The program would try
+to expand a variable named ``100'', which is not what you intended. If you
+need to use one of the special characters as an ordinary character, you 
+must precede it with the $\backslash$ character. Thus to enter the above
+symbol for one hundred dollars you would type $\backslash$\$100. Because
+of this feature we must now add another character to the list of special
+characters: the $\backslash$ character itself. To actually use a 
+$\backslash$ literally in a file you would have to enter $\backslash\backslash$.
+ Things can get a bit mind-boggling. How do you suppose the program would
+interpret $\backslash\backslash\backslash\backslash$\$MSDOS ? (That's
+right,  $\backslash\backslash$ON.)
+
+The reader should consult the data files distributed with the program for
+examples of usage. The author has made an effort to make these files as
+self-documenting as possible by including numerous comment lines.
+  
+\subsection{The time File}
+
+The main purpose of the time file is to define the possible meeting times
+of classes. It also allows the user to specify the start and end dates for
+a semester. 
+
+In general, the program recognizes most reasonable formats for dates and times.
+ The date 9/12/96 can be entered variously as 9/12/1996, 9-12-96,
+9-12-1996, ``9 12 96'', and ``9 12 1996''. After the year 2000, all years
+should be given in 4 digit form. 
+Times can be entered in civilian
+and military format with a variety of variations. For example, the following
+are all valid ways to specify 6:00 in the evening: 18:00, 18:00:00, 6:00 pm,
+6:00 p.m., 6:00 PM and 6:00 P.M. (In fact, the program only requires that
+a p or P follow the 6:00 for a pm time, and that an a or A follow it for
+an am time. ) Midnight can be given as 0:00, or 12:00 am. Noon can be
+given as 12:00, or 12:00 pm.
+
+Each content line of the time file must begin with one of the following
+key words: SemesterStart, EndOfClasses, EndOfSemester, Holidays, 
+PeriodicTimeSlot and NonPeriodicTimeSlot. Depending on which keyword 
+begins the line, the program expects varying numbers of fields to follow
+it. In the following we describe each of these possible lines and their
+functions.
+\begin{description}
+\item [SemesterStart] This should be followed by a date string and a time
+string, for example, 
+\begin{quote}
+SemesterStart 9/2/96 0:00
+\end{quote}
+says that the semester begins at midnight on the  date. (Let us adopt the
+convention that a day begins at midnight.)
+ You should
+always give the date of Monday of the  week that classes begin and you will probably
+want to designate midnight as the time. (See below under PeriodicTimeSlot
+to see why Monday at midnight is a good choice.)
+\item [EndOfClasses] This should be followed by the date of the last day
+of classes and any time of day after the last class will meet on that day.
+\item [EndOfSemester] Designate a date and time after the end of all final
+examinations.
+\item [PeriodicTimeSlot] This is used to specify the set of dates and times
+that a given class will meet throughout the semester. Dates and times listed
+on this line give the start and end of each class period during the first
+week of classes. The program then uses these to generate the set of all
+meeting times by assuming that the class will meet the same hours each week.
+There are two formats allowed for the rest of a PeriodicTimeSlot line. In
+both formats the keyword is followed by a name and a description field. The
+name field should be a short, unique, mnemonic for the time slot. It will
+be used to refer to that timeslot in other data files. The description is
+a string that will be printed in reports. For example, you might name a
+timeslot mwf8 and have as its description ``MWF 8:30-9:25'' (Recall that
+any field containing space must be surrounded by quotes.) The rest of the
+line depends on which format is used.
+\begin{enumerate}
+\item  The first format is used to describe ``standard'' class meeting times
+which will not change from one semester to the next. There should be a list
+of integers, two for each class period during the first week of classes. Each
+integer represents a number of seconds since the instant specified in
+SemesterStart. Thus, the first pair gives the time in seconds from 
+SemesterStart until the beginning and end of the first class period. For 
+a class that meets five times a week there would be five such pairs. Note
+that as long as SemesterStart is given as a Monday at midnight, there should
+be no reason to change these lines from one semester to the next. (There is
+a list of numbers of seconds since midnight for various ``common'' times in
+the file examples/offsets.)
+\item The second format is the same, except that the beginning and end of
+each class period the first week is given by an explicit date and time. The
+advantage of this format is that it is more readable and numbers of seconds
+need not be computed. On the other hand, these entries must be updated 
+each semester.
+\end{enumerate}
+\item [Holidays] The function of the holidays line (there should be only one) is to define periods of time during the semester when no classes meet. When
+the program creates a periodic time slot (using either of the formats described
+above) it  automatically removes any generated class period which overlaps  one of the time periods defined on the Holidays line. Following the
+keyword are as many 5-field entries as desired, one for each holiday. In
+each case one gives the name of the holiday followed by a date time pair 
+giving the time of the beginning of the holiday period and a date time pair
+marking the end. For example, suppose classes are dismissed at noon on
+the Wednesday before thanksgiving. The thanksgiving entry for 1996 could
+then be given as "Thanksgiving 11/27/96 12:00 12/2/96 0:00. As you may recall,
+the start of a semester should always be given as a Monday at midnight, but
+sometimes classes don't meet the first week of class on Monday. This could
+be handled by marking the Monday of the first week of classes as a holiday. 
+\item [NonPeriodicTimeSlot] These lines are used to define meeting times
+for classes or events that occur only once or a small number of times. After
+the keyword one gives a name and description followed by as many 4 field entries as desired. Each such entry
+includes a date time pair giving the start of a class time, and a date-time
+pair giving the end. For example, the line 
+\smallskip
+\begin{verbatim}
+NonPeriodicTimeSlot fp1 "Final Exam Period 1"  12/20/96 5:00pm 12/20/96 7:00pm
+\end{verbatim}
+\smallskip
+defines the meeting time for a final examination. Time slots created by the
+NonPeriodicTimeSlot line are not checked against holidays. This is to allow
+you the possibilty of forcing certain events to meet on a holiday.
+\end{description}
+The new semester program (see the discussion of the Action/New Sem menu choice
+below) creates a new time file but does not attempt to update method 2
+PeriodicTimeSlot lines or NonPeriodicTimeSlot lines. Instead, they are marked
+as comments, with several special comment lines inserted around them to
+draw the user's attention.
+
+\subsection{The people file}
+
+The people file is used to give information about all the personnel who will
+teach or hold an assignment during the given semester. There is one line
+per person and each line has exactly 9 fields. In field 1 give a short name
+(20 or fewer characters) for the person. This name must be unique
+and is used to refer to that person in other data files. A much longer
+(up to 80 character) name can be given in field 9. The longer name appears on
+certain reports generated by the program. The remaining fields are
+the following:
+\begin{description}
+\item [Appointment Type] Give a short name for the type of position held by
+this person. The program does not expect any particular names -- the choice
+of these names is entirely up to the user. However, the names chosen should
+correspond with possible entries in the appointment type field of the jobs
+file (see below.) When a person is assigned to do a job the program checks
+to see whether the person's appointment type is suitable for that job by
+comparing the appointment type fields. In any departmental setting there
+would almost certainly be at least two types: Faculty and TA, say. However,
+these types might be further subdivided to correspond with various levels of
+experience.
+\item [start] Give a date that represents the time that this person's appointment began. In conjunction with the next field this is intended to allow the
+user to indicate that a person might not be available for an entire semester.
+If one enters NA for this field then the program will replace it with
+SemesterStart. It is good practise, however, to enter actual and realisitic
+dates for both this field and the next, since that will allow the program 
+to catch certain mistakes. (Do not enter a date before 1-1-70.)
+\item [end] See the previous field description. If NA is entered for this
+field the program replaces it with EndOfSemester.
+\item [seniority] The program does not currently use this field. It may be
+safely left as 0.
+\item [load fwd] The program does not currently use this field. It may be
+safely left as 0.
+\item [Semester Load] An integer or decimal value representing the maximum
+teaching or assignment load that can be assigned to this person for the
+given semester. In most departmental settings there is an agreed-upon level
+of work expected from each person, e.g. 2 ``courses'' for a faculty member.
+The program does not measure load in any intrinsic unit such as ``courses''
+or ``hours.'' Indeed, the number entered here only acquires meaning when
+compared with the corresponding entry in the jobs file. At the time
+this program was written, our department measured the teaching of a normal
+stand-alone class as 6 load units. This was because there were two 
+other possible teaching jobs, each involving running a ``recitation'' section,
+that were considered to be half as difficult, and one-third as difficult, as
+teaching a class. These assignments thus carried loads of 3 and 2 
+respectively. The program will complain when any person's total accumulated
+load from their assigments in the given semester exceeds the value listed
+here, but will make the assignment anyway. It is good practise to start
+out with this value set to some departmental minimum, and to raise it to
+the actual load assigned only in response to program complaints. That will
+prevent you from inadvertantly assigning someone too high a load. 
+\item [Academic Year Load] The total load this person may receive in an
+academic year. (Fall and Spring semester.) This value should be determined and
+entered as soon as possible in the scheduling cycle, and should not be
+changed thereafter except to correct errors. 
+\end{description}
+
+\subsection{The jobs file} 
+
+This file is used to provide information about the various jobs that can
+be assigned to a person in a given semester. Like the people file it has
+a very simple structure: there is exactly one line containing 6 fields for
+each job. The first field must be a unique short ( less than 20 character )
+name for the job. The job will be referred to by this name in other
+data files. The 5th field is a more verbose (up to 80 character) description
+of the job. The remaining fields are as follows:
+\begin{description}
+\item [Appointment type] This field describes the type(s) of appointment that
+is qualified to do the job, and corresponds with one of the possible 
+entries in the field of the same name in the people file. It is often the
+case that more than type of appointment is qualified to do a job: for example
+a Freshman class might be taught by either a faculty member or a TA. You may
+enter multiple appointment types in this field by joining them with the
+symbol $|$ with no space between. (The $|$, or vertical bar, symbol is often
+used in programming languages to stand for ``or''). 
+\item [start] This is a date used to indicate the effective date on which
+a job begins. For example, in a team-teaching situation, the second teacher's
+job might begin sometime in the middle of the semster. This is, of course, a
+rather unusual situation. Most jobs begin at the beginning of the semester and
+end at the end of the semester. Recognizing this, one can enter NA in this
+field, and the program will replace it with SemesterStart. 
+\item [end] The date used to indicate the effective ending date of a job. If
+NA is entered the program will replace it with EndOfSemester.
+\item [load] An integer or fraction representing the load carried by this job.
+See the rather extensive discussion of load in the section on the people file.
+
+\end{description}
+
+\subsection{The rooms file}
+
+This file is used to provide information about the rooms in which classes
+can be assigned to meet in the given semester. It has one line containing 6
+fields for each room. The first field is a short (less than 20 character)
+name for the room. It must be unique and is used to refer to this room in
+other data files. The last field is a more verbose (up to 80 character)
+field which may be used to give a long name for or to provide a description
+of the typical usage of the room. The second and 3rd fields give the name
+of the building and the room number. (The number need not actually be
+a number -- it is any designation for the room that locates it uniquely in
+a building, e.g. B5 for room number 5 in the basement. ) These fields must
+be less than 20 characters long. The remaining 2 fields give the seating
+capacity of the room for classes and for examinations respectively.
+
+\subsection{The schedule batch file}
+
+This is the file that actually ``creates'' a schedule by specifying what
+classes and assignments (e.g. grading jobs ) exist and how they are 
+organized into courses. Perhaps a word of explanation as to why this is
+called a ``batch'' file is in order. Most users will invoke the various
+features of schedule via the menu interface described in the next section, but
+it is also possible to run the program in a command line mode. In its command
+line mode the program presents the user with a prompt and waits for the
+user to type any of a set of possible commands. Some of these commands
+cause internal data structures to be allocated which contain information
+describing a class, a course, or an assignnment. Thus, such a command can
+be said to ``create'' a class. The program can also be directed to read
+its commands from a file rather than directly from the user. Such a file
+containing a list of commands that might also have been typed at the program's
+prompt is called a {\it batch file.} Thus, the schedule batch file is
+a file containing the commands necessary to ``create'' a schedule for a
+given semester.   
+
+The schedule batch files are located in the data directory. There is one
+for each semester and they are named sched.xxx, where xxx is the 3 character
+designation for the semester.  After 
+reading this section the user should examine one of the existing
+batch files as an example illustrating how the commmands are used. 
+
+If a command requires a field for which no value is currently available, 
+e.g., the name of a teacher when the teacher has not yet been assigned, the
+user should supply ``TBA'' or whatever string has been given as the
+value of the shell variable MISSINGDATA. (The default value of MISSINGDATA
+when the program starts up is ``TBA'', but the user may change this
+at any point in the batch file by using the set command. For example, 
+including the line ``set MISSINGDATA FOO'' changes the missing data 
+designator from that point forward to ``FOO''.)
+
+Each command in a batch file must occur on a single line, unless that line
+is continued using the $\backslash$ character. Any number of blank spaces 
+can be included between fields, provided there is at least one blank separating
+one field from another. (There can even be any amount of blank space at
+the beginning of a line. )
+
+The first content line of any batch file should be a line of the form
+\begin{quote}
+
+schedule xxx TITLE
+\end{quote}
+where xxx is the 3 character designation for the semester and TITLE is a
+string which will be printed at the top of the program's listing of the
+schedule. (Normally, this will contain spaces and should therefore be
+surrounded with quotes.)
+
+The last content line should be a line that reads
+\begin{quote}
+end ECHO ON
+\end{quote}
+
+To understand the remaining lines in a batch file it is necessary to understand
+schedule's view of the building blocks of a schedule. These building blocks
+are the following:
+\begin{description}
+\item [Courses] A course is a nonempty collection of classes and assignments.
+This organization reflects the fact that real courses often contain multiple
+sections which run more or less independently. Each course has a name and
+a person who is designated as supervisor of that course.
+\item [Classes] A class is a meeting of a group of students with a single
+teacher that occurs at specified times in a specified room. A class may have
+other classes attached to it, and may also have assignments attached to it.
+For example, a lecture class may have a designated recitation section (also
+a class) that goes along with it. 
+\item [Assignments] An assignment is any job a person can be assigned that
+does not involve being the teacher of a class or supervisor of a course. 
+\end{description}
+
+Let us now describe each of the commands used to describe the structure of 
+a schedule in detail.
+\begin{description}
+\item[The course command] The course command is introduced by the keyword
+{\it course} and is followed by two fields. The first field is used to
+supply a name for the course and the second gives the name of a
+faculty member who supervises the course. (The name should be one of the
+unique identifiers given as the first field in the people file.) The command
+also sets the value of an internal variable called CurrentCourse to the name
+of the course. This value will remain unchanged until the next course
+command. All class and assign commands issued until the next course command
+will create classes and assignments which are ``attached'' to the current
+course. 
+
+Of course, sometimes one wishes to create ``stand-alone'' classes, or
+assignments which service the entire department rather than a particular
+course. To handle this situation, a special form of the course command
+is provided. The command {\it course end} causes the CurrentCourse value
+to be cleared. Any classes or assignments created after such a command, and
+before the next course command, will not be attached to any course.
+
+Final examinations may be attached to courses by treating the final examination
+as a special class that meets only once. One would need to create a
+nonperiodic time slot for the final examination time by creating the appropriate entry in the time file. 
+
+\item[The class command] The class command is introduced by the keyword
+{\it class} and is followed by 5 required fields and one optional field.
+The required fields, which we shall call name, room, teacher, time, and job,
+must be given in that order, and the optional field must follow the 
+required ones. The name field is any name the user chooses to give the
+class being created. ( For example, the number by which the class is
+identified in the time schedule of classes might be used as a name. ) The 
+name must be unique within a given course. The room, teacher, time, and
+job fields should be chosen from among the unique identifiers which form
+the first fields of lines from the rooms, people, time, and jobs files
+respectively. (Or the missing data symbol.) They identify the place the
+class meets, who teaches it, the times the class meets, and the job entailed
+by teaching the class. The optional field may be either the number of students
+enrolled in the class (if that information is available) or the symbol ``N''
+which indicates that the class is not available for student enrollment. 
+(This allows the user to create ``contingency'' classes which are assigned
+rooms and times, thus securing those rooms and times against use by other
+departments, and which can later be opened to students if the need arises. These classes have no enrollment and are not counted by the program's
+auditing routines. ) 
+
+Like the course command, the class command sets the value of an internal
+variable called CurrentClass. 
+
+\item[The attach command] The syntax of the attach command is the same as
+the class command and it also creates a class attached to the current course.
+The only difference is in the way enrollments are handled: any enrollments
+entered with the class command are included in the total course enrollment
+( or parent class enrollment in the case of a subclass,) whereas enrollments
+in an attachment are not included. This is useful, e.g., in a situation
+where every student in a course must enroll in a lab in addition to a class.
+Defining the lab with the attach command rather than with the class command
+keeps its enrollment from being double counted. Common final examinations
+in a course should be created with the attach command. Since final 
+examinations meet only once it will be necessary to create time slots for 
+them in the time file.
+\item[The subclass command] 
+Sometimes one needs to attach classes or assignments to individual classes
+rather than to a course. For example, a course might consist of 3 large lecture
+sections ( each of which would be considered a ``class'' ) and the 
+lectures might in turn have recitation sections attached to them, or graders
+designated to serve that lecture alone. To allow for this kind of structure
+the {\it subclass} command is provided. Sublcass causes all subsequent
+classes and assignments to be attached to the class which was current at the
+time the subclass command was given, up until the command {\it subclass end}
+is given. ( Sublcass $\dots$ sublcass end pairs can also be nested up to
+five levels deep, although it is unlikely that more than 2 levels would ever
+be required.)
+
+\item[The refno command ] This command is used to attach a unique identifying
+number to a class ( for example, it can be used to specify the University-wide
+unique identifying code for the class. ) The usage is {\it refno string},
+which will assign string as the reference number of the current class. Thus,
+an appropriate place to include this command is immediately following the
+class command that creates a particular class. The reference number, if 
+assigned, will appear in the schedule report generated by the program, but
+has no other significance.
+
+\item[The assign command]. This command creates an assignment attached to
+the current class if it appears between subclass and subclass end. Otherwise
+the assignment is attached to the current course if there is one, or else
+the assignment created is stand-alone. Following the keyword {\it assign}
+there are three fields: name, person, and job. The name is chosen by the
+user to identify the assignment. The person and job fields should be chosen
+from among the unique identifiers in the people and jobs files. 
+
+\end{description}
+
+Besides the commands described above, any shell command can be included in
+the batch file. (See the schedule manual page for documentation on all shell
+commands. ) Other than the set command, which can be used to define macros,
+it is unlikely that any of these additional commands would be useful. 
+
+It should be mentioned that course, class, schedule, and assign commands
+can be used at the shell prompt with only one ( or even with no ) fields
+following the command name. These forms of the commands, which are
+documented in the schedule manual page, can be used to obtain listings of
+various specific parts of the schedule. Because of this, if one includes
+by mistake one of these forms in a batch file, then unexpected output
+may be produced.  
+
+\section{Using the Program}
+
+Let us assume that the executable schedule.exe has been placed in a directory
+that is on the command search path. If that is the case, the program 
+can be invoked by merely typing ``schedule'' at the DOS command prompt. 
+The program will then present the user with a menu-driven interface that
+is described more fully below. There are also various flags that be
+given on the command line. The full usage syntax is:
+\begin{quote}
+schedule [ -c -n  -wd $<$path$>$ -sem $<$string$>$ -debug -help -version ]
+\end{quote}
+Square brackets indicate that what is inside is optional. Flags that have
+an expression in brackets after them must be accompanied by an argument 
+of the sort indicated in the brackets. 
+The meaning of the flags is as follows:
+\begin{description}
+\item [-c] Start up the program in command mode. The command mode is 
+extensively documented in the Unix-style manual page document called
+schedule.1 and will not be discussed further here.
+\item [-n] Don't read the file schedule.rc at startup.
+\item [-wd] Use the item that follows on the command line (designated as 
+$<$path$>$ above ) as the path to the program's working directory. 
+\item [-sem ] Use the item that follows as the default semester. (Note that
+if either -sem or -wd is used, the settings they cause will override any
+settings in schedule.rc.)
+\item [-debug] Start the program in debug mode.
+\item [-help] Print a usage message and exit.
+\item [-version] Print the program version number and exit.
+\end{description}
+
+The options c and n can be given simultaneously as either -nc or -cn. 
+
+\subsection{The menu interface}
+
+The interface conforms to what is commonly called the {\it document-view}
+model. At any given moment there is always a document on view in the main
+window. Various actions, such as saving the document, printing it, and
+switching to a different document, can be selected from the menu and its
+submenus. One can toggle back and forth between the document and the menus
+by using the $<$esc$>$ key. There is a status bar at the bottom of the screen
+that displays important aspects of the program's current state. The title
+line at the top of the screen is always visible and shows the program
+version number. 
+
+When the cursor appears in the main window, the arrow keys can be used to
+move around within the document on view. In addition, the following keys
+may  be used: Page Down, Page Up, Control-End (takes the cursor to
+the end of the document,) Control-Home (takes the cursor to the beginning of
+of the document,) Enter (scrolls the screen one line down), and space-bar
+(same as page down, except that the bottom line of the last screen is
+retained as the top line of the next.) As mentioned in the last paragraph,
+the escape key will activate the main menu which appears on the line
+above the main document window. 
+
+Once the menu is activated, the left and right arrow keys may be used to 
+highlight various menu items. The only other keys which are valid in this mode are the escape key and the down-arrow key. The escape key returns the user
+to the document window, and the keys then behave as described in the previous
+paragraph. The down arrow key causes a submenu to pop down from whatever
+menu item is currently highlighted and places the program in submenu mode.
+
+In submenu mode the up and down arrow keys cycle the user among the various
+choices available on that submenu. The only other keys active are the
+escape key and the enter key. The escape key takes the user back to the
+main menu mode described in the previous paragraph. The enter key selects
+the currently highlighted submenu item. 
+
+In each of the three modes -- main window, menu, and submenu -- invalid
+keystrokes will cause a beep, but will otherwise do no harm. 
+
+Several of the menu choices cause a special dialogue window to appear at the
+right center of the screen. Each such window has a descriptive title at the
+top, a prompt line at which the user can enter a response, and one or two
+lines of information below that explain what type of response is expected
+from the user. The user can edit their response only by using the backspace
+key. Once the response is typed, striking the enter key will submit it to
+the program for processing. If instead, the user strikes the escape key 
+whenever a dialogue window is displayed, the dialogue will be canceled and
+the user returned to the main menu level. Any error messages to the user
+during a dialogue will appear on the status bar and will remain until the
+next keystroke. 
+
+The status bar displays the following information, from left to right: 
+First is 
+the current position, L:C, in the file, where L is the line number and C is
+the column number. Next is the name of the currently open file, i.e, the
+one on view in the main window. Normally this name will not be meaningful
+to the user since the file being viewed is a temporary file created by
+the program. Other files can be opened from the file menu and from the help
+menu.
+ The current semester is displayed next. For example if one sees SEM: f97
+on the status bar, the next time data is loaded all data will be taken
+from the data files for the f97 semester. Note, however, that the 
+presence of the SEM value on the status bar does not indicate that any data
+has been loaded. If the data from some semester has actually been loaded
+then that will be indicated on the status bar by [sem]. For
+example, SEM: f97 [s96] indicates that the Spring 96 data is currently
+loaded, but that the current semester is f97. (The main significance of the
+current semester is in how it influences the behaviour of several menu choices --
+see below. ) Next is the current working directory of the program. Finally,
+an additional message may be displayed, the default being a message that
+reminds the user of the significance of the escape key.
+
+Let us turn now to a description of each of the possible menu choices.
+(Note that in some cases menu items are marked as xxxxxx. These are menu
+slots which are not currently used by the program. Choosing them is
+harmless, but unproductive.)
+
+\begin{description}
+\item[The file menu] Most of the choices on this menu have to do with
+manipulation of the currently open file (the one on display in the main
+window and named on the status bar.)    
+
+\begin{description}
+\item[Open] This choice begins a dialogue which asks the user to name an existing
+file which will then be opened and displayed in the main window. The user
+can give either a path relative to the current working directory of the
+program, or an absolute path beginning with $\backslash$. The chosen file
+becomes the current open file until supplanted by another open or other menu
+choice that replaces the current open file. 
+\item[Load] This choice causes the data for the current semester ( the one
+displayed after the SEM symbol on the status bar ) to be loaded into memory.
+It also causes the batch file for the current semester to be processed. 
+Any error messages generated during the data load or the batch file processing
+are placed in the program's temporary file and the temporary file is made
+the current open file so that they may be viewed at leasure.
+\item[Save As] This command is used to save the current open file to the
+computer's hard drive or floppy drive. The current open file is often a
+temporary file which will be removed when the schedule program quits, so
+it is necessary to choose this item if the user wants to keep copies of any
+output that schedule produces. Choosing this item will start a dialogue in
+which the user is asked to provide a name (actually, a path) to save the
+current open file under. If the user provides the name of a file that
+already exists he will be asked to confirm whether he wishes to replace
+the existing file and whether he wishes to replace the file or add the
+current open file to the end of it (append.)
+The name given is taken as a path relative to the current
+working directory, or as an absolute path if it begins with the $\backslash$
+character.
+\item[Print] This command causes the current open file to be printed on
+the system printer (more precisely, the text is directed to the PRN device.)
+Before the file is printed, however, the user is asked in a dialogue whether
+to print in landscape mode or in normal mode. Normal mode is a reasonable
+choice for all files generated by the program, with the exception of a
+roomchart file. Those work best when printed in landscape mode with a
+compressed font. In order for all of this to work, the program needs to
+be told the printer commands necessary to put the printer in landscape mode
+and to return the printer to portrait mode. This can be done by including
+the lines ``set LANDSCAPE xxxxx'' and ``set PRINTERNORMAL xxxxx'' in the
+schedule.rc file. Here xxxxx should replaced by whatever escape sequence is
+necessary for the printer attached to the computer (the user should consult
+her printer manual for this information.) The schedule.rc that comes with
+the program already contains settings that should work with most Hewlet-Packard
+printers. 
+\item[Quit] This command really needs no explanation. From time to time,
+schedule may shut down abnormally (e.g., if there is a power failure.) If this
+happens then the program will not have time to remove its temporary file. If
+you find a file with a strange name (e.g., TEMP.\$\$\$) in the working
+directory, this is the likely explanation. Simply remove this file when
+schedule is not running.
+\end{description}
+\item[The View menu]
+The commands on this menu are primarily used to change the file on view in
+the main window. They are the means by which schedule produces reports 
+summarizing various aspects of the data.
+\begin{description}
+\item[Schedule] This choice causes schedule to generate a report listing all
+courses, classes, and assignments of the current semester. It will only work
+if the data for the current semester has been loaded. If the user wishes to
+retain a copy of this document she must either print it or save it in a file.
+Both of these can be done from the File menu.
+\item[Audit] This choice causes schedule to generate a report comparing 
+demand for the various possible jobs with the availability of each job as
+measured by load units. The figures are displayed for each job and for
+each semester of the current academic year. In addition, a final column 
+totals the figures for each of the two semesters. This menu choice will
+work regardless of whether any data has been loaded or not.
+
+ Before the report is generated, the user is asked
+in a dialogue to specify how each person's load for a semester
+should be determined. In one method, the program uses one half the academic
+year load in each of the two semesters, and in the other the load for each
+semester, as read from that semester's people file, is used. Which method is
+the appropriate one to use depends on the status of the scheduling process
+at the time the program is run. Normally, the semester load figure will not
+be accurate, especially for the Spring semester, until all job assignments
+for the Fall Semester have been made and the Spring semester's load
+figures  updated to reflect the load left over from what was
+assigned in the fall. On the other hand, one often wants to get a reading
+on whether the department is on target for meeting its teaching committments
+well before all Fall assignments have been made. In this situation one should
+choose the average of academic year load method, with the understanding that
+only the totals column will be meaningful. In all other situations, one should
+choose the actual semester load method. 
+
+The report produced is in 4 sections. The first section, the demand section,
+counts how many load units have been allocated to each of the possible
+jobs because of commands in one of the schedule batch files. For example,
+if one of the rows is titled ``Teacher'' then the entry for the fall semester
+column counts how many times classes with the job field ``Teacher'' have
+been created in the fall semester batch file, and multiplies that figure by
+the load units for the Teacher job as given in the jobs file for that 
+semester. It is possible to have different load values for a given job
+in each of the semesters, although that is an unlikely situation. At the
+end of the demand section there is a total line which gives the total of
+the demands in the column above it.
+
+The second section, the availabilty section, counts how many load units
+are available for each job. For example, if one of the rows is titled 
+``Teacher'', then the entry for the Fall semester counts up the load units
+in the given semester ( as computed by the method chosen by the user )
+for all people whose appointment type allows them to do the given job.
+In this section, the totals line is {\bf not} the total of the entries above,
+but rather gives the total of all load units of all people in the people file
+for the given semester. 
+
+The third section shows the difference between each of the lines in the
+demand section and the corresponding line in the availability section.
+
+Finally, the legend section displays the number of load units that each of
+the various jobs is worth.  
+\item[RmChart] This causes a roomchart to be created for a date in the
+current semester. Like the audit report, no data needs to be currently loaded
+in order for this to work. The user is asked in a dialogue to supply a date
+and time for the beginning of the time period covered by the room chart, and
+a date and time for the end of the time period. (Normally, both dates would
+be the same.) For example, suppose there is an existing batch file sched.f97
+and one wishes to create room charts showing how rooms are being used
+on Monday-Wednesday-Friday  and on Tuesday-Thursday (assuming, as is typical,
+that room usage is pretty much the same on Monday, Wednesday, or Friday and
+on Tuesday or Thursday.) One would begin by choosing any date during the
+f97 semester that is on a Monday, Wednesday, or a Friday, and on which classes
+actually meet. For example, one could choose September 11, a Wednesday.   
+One then selects a range of times wide enough to include all classes that
+meet on that day. Thus, suppose no classes meet before 8:00 am or after 
+7:00 pm. One then could specify 9/11/97 and 8:00 as the start of the time
+block, and 9/11/97, 19:00 ( or 7:00 pm) as the end. After saving or printing
+the resulting room chart, one would repeat the entire procedure for a Tuesday
+or Thursday date. 
+
+The roomchart that will appear in the main window will not be intelligible 
+because the long lines in the chart will be wrapped. To view the chart it
+is necessary either to print it in Landscape mode or to save it in a file
+and view it with an editor that supports horizontal scrolling (e.g. DOS edit.)
+
+The format of the information displayed in a roomchart should be self-explanatory. 
+
+\item[People] This command creates blocks of information, one for each person
+listed in the people file of the current semester. The data for the current
+semester must be loaded in order for this command to work.
+A numbered list of all
+such people is first displayed in the main window, and a dialogue which allows
+the user to select a person or persons from that list is started. One can
+either choose to display information about all people by entering the word
+all at the dialogue prompt, or to display information about a person or
+a range of people by entering that person's number, or a range of numbers,
+at the prompt. What if you want to display information about Mr foo, but
+you don't remember Mr foo's number and his name is not visible on the first
+page ? In that case, escape from the dialogue by hitting the escape key, and
+then scroll down to Mr foo's entry by using the arrow keys. Finally, start
+up the dialogue again by choosing the People menu item a second time. (Another
+idea would be to print out a list of the people for future reference by 
+escaping from the dialogue and printing the numbered list of people from the
+File menu. Remember, anything that is visible in the main window can be
+printed or saved!) 
+
+Each block of information created after the dialogue is finished concerns 
+a particular person. Listed are the appointment dates, the load values, and
+the jobs assigned to that person in the given semester. The blocking of
+information is done so that a printout of this report can be cut up and
+distributed to each person to inform him of his status in that semester.
+\end{description}
+\item[The Set menu] The choices on  this menu allow the user to change
+the values of certain internal variables that influence the behavior of the
+program.
+\begin{description}
+\item[Semester] This selection starts a dialogue that allows the user to change
+the current semester. Recall that the value of the current semester is
+displayed at all times on the status bar, and determines which data is loaded
+when the user selects load on the file menu. The value of the current
+semester when the program starts up can be controlled by including the
+line ``set SEM xxx'' in schedule.rc, where xxx is any desired 3 character
+semester designator. 
+\item[Vars] This selection displays the names and values of all currently
+defined shell variables in the main window, and starts a dialogue which allows
+the user to change the value of one of the existing variables, or to define
+a new one. Note that SEM, WD and MISSINGDATA are shell variables, so anything
+that can be set by using any of the choices on the SET menu can also be set
+using the Vars menu choice. 
+\item[Dir] This selection allows the user to change the working directory of
+the program. The value of the working directory is displayed at all times
+on the status bar. Recall that whenever the user is asked to supply a path
+to a file, the path will be taken relative to the working directory unless
+it begins with the $\backslash$ character. The user should not change the
+working directory without good reason, and should always change back to
+the ``official'' working directory as soon as possible. Many features of the
+program will not work unless the working directory is chosen correctly.
+\item[TBA] This selection allows the user to change the value of the
+internal variable called MISSINGDATA. The default value of this variable,
+and the value it will have at startup (unless changed in schedule.rc) is 
+``TBA''. The significance of the MISSINGDATA variable is twofold. It can
+be used anywhere in a schedule batch file that data is called for when the
+data is not available. For example, with the class command one must supply
+at least 4 pieces of data: the room, teacher, time, and job. If any of these
+values is unknown or undetermined, the missing data symbol can be entered
+instead. Secondly, the missing data symbol will appear in reports wherever
+there there is unknown or missing data. Note that, because of this twofold
+significance, it may be useful to change the missing data while the program
+is running. For example, one symbol may have been used in the schedule batch
+file, but one might prefer a different symbol to appear on reports. To do
+this, simply use this menu choice to change the missing data symbol after data
+has been loaded, but before a report is generated.  
+\end{description}
+\item[The Action menu] This menu allows the user to escape from the user
+interface in order to access other facilities of the schedule program. 
+\begin{description}
+\item[Shell] This selection allows the user to escape from the menu interface
+to the command line interface. The command line interface can also be
+reached by starting the program with the -c flag. The command line interface
+is very powerful, but the casual user will probably never need to use it.
+See the Unix-style schedule manual page for extensive documentation on the 
+command line interface. To exit from the command line interface and return
+to the menu interface, enter ``end'' at the command line prompt. To exit
+from the command line interface directly to the DOS prompt, enter ``exit'' at
+the prompt. 
+\item[New Sem] This selection runs an external program called newsmstr.exe
+which is used to begin the process of setting up the data files and the batch
+file for a new semester. This program can also be run on its own, independently
+of the schedule program: go to the src/newsmstr subdirectory of the
+working directory and type ``newsmstr''. The newsmstr program is very verbose,
+and leads the user step by step through the process of creating new data
+files. For further information, consult the newsmstr manual page. 
+\end{description}
+\item[Help] This menu provides access to online documentation. It is very
+incomplete at the present time -- the only working selection displays a file
+called info.txt in the main window which contains some general information
+about the program.
+\end{description} 
+
+The first time a new semester's data and batch file is loaded it is normal
+to have many error messages displayed in the main window. An efficient way
+to correct the errors is to have the schedule program running in one DOS 
+window ( say, under MS -Windows 3.1 or 95 ) and to have an editor (e.g,
+MS-Word, or DOS Edit ) running in another. Correct any problems in the
+data and batch files in the editor window, save the changes, and the choose
+load again from the menu in the schedule program window. After several
+iterations of this process, the data should load cleanly. Remember that if
+you use a word processor for editing it is necessary to save the data
+and batch files as plain ascii files. 
+ 
+\section{Official Bugs}
+There are two kinds of bugs: known bugs and unknown ones. This program, of
+course, has both kinds. For a listing of the known bugs consult the
+schedule manual page. If you find any of the latter kind, please report
+them to the author at the address listed in the info.txt file.
+
+\end{document}

@@ -1,0 +1,8 @@
+How to add a new filter to the library
+
+1. copy and rename one of the source files to foo.c, say
+2. rewrite foo.c to do the job you want
+3. Add foo.o to the list of objects in the Makefile
+4. Add a declaration for the new filter to ../partition.h
+5. Add the appropriate structure entry in manager.c
+

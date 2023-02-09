@@ -1,0 +1,63 @@
+Changes .01 --> .02
+
+	1) Changed the signature of browse from
+		char *browse(char *)
+	   to
+		int browse(char *)
+
+	   This way the browser can indicate something about the selection
+           while returning the selection itself through the pointer
+           argument.
+
+	2) Typing e or E while in the right pane now forces an edit of
+           the selected file.
+
+	3) Added visual cue to the nature of a file in the right pane.
+           Thus, executable files end in *, directories in /, etc.
+	   (Thanks to Claudio Tantignone for suggesting this.)
+
+	4) Now we trap ^L and redraw entire stdscr if received.  
+
+.02 --> .03
+
+	1) Implement history list (forward/back) in browser. There
+	   are 2 new supporting files: history.c and history.h.
+
+	2) Fixed bug in Minix implementation: after reading a lone ^[ we
+           weren't clearing the stdin eof indicator causing the next read
+           to get eof.
+
+	3) some commenting out in edit.c was poorly done. fixed that.
+
+	4) fixed memory leak in xplore.c: weren't freeing memory malloc'd
+           for new_argv.
+          
+	5) We didn't always reset value of is_psuedo in xplore.c. Fixed that.
+
+.03 --> .04
+
+	1) Implement p key-action to print selection.
+
+	2) Implement m key-action to pipe output through more.
+
+	3) Changed signature of browser yet again to 
+                 int browse(void *)
+	   in order to support multiple selection.
+
+	4) Implement ^B keyaction in top window to browse for arguments.
+
+	5) Changed signature of browse yet again, to
+		int browse(void *, char *)
+	    this time to support content of top pane that can be controlled
+            from outside.
+
+	6) Bug: unused escape sequences were being treated as escape char.
+           Now we ignore them.
+
+	7) Implement anchoring and highlighting to support multiple 
+           selection in right pane.
+
+	8) Fixed BIG memory leak: we weren't using FreeRight or FreeLeft
+           in xplore.c. Something accidentally deleted earlier?
+
+	9) Added loop over multiple selections in xplore.c

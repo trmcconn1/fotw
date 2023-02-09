@@ -1,0 +1,42 @@
+.TH TRUENAME 1
+.SH NAME
+truename \- Give an equivalent name for a file, with no symbolic links.
+.SH SYNOPSIS
+.B truename [ -vda ] paths ...
+.SH OPTIONS
+	-v: Give a play-by-play.
+.br
+	-d: Don't clean up by removing redundant /.. and ./
+.br
+	-a: Force answer to be given as an absolute path.
+.br
+	-version: Print the version number and exit.
+.SH DESCRIPTION
+.I Truename
+expresses the name of each path in the form DIR1/DIR2/.../DIRN/F, where none of
+DIR1...DIRN or F is a symbolic link. The path returned is either absolute or
+relative to the current working directory, depending on the nature of the
+links. Without the -d option the program will resolve all . and .. references
+in each path before resolving the links and will also remove any . and ..
+references generated while following links. 
+
+The file program with the -L option will tell the nature of the file whose
+name is given by this program, but will not provide its name.
+
+Truename uses a simple recursive algorithm. For a more detailed description
+see the source code. 
+.SH EXAMPLE
+%ls -l /usr/include/linux
+.br
+lrwxrwxrwx   1 root  root 28 Nov 19  1994 /usr/include/linux
+ -> /usr/src/linux/include/linux/
+.br
+%truename /./etc/../usr/include/linux
+.br 
+% /usr/src/linux/include/linux
+
+.SH "SEE ALSO"
+.I ln(1), readlink(2), file(1)
+.SH BUGS
+It seems as if this program must amount to "reinventing the wheel", but there
+does not seem to be a common Unix utility with precisely this functionality.

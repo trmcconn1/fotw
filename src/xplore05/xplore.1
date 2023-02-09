@@ -1,0 +1,209 @@
+.TH XPLORE 1
+.SH NAME
+xplore \- text mode filesystem browser 
+.SH SYNOPSIS
+.B xplore 
+[
+.B -hlv 
+] [
+.B -d
+.I path ] 
+.br
+.SH OPTIONS
+.IR "\-l" "  Print association information and exit."
+.br
+.IR "\-v" "  Print version number and exit."
+.br
+.IR "\-h" "  Print usage information and exit."
+.br
+.IR "\-d" "  Next argument gives path to startup directory."
+.br
+.SH DESCRIPTION
+.I Xplore
+presents a two-paned window showing the subdirectories of the current
+directory on the left, and all files and directories in the current directory
+on the right. The user may change the current working directory by selecting
+a directory in the left pane and entering a carriage return. The directory
+that would be selected by entering a carriage return is shown in reverse
+video. The user may move this selection among the various possibilities by
+using the up/down arrow keys. The right arrow key moves the focus for
+selection into the right pane. Again, the user may select a file or
+directory by entering a carriage return, with the selected file or
+directory being shown in reverse video. As before, the arrow keys are
+used to move the selection among the various choices in the right pane,
+but the left arrow returns the focus to the left pane. (The escape key
+also has this function when focus is in the right pane. When the focus is
+in the left pane, the escape key aborts the program.) 
+.PP
+What happens when a file or directory in the right pane is selected depends
+on the nature of the selected item. If it is an executable file, then 
+that file is executed and control returns to the browser upon completion.
+(Before an executable is run, the user is given the opportunity to enter
+command line arguments in the top pane. After entering any command line
+arguments, striking return will run the executable. The user can also
+browse for command line arguments at any point during editing in the
+top pane by entering ^B. Only very primitive editing is implemented in
+the top pane: characters can be added or deleted at the end, but there
+is no insertion or cursor movement.)
+If it is a directory then the program changes to that directory and the
+browser begins afresh there. If the user has established
+an association (see below) for the selected file's extension or
+filename, then the associated application is run with the chosen path 
+supplied as an argument. If the selection is a psuedo-file
+(see below), then the associated action is taken. Finally, if
+none of the above apply, the file is opened in the editor given by
+the EDITOR environment variable. (If there is no EDITOR environment
+variable, then vi is used.) In all cases, control
+returns to the browser upon completion. (As mentioned above, the user
+can only exit from the browser by using the escape key with focus in
+the left pane.)
+.PP
+The user may make multiple selections in the right pane. (See special
+keystroke section below for how to highlight multiple files.) Each selection
+is then handled in turn, the same way an individual selection would
+be handled.
+.PP The browser implements a history list which keeps track of all
+previously entered directories (up a limit set at compile time.) Using
+the forward (f) and back (b) keys while in the left pane changes to
+the next (resp. previous) directory on the history list. 
+.PP
+If the user wants to edit an executable (or any other file) he can do
+so by entering the letter e (lower or upper case) instead of return when
+the file name is selected. Output from an executable can be piped through
+the more program by entering the letter m instead of return.
+.PP
+Upon startup the program opens and processes a file named .xplorerc, if
+it exists, in the user's home directory. This file contains any 
+associations the user wishes to define. Any text following the # character
+up to the next newline is ignored.
+.PP
+.SS SPECIAL KEYS
+The following keystrokes are recognized when the left pane has focus:
+.IP f
+Moves browser forward one directory on the history list.
+.IP b
+Moves browser one directory back on the history list.
+.IP ^[
+The escape character quits the program.
+.IP q
+Also aborts the program and is preferable to escape since the latter may
+cause a short delay due to escape sequence processing.
+.IP ^D
+Also aborts the program.
+.PP
+The following keystrokes are recognized when the right pane has focus:
+.IP e
+Forces an edit of selection, even if it is executable.
+.IP p
+Prints the selection using the print spooling system, but only if it is an 
+ordinary file.
+.IP m
+Normally output from non-interactive programs vanishes as soon as the 
+program is done. This key executes a selection and causes output from it 
+to be piped through more so it can be viewed at leisure before returning
+to the browser.
+.IP .
+Toggles anchoring for multiple selection in the manner of Lotus 123. When
+anchoring is on, everything in the right pane between the anchor location
+and the current cursor location is selected and highlighted.
+.PP
+The following keystrokes are recognized when the top pane has focus:
+.IP ^B
+Browse for arguments rather than typing them in
+by hand. Selecting directories from the left pane allows the user to 
+continue browsing. Selecting a directory from the right pane supplies the
+chosen directory as an argument.
+.PP
+The following keystrokes are recognized in either bottom pane:
+.IP ^L
+Redraws the screen. Useful if it has been messed up by output from another
+program
+.IP a
+Select all. Makes last item in the right pane current and selects everything
+before it. (If invoked from left pane, right pane has focus.)
+.IP "Left arrow"
+Move selection left, into left pane if current focus is in leftmost column
+of right pane.
+.IP "Right arrow"
+Move selection right, into right pane if used from left pane.
+.IP "Up arrow" 
+Move selection up.
+.IP "Down arrow"
+Move selection down.
+.IP h
+Same as left arrow.
+.IP l
+Same as right arrow.
+.IP k
+Same as up arrow.
+.IP j
+Same as down arrow.
+.IP ^I
+Same as down arrow.
+.IP ^H
+Same as up arrow.
+.IP ^?
+Same as up arrow.
+.SH ASSOCIATIONS
+Associations define actions to be taken when a file with a given name
+or extension is selected in the browser. Supported associations are of
+three types: by extension, by name, and by means of a special category 
+called a psuedo file. 
+.SS  Extension associations
+For the purpose of this program an extension is defined as all characters
+following and including the final "." character in a filename, with
+the exception that if the only dot begins the filename then there is no
+extension. Extension associations are defined by a line of the form
+.PP
+.I \.ext program args 
+.PP
+where program denotes the name of an executable. (If the executable is not
+in a directory on the current PATH then the fully qualified path to it must
+be given.) One of the arguments may be %s, which is replaced by the 
+selected path.
+.SS Filename associations
+Filename associations are defined by lines of the form
+.PP
+.I filename program args
+.PP
+The only difference in behavior between this type of association and the
+previous is that it is triggered whenever a file with the given filename is
+selected. For the purpose of this program, the filename is the final
+component of the path pointing to the given file. (Note that this includes
+the extension, if there is one.)  
+.SS Psuedofile associations
+A psuedofile is a name that appears in the right pane of the browser,
+no matter what directory is current, and which does not name any existing
+file. A psuedofile must begin with an asterisk (*), but otherwise can
+contain any characters. Psuedofile associations are defined by lines of
+the form
+.PP
+.I *NAME program args
+.PP
+where *NAME is the full name of the psuedofile. As above, the program
+with the given arguments is executed whenever the pseudofile name is
+selected in the browser.
+.PP
+It is important to understand that in all 3 types of associations the
+specified command (i.e, program + arguments,) is not evaluated by a
+shell: instead it is launched by the exec family of system calls. In
+particular, this means that redirection, piping, and background
+execution cannot be specified on the given command line. (More complex
+behaviour can be invoked by specifying the name of a shell script as the
+program to be executed.) Also, since the launched program is run in
+a separate process, it cannot influence the working directory or
+environment of the browser itself.
+.SH AUTHOR
+Terry R. McConnell 
+.br
+trmcconn@syr.edu
+.SH BUGS
+.br
+If the terminal lacks the vi, vs, ve capabilities then the cursor cannot
+be made invisible. (This is true, e.g., of the Minix terminal.)
+.br
+.br
+There may be up to a one second delay if the escape key is used to exit
+from a pane or from the program. On most platforms this is unavoidable
+due to the possibility of confusing a singe escape key with the 
+beginning of an ANSI escape sequence.

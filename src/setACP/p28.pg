@@ -1,0 +1,155 @@
+# Problem 28 of ACP test. 
+#
+# Angle and quadrant from negative value of trig function
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 28", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Returns a permutation of 0-4 as a list. Many problems on the second half
+# of the ACP test have 5 choices.
+
+sub mybigshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	my $d = random(0,4,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+
+	if( $d == 0 ){ return ( 4, $a,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 1 ){ return ( $a, 4,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 2 ){ return ( $a, $b, 4,  $c, 6 - $a - $b - $c); }
+	if( $d == 3 ){ return ( $a, $b, $c, 4,  6 - $a - $b - $c); }
+	if( $d == 4 ){ return ( $a, $b, $c, 6 - $a - $b - $c,  4); }
+
+}
+
+
+
+
+# selector for which function f to use: 0 = sine, 1 = cosine, 2 = tangent
+$f = random(0,2,1);
+
+$j = random(0,2,1);  # selector for reference angle (30, 45, or 60 degrees.)
+@references = (30,45,60,30,45,60);
+$reference = $references[$j];
+
+# The problem asks for the angle if f(angle) =  -f(reference angle)
+# We list the correct answer followed by 4 incorrect answers, but this must
+# be tailored to each function
+
+if($f == 0){
+
+# Case of the sine function: correct would be
+# (i) -reference or (ii) 180 + reference. 
+# We display (i) as the correct answer. Incorrect choices are then (i) (ii) for
+# each of the two other possible reference angles  
+@numans = (-$reference,-$references[$j+1],-$references[$j+2],
+180+$references[$j+1],180+$references[$j+2]);
+@equations = ("\sin(\theta) = -\frac12", "\sin(\theta) = -\frac{\sqrt{2}}2",
+"\sin(\theta) = -\frac{\sqrt{3}}2");
+
+}
+
+if($f == 1){
+
+# Case of the cosine function: correct would be
+# (i) 180 - reference or (ii) 180 + reference. 
+# We display (i) as the correct answer. Incorrect choices are then (i) (ii) for
+# each of the two other possible reference angles  
+@numans = (180-$reference,180-$references[$j+1],180-$references[$j+2],
+180+$references[$j+1],180+$references[$j+2]);
+@equations = ("\cos(\theta) = -\frac{\sqrt{3}}2", "\cos(\theta) = -\frac{\sqrt{2}}2",
+"\cos(\theta) = -\frac12");
+
+}
+
+if($f == 2){
+
+# Case of the tangent function: correct would be
+# (i) -reference or (ii) 180 - reference. 
+# We display (i) as the correct answer. Incorrect choices are then (i) (ii) for
+# each of the two other possible reference angles  
+@numans = (-$reference,-$references[$j+1],-$references[$j+2],
+180-$references[$j+1],180-$references[$j+2]);
+@equations = ("\tan(\theta) = -\frac{\sqrt{3}}3", "\tan(\theta) = -1",
+"\tan(\theta) = -\sqrt{3}");
+
+}
+
+
+@ans = ("$numans[0]","$numans[1]","$numans[2]","$numans[3]",
+"$numans[4]");
+$equation = $equations[$j];
+
+
+# get a permutation of 0-3 to shuffle display
+@picks = mybigshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+$ansE = $ans[$picks[4]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+If \( $equation \), then one possible value of \( \theta \) in degrees is:
+$PAR
+A)  $ansA 
+$BR
+B)  $ansB 
+$BR
+C)  $ansC 
+$BR
+D)  $ansD 
+$BR
+E)  $ansE 
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+$letter = "E" if $picks[4] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

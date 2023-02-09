@@ -1,0 +1,102 @@
+%{
+/*	reverse.ff: reverse input */
+/*      options: default: reverse by word = string of alphanumerics
+		-W:  reverse by  Word = string of non whitespace
+		-w:  reverse by Word, except leave period in place
+		-l:  reverse by line
+		-s:  reverse by sentence
+		-d:  next argument is a string. Reverse blocks delimited
+		     by this string. The string is assumed to occur just
+		     before the beginning of the file, but not just after
+		     the end.
+		-n:  next argument (k) means reverse blocks of k chars
+		-f:  reverse by file. Next argument is larger than size
+			of file (to allocate a big buffer.)
+*/
+#define BUFSIZE 8192
+#define INFO "                       CHICKEN HAVEN SOFTWARE  (T. McConnell)
+                          fgn, version 1.2 
+	reverse: reverse input.
+	usage:   reverse [-Wwlsnfd-] [arg] [input-file]
+	options: default: reverse by word = string of alphanumerics.
+		-W:  reverse by  Word = string of non whitespace
+		-w:  reverse by Word, except leave period in place
+		-l:  reverse by line
+		-s:  reverse by sentence
+		-n:  next argument (k) means reverse blocks of k chars.
+		-d:  next argument is a string. Reverse blocks delimited
+		     by this string. The string is assumed to occur just
+		     before the beginning of the file, but not just after
+		     the end.
+		-f:  reverse by file. The next argument give size of
+	             buffer to allocate. Must be big enough to hold
+		     the input file, or you will be in a world of hurt.
+Reads from stdin if no filename or - is given as a filename."
+
+static char buf[BUFSIZE]; /* buffer for line or word-based reverse */
+char *fbuf; /* buffer for file reverse-allocated dynamically */
+char *bufend = buf;
+char *bufptr;
+int charcnt=0;
+int length;
+void reverse(char s[]);
+char *strdup(char *);
+%}
+# reverse by word, not including punctuation.
+-_ /[a-zA-Z0-9]+/ {strcpy(buf,yytext);reverse(buf);printf("%s",buf);}
+# reverse by word, including punctuation, except period.
+-w /[^. \t\n]+/ {strcpy(buf,yytext);reverse(buf);printf("%s",buf);}
+#  reverse by Word, including all punctuation. 
+-W /[^ \t\n]+/ {strcpy(buf,yytext);reverse(buf);printf("%s",buf);}
+# reverse by line
+-l /.+/ {strcpy(buf,yytext);reverse(buf);printf("%s",buf);}
+# reverse by sentence.
+-s /\([^.!?]+\)\([.?!]\)/ {strcpy(buf,\$0);reverse(buf);
+	printf("%s",buf);printf("%s", \$1);}
+# reverse by delimited block
++d /.|[\n]/ {length=strlen(clvar);
+		if((charcnt>=length)&&(strcmp(bufend-length,
+		clvar)==0)){reverse(buf);
+		printf("%s",buf);charcnt=0;*buf='\0';bufend=buf;}else{
+		strcat(buf,yytext);++bufend;++charcnt;}}
+# Flush unmatched buffer at end of file.
++d /<<EOF>>/ {printf("%s",buf);return 0;}
+# reverse each block of n characters
++n /./ { if(charcnt == atoi(clvar)-1){strcat(buf,yytext);reverse(buf);
+		printf("%s",buf);charcnt=0; buf[0]='\0';}
+		 else {strcat(buf,yytext);
+		charcnt++;}}
+# Flush unmatched buffer at end of file.
++n /<<EOF>>/ {printf("%s",buf);return 0;}
+#
+# reverse by entire file
++f /.|[\n]/ { if(charcnt==0)if((fbuf=(char *)malloc(atoi(clvar)))==NULL){
+		printf("Unable to allocate buffer\n");exit(1);}else
+			bufptr=fbuf;
+		*fbuf++=yytext[0];charcnt++;}
++f /<<EOF>>/ {*fbuf='\0';reverse(bufptr);printf("%s",bufptr);return 0;}
+%%
+/* reverse: reverse a string s in place */
+/* See K&R, p. 62 */
+void
+reverse(char s[])
+{
+	int c,i,j;
+
+	for(i=0,j=strlen(s)-1;i<j;i++,j--){
+		c = s[i];
+		s[i]=s[j];
+		s[j]=c;
+	}
+
+}
+/* strdup : not built in on the NeXT */
+char *strdup( char *s)
+{
+        char *p;
+
+        p = (char *) malloc(strlen(s)+1);
+        if(p != NULL)
+                strcpy(p,s);
+        return p;
+}

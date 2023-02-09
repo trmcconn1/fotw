@@ -1,0 +1,25 @@
+Ephemeris is a command line tool for creating ephemerides from given
+orbital elements. It maintains a library of orbital elements (sun, planets,
+etc) which can be enlarged by gathering input in a dialog with the user.
+
+The ephemeris command line interface is provided by incorporating my 
+monitor program. Giving the help command at the monitor prompt provides
+a list of available commands; "help command_name" gives more specific 
+information on the usage and purpose of that command. 
+
+INSTALLATION
+
+Edit the Makefile appropriately for your platform and say make. Then
+move the resulting executable (ephemeris) to an appropriate folder on 
+your system. Ephemeris will use a startup configuration file named
+.ephemeris2.rc in your home directory. The path to a startup file can
+also be given on the command line (ephemeris -h provides usage information.)
+You may, if you wish, edit the supplied ephemeris2.rc and copy to your
+home directory. Ephemeris will run without a startup file.
+
+This is free software offered as-is in the hope that some may find it
+useful. Use at your own risk.
+
+Terry R. McConnell
+trmcconn@syr.edu
+http://subarnyard.net

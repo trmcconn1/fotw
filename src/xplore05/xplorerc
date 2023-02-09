@@ -1,0 +1,43 @@
+# EXAMPLE xplore configuration file
+# contains comments and lines of the following forms
+#
+# .ext command
+#
+# where command is the command line used to open a file with the given
+# extension. The sequence %s in the command is expanded to the file
+# with extension
+# 
+# name command
+#
+# where command is to to be run whenever a file of the given name
+# is selected
+#
+# *name command
+#
+# where *name is a psuedo-file that appears in the browser
+# See the manpage xplore.1 for more details
+
+# EXTENSION associations
+.1   man %s
+.2   man %s
+.3   man %s
+.4   man %s
+.5   man %s
+.6   man %s
+.7   man %s
+.8   man %s
+
+.html lynx file://%s
+.gz   gunzip %s
+.Z    uncompress %s
+
+# FILENAME associations
+makefile make all
+Makefile make all
+
+# PSUEDO_FILE associations
+*SHELL /bin/sh        # or replace with your favorite shell
+*HELP  man 1 xplore   # assumes xplore.1 has been properly installed
+
+# PSUEDO FILES can take arguments too
+*EDIT /usr/bin/vi %s

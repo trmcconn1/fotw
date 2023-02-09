@@ -1,0 +1,60 @@
+# EXAMPLE SHELL SCRIPT                                     EXAMPLE SHELL SCRIPT
+#
+###############################################################################
+# Schedule Shell script: creates schedule and mails it to mcconnel
+#
+# By Terry McConnell (August 1996)  (UNIX ONLY)
+#
+# This does nothing sophisticated: it assumes that mail is sent successfully.
+# There is no way to check otherwise.
+# You can easily modify it to create and send out as many reports as you wish
+###############################################################################
+
+###############################
+# Word of advice: never forget#
+# that shells share variables #
+# with their parents.         #
+###############################
+
+#suppress printing prompts
+set HOLDPROMPT $PROMPT
+set PROMPT ""
+
+echo MAIL SHELL SCRIPT (BY Terry McConnell)
+
+
+# Ignore error messages
+2> /dev/null
+set ECHO OFF
+
+# load the current semester
+load -sem $SEM
+take data/sched.$SEM
+set ECHO OFF
+
+# send to a temp file, with a carelessly chosen name.
+> foo
+
+# Direct the schedule there
+schedule $SEM
+
+# Restore output to screen
+end
+
+# Mail it out, using Unix mail
+# Notice that the space must be quoted since -s looks for 1 arg.
+echo scripts/mail: sending mail to mcconnel. (Subject = Latest Schedule.)
+push start /m c:\syracces\apps\pmail\winpmail.exe
+push c:\syracces\apps\pmail\winpmail.exe -T tmc@barnyard.syr.edu \
+-F foo -S Latest\ Schedule  
+
+# Clean up
+push del foo
+load -free
+set PROMPT $HOLDPROMPT
+set HOLDPROMPT
+
+#restore error messages
+end 
+end ECHO ON
+

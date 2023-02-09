@@ -1,0 +1,1833 @@
+date 5/15/2016 informal
+distance 200m
+ssampere 34.6 
+distance 8k
+ssampere 36:02.2 
+*Timed by Cromp. Skytop, in the snow!
+
+date 5/15/2016 outside
+distance 10k
+jmora 38:02 
+*Lilac
+date 5/7/2016 outside
+distance 5k
+pnoll 33:05 
+*Right to Run
+
+date 5/14/2016 regular
+*OLP Runs
+distance 5k
+csteinbach 22:49.7 
+ebriggs 23:34.7 
+kcollins 29:55.0 
+jview 32:37.9 
+sgraceffo 38:14.7 
+
+distance 8k
+jmartinez 34:00.3 
+rmozo 34:11.3 
+triccardi 35:19.7 
+jmoore 35:44.9 
+rquinn 37:09.9 
+amartinez 37:27.1 
+hteres 40:14.9 
+khanlon 55:18.7 
+tcromp 58:50.6 
+tskwarnicki 63:35.5 
+jdiederich 72:35.0 
+
+distance 15k
+acushman 63:34.4 
+rdean 75:11.4 
+ryanai 82:26.5 
+tmcconnell 82:32.8 
+bnicholson 86:04.7 
+
+date 5/10/2016 informal
+distance 200m
+kcollins 43.5 
+date 5/12/2016 informal
+distance 800m
+kcollins 3:59.6 
+*CNS timed by Tim Collins
+distance 5k
+jdiederich 42:51.3 
+
+date 4/20/2016 informal
+distance 800m
+jriccardi 2:11.6 
+*CBA, timed by Heidi Busa
+
+date 5/12/2016 regular
+distance 200m
+emosure 45.2 
+*Marcellus
+dhughes 43.9 
+tskwarnicki 47.4 
+distance 55m
+tskwarnicki 10.14 
+rmay 12.44 
+mpiscitelli 13.14 
+distance 400m
+rmay 148.1 
+skelly 1:12.9 
+distance 1500m
+dhughes 6:16.3 
+distance 3k
+tskwarnicki 21:18.9 
+*Skytop: Nicholson and Piscitelli timing
+distance 400m
+kwall 68.0 
+*Sampere timing, Women's Lacrosse Observing
+
+date 5/11/2016 informal
+distance 800m
+tkirkland 3:15.6 
+vhotaling 3:54.7 
+*Skytop, timed each other
+
+date 5/10/2016 informal
+distance 3k
+csteinbach 12:52.4 
+distance 200m
+hteres 31.0 
+jmartinez 31.8 
+jstauffer 33.6 
+distance 800m
+jmora 2:30.0 
+distance 55m
+jmora 8.24 
+jmartinez 8.94 
+*Sunnycrest, timed by Nicholson
+distance mile
+jsnyder 5:58.4 
+distance 800m
+jsnyder 2:53.8 
+*ESM track, timed by Keith Snyder
+
+date 5/5/2016 informal
+distance 5k
+ecreel 20:57.4 
+*Sunnycrest timed by Nicholson
+
+date 5/9/2016 informal
+distance 8k
+mdasilva 50:04.8 
+acushman 31:22.9 
+distance 1500m
+drobbins 8:35.2 
+distance 800m
+tcoughlin 3:19.0 
+distance 400m
+tcoughlin 71.7 
+distance 100m
+mfitzpatrick 15.0 
+*SU outdoor track
+*officials: Cromp and Robbins
+distance 15k
+ecreel 1:08:44 
+jmoore 1:10:39 
+*Sunnycrest, timed each other
+
+date 5/6/2016 informal
+distance 1500m
+rmay 9:00.6 
+*Nottingham, timed by Ruth Yanai
+
+date 11/8/2015 informal
+distance 5k
+tcollins 30:23 
+*Burn Run
+date 1/24/2016 informal
+distance 5k
+hketcham 23:37 
+*Chilly Chili
+
+date 5/6/2016 informal
+distance 400m
+hteres 72.4 
+distance 800m
+csteinbach 2:53.1 
+*timed by P.Ford
+*Coreen in spikeless spikes
+
+date 8/23/2015 informal
+distance 10k
+kwhite 41:54 
+*Caz Tri 
+
+date 5/3/2016 informal
+distance 1500m
+tcromp 9:07.8 
+*Skytop, timed by Sampere 
+
+date 5/1/2016 outside
+distance 3k
+ecreel 12:09 
+rniezabytowski 13:46 
+mwhipps 14:21 
+distance 10M
+triccardi 65:39 
+emosure 68:16 
+ncoffey 69:25 
+rmozo 1:13:06 
+tkirkland 1:19:21 
+rbond 81:05 
+pford 1:22:37 
+kkeenan-kirkpatrick 84:09 
+hteres 1:27:28 
+theath 1:30:44 
+vhotaling 1:41:37 
+*Mountain Goat
+csteinbach 77:43 
+ebriggs 78:18 
+*Broad Street Phila.
+distance mile
+dwhite 5:07.65 
+*UB meet
+
+date 4/29/2016 regular
+*Captain's choice day 
+distance 800m
+*section 1
+rpanek 2:24.5 
+sscott 2:37.7 
+kekelly 2:55.2 
+hteres 2:56.6 
+aupanek 3:11.1 
+smore 3:13.2 
+*section 2
+sscott 2:32.8 
+cgriffin 4:10.8 
+rmay 4:15.5 
+mpiscitelli 4:15.5 
+ebriggs 3:23.6 
+*section 3
+jmartinez 2:22.0 
+mfitzpatrick 2:35.0 
+*section 4
+kkeenan-kirkpatrick 3:26.5 
+
+distance 400m
+rmozo 60.6 
+jmoore 68.9 
+jallen 85.5 
+ebriggs 95.3 
+drobbins 1:45.8 
+mpiscitelli 1:50.0 
+*section 2
+rpanek 60.9 
+jmartinez 89.7 
+cgriffin 1:47.1 
+tskwarnicki 1:48.0 
+mpiscitelli 1:48.9 
+rmay 1:50.9 
+
+distance 200m
+hteres 31.3 
+jmartinez 33.1 
+ebriggs 44.4 
+rhahn 2:24.7 
+
+distance 100m
+jallen 18.8 
+
+date 4/28/2016 regular
+distance 55m
+mhonis 7.94 
+distance 400m
+kvanboden 66.0 
+jmora 5:21.3 
+distance 800m
+rbond 2:34.8 
+tcollins 3:41.1 
+acushman 2:19.0 
+
+date 4/20/2016 outside
+distance mile 4:50.9
+distance 400m
+pmcguane 53.3 
+*CBA meet
+date 4/13/2016 outside
+distance mile
+pmcguane 5:04.7 
+
+date 4/22/2016 regular
+distance 1500m
+*section 1
+mdee 4:34.3 
+kekelly 6:01.1 
+rdean 6:02.0 
+tkirkland 6:15.3 
+smore 6:54.2 
+cdranchek 7:02.4 
+ssampere1 7:50.5 
+vhotaling 7:53.8 
+jbrown 8:03.2 
+tcollins 8:04.0 
+sgraceffo 10:55.1 
+
+*section 2
+rmozo 5:06.8 
+mfitzpatrick 5:13.7 
+kvanboden 5:45.4 
+rbond 5:52.0 
+csteinbach 5:54.8 
+hteres 6:22.1 
+sleone 6:38.9 
+jallen 7:25.8 
+mpiscitelli 7:28.2 
+kcollins 8:05.9 
+cgriffin 8:14.5 
+tskwarnicki 10:06.2 
+price 10:43.3 
+
+*section 3
+jmartinez 4:59.3 
+kvanboden 5:26.8 
+kkeenan-kirkpatrick 6:33.2 
+bnicholson 7:18.5 
+
+distance mile
+jdiederich 14:47 
+
+distance 200m
+msampere1 3:17.6 
+jphelps 2:56.8 
+
+distance 400m
+msampere1 6:45.1 
+jphelps 5:15.5 
+
+date 4/21/2016 regular
+distance 200m
+csteinbach 34.5 
+kekelly 38.5 
+distance 400m
+ecreel 64.0 
+mrybinski 95.4 
+distance 800m
+rcleary 4:30.1 
+*Sunnycrest, timed by Nicholson
+
+date 4/10/2016 outside
+distance 10k
+ebriggs 48:25 
+*Skunk Cabbage
+
+date 4/14/2016 regular 
+*Relay makeup day
+*section 1
+distance 4x3manley 
+rmay cgriffin mpiscitelli tcallahan 14:47.7 
+*KNS
+*joined while in progress
+distance 4x1manley
+sscott fschlereth jallen pford 3:37.8 
+*THW
+mdasilva rdean kcollins acushman 3:20.0 
+*TCS
+
+*section 2
+distance 4x2manley
+csteinbach dwhite tcallahan mhonis 5:58.5 
+*KNS
+rbond ecreel hteres rmozo 6:09.8 
+*KBB
+rdean trobertson tcoughlin acushman 6:16.5 
+*TCS
+kwhite jmoore kekelly rniezabytowski 6:48.3 
+*KBB
+mrybinski ncoffey mpiscitelli skelly 7:58.9 
+
+*section 3
+distance 4x1manley
+ncoffey tcallahan skelly csteinbach 3:00.6 
+*KNS
+cgriffin pdriscoll mrybinski mhonis 3:35.5 
+*KNS
+distance 4x3manley
+sscott jallen triccardi jmartinez 10:34.7 
+*THW
+kkeenan-kirkpatrick acushman ehahn kcollins 14:04.7 
+*TCS
+
+*section 4
+distance 4x2manley
+jallen pford triccardi jmartinez 7:22.1 
+*THW
+trobertson kkeenan-kirkpatrick msampere1 kcollins 14:23.7 
+*TCS
+distance 4x3manley
+ecreel jmoore rbond rmozo 11:04.4 
+*KBB
+tcoughlin mdasilva rdean tcromp 14:10.4 
+*TCS
+
+date 4/13/2016 regular
+distance 8k
+rbond 37:47.1 
+distance 4x2manley
+tcromp jdiederich kwall ssampere 11:36.0 
+*TCS
+*Manley, timed by Nicholson
+
+date 4/6/2016 informal
+distance 8k
+tmcconnell 39:48.3 
+*Manley, timed by P. Ford (who ran ahead in 39:36.7)
+
+date 4/10/2016 outside
+distance 5k
+jmoore 21:07 
+*Paint Westvale Purple
+date 4/9/2016 outside
+distance 5k
+wmcrae 32:56 
+*Talahasee, FL
+date 4/9/2016 outside
+distance 5k
+hteres 24:33 
+*Good Samaritan
+
+date 4/3/2016 outside
+distance hmar
+kwhite 1:31:45 
+rmozo 1:44:43 
+tkirkland 1:54:18 
+vhotaling 2:19:50 
+kcollins 2:44:12 
+*Syracuse Half - in an epic blizzard
+
+date 4/1/2016 regular 
+distance 800m
+*section 1
+tcallahan 2:06.7 
+kvanboden 2:28.3 
+triccardi 2:30.6 
+kekelly 3:30.7 
+mdasilva 3:38.6 
+mrybinski 4:01.7 
+cgriffin 4:13.4 
+mpiscitelli 4:37.0 
+rmay 4:40.6 
+pjewell 4:50.0 
+
+*section 2
+rmozo 2:24.6 
+ecreel 2:34.3 
+kwhite 2:44.3 
+triccardi 2:47.8 
+asalas 3:00 
+cdranchek 3:23.5 
+drobbins 3:51.5 
+mpiscitelli 3:53.3 
+fschlereth 4:16.2 
+wmcrae 4:23.4 
+price 5:10.2 
+
+*section 3
+dwhite 2:19.2 
+jmartinez 2:28.4 
+mfitzpatrick 2:36.5 
+kwall 2:41.1 
+triccardi 2:46.0 
+hteres 3:01.4 
+kvanboden 3:05.0 
+mhonis 3:05.3 
+tskwarnicki 4:41.8 
+
+*section 4
+ssampere 2:35.8 
+ecreel 2:47.5 
+triccardi 2:47.8 
+jallen 3:39.3 
+bnicholson 3:41.1 
+msampere1 19:22 
+
+*section 5
+triccardi 2:51.5 
+
+distance 400m
+tcallahan 57.1 
+distance 200m
+tcallahan 28.0 
+*both timed by Mickey
+jallen 44.0 
+*timed by Patti
+
+date 3/31/2016 regular
+*OCC
+distance 800m
+jmoore 2:42.2 
+
+date 3/26/2016 regular
+*distance makeup  day
+distance 1500m
+ebriggs 6:43.4 
+
+distance mile
+spanek 10:57.4 
+aupanek 11:17.0 
+*They ran 2 laps short in the 3k
+
+distance 3k
+mdee 9:33.6 
+acushman 11:13.2 
+rpanek 11:37.1 
+ssampere 11:57.6 
+rbond 12:49.5 
+skelly 13:12.1 
+jstauffer 13:34.7 
+hteres 13:39.9 
+pford 13:46.7 
+smore 14:26.1 
+
+sleone 14:00.1 
+*timed by Cleary. smozo's time was missed. 
+*She apparently finished approx 5 sec behind sleone
+*but we had no choice but to assign her the next slower time
+smozo 14:37.8 
+mrybinski 14:37.8 
+thomeyer 14:47.1 
+jlawton 15:05.3 
+loaks-lee 15:13.5 
+mpiscitelli 15:41.9 
+cdranchek 15:56.8 
+mdasilva 16:02.7 
+jallen 17:25.7 
+asalas 17:36.7 
+wmcrae 18:28.2 
+kkedenburg 18:36.3 
+
+distance 5k
+mfitzpatrick 19:35.2 
+triccardi 22:55.4 
+cgriffin 33:15 
+tcromp 32:35.3 
+pjewell 32:35.3 
+tskwarnicki 37:44.5 
+distance 8k
+rmozo 34:55.2 
+csteinbach 37:06.4 
+
+date 3/24/2016 regular
+distance 400m
+emosure 2:02.5 
+*Marcellus Track, timed by Joe Riccardi
+
+date 3/11/2016 regular
+distance 400m
+* not in time order
+* there were several sections
+jstauffer 69.4 
+jmora 68.2 
+rdean 75.9 
+fschlereth 98.9 
+ssampere1 99.0 
+pmather 69.9 
+vsrinivas 74.5 
+bwinckelmann 75.9 
+cgriffin 1:53.1 
+cdranchek 78.0 
+acushman 59.8 
+jhubisz 57.7 
+loaks-lee 1:33.1 
+mfitzpatrick 69.1 
+sscott 64.9 
+jmora 65.6 
+mhonis 65.4 
+asalas 72.9 
+
+distance 200m
+*section 1
+jmora 31.6 
+kvanboden 33.6 
+tmcconnell 35.3 
+loaks-lee 42.6 
+kcollins 47.3 
+
+*section 2
+kvanboden 29.3 
+jmora 30.9 
+vsrinivas 32.9 
+mfitzpatrick 32.9 
+hketcham 34.7 
+mwhipps 39.6 
+cgriffin 50.4 
+
+*section 3
+sscott 31.5 
+tperrone 32.5 
+
+distance 100m
+*55m lane was in use
+*section 1
+sscott 15.8 
+tperrone 16.3 
+tmcconnell 17.8 
+
+*section 2
+cdranchek 16.3 
+mwhipps 18.5 
+sleone 20.0 
+cgriffin 23.5 
+
+*section 3
+mhonis 14.2 
+hketcham 17.0 
+loaks-lee 20.0 
+
+*section 4
+*walkers
+mcox 69.9 
+jphelps 70.2 
+mwilbur 71.1 
+ssampere1 82.4 
+
+*section 5
+
+date 3/10/2016 regular
+*SU outdoor track. Warm but very wet
+distance 400m
+rmozo 75.0 
+kwhite 81.0 
+mdasilva 89.8 
+rcarpenter 1:37.8 
+
+distance 200m
+rmozo 34.0 
+kwhite 35.4 
+mdasilva 39.4 
+
+distance 55m
+rmozo 9.04 
+kwhite 9.34 
+
+distance 800m
+wborgstede 6:34.4 
+
+date 3/3/2016 regular 
+distance 3k
+kwhite 11:51.5 
+trobertson 12:18.0 
+*timed by Tracy Cromp
+
+distance 5k
+kwhite 20:16.2 
+skelly 22:16.2 
+smore 25:34.7 
+loaks-lee 26:24.5 
+cdranchek 28:09.3 
+mdasilva 29:31.2 
+tcromp 34:30.1 
+wmcrae 34:31.6 
+
+distance 8k
+rmozo 36:44.3 
+pford 38:39.3 
+kcollins 49:16.4 
+
+distance 15k
+mfitzpatrick 63:34.3 
+kvanboden 64:23.8 
+ncoffey 65:11.0 
+jmartinez 76:32.2 
+thomeyer 80:50.3 
+jstauffer 80:50.3 
+pjewell 97:32.7 
+distance 200m
+rmay 56.5 
+*timed by P. Ford
+
+date 3/2/2016 regular
+distance 15k
+ssampere 1:11:05.3 
+kkeenan-kirkpatrick 1:19:26.5 
+
+date 2/19/2016 regular
+distance 4x1manley
+*section 1
+theath kekelly rniezabytowski bnicholson 3:09.0 
+*KBB
+triccardi jriccardi pmcguane jmartinez 3:10.6 
+*THW
+pjewell sleone price rcleary 4:30.4  
+*KBB
+msampere1 ssampere1 tcromp ssampere 6:42.0 
+*TSS
+
+*section 2
+hteres jstauffer sleone rmozo 2:55.7 
+*KBB
+tcollins tcoughlin mfitzpatrick ssampere 2:57.5 
+*TCS
+thomeyer kkelly vsrinivas bwinckelmann 3:32.5 
+*KBB
+csteinbach kvanboden mhonis rmay 4:59.9 
+*KNS
+
+*section 3
+fschlereth pmcguane tperrone triccardi 2:59.9 
+*THW
+skelly csteinbach mpiscitelli kvanboden 3:25.1 
+*KNS
+kheath ehahn mfitzpatrick ssampere 3:36.0 
+*TCS
+
+*section 4
+kvanboden csteinbach skelly mhonis 2:45.1 
+*KNS
+ecreel bnicholson bwinckelmann vsrinivas 2:53.3 
+*KBB
+wmcrae jriccardi smore cdranchek 3:13.4 
+*THW
+mwhipps tcoughlin jlawton tcollins 3:25.0 
+*TCS
+
+*section 5
+kkeenan-kirkpatrick ssampere kheath mfitzpatrick 3:13.1 
+*TCS
+
+distance 4x2manley
+ecreel sleone jstauffer theath 7:05.9 
+*KBB
+jlawton kkeenan-kirkpatrick drobbins tcoughlin 8:30.4 
+*TCS
+
+distance 800m
+triccardi 2:34.7 
+
+distance 200m
+pmcguane 25.6 
+jriccardi 28.2 
+
+
+date 2/11/2016 regular
+distance 4x3manley
+*section 0
+triccardi smore jmora rhahn 19:47.6 
+*THW
+*section 1
+tcallahan kvanboden jview pdriscoll 11:14.9 
+*KSC
+ecreel kwhite jstauffer sleone 11:16.4 
+*KBB
+fschlereth jmora cdranchek tperrone 12:40.2 
+*THW
+
+*section 2
+kvanboden csteinbach mdee tcallahan 9:27.9 
+*KSC
+pmather rniezabytowski kekelly rmozo 11:01.3 
+*KBB
+mdasilva rdean trobertson kwall 11:33.5 
+*TCS
+wmcrae smore triccardi jmartinez 12:17.4 
+*THW
+thomeyer vsrinivas bnicholson price 14:34.8 
+*KBB
+
+*section 3
+ncoffey mhonis kvanboden mdee 10:22.4 
+*KSC
+distance 4x1manley
+rcleary kwhite vsrinivas pmather 3:09.6 
+*KBB
+
+
+date 2/10/2016 regular
+distance 4x3manley
+jdiederich mdasilva tcromp ssampere 18:10.0 
+*TCS
+mdasilva drobbins kwall ssampere 13:44.4 
+*TCS
+bnicholson bwinckelmann vsrinivas hteres 12:10.5 
+*KBB
+distance 4x1manley
+ssampere tcromp jdiederich drobbins 5:14.9 
+*TCS
+
+date 2/6/2016 regular
+*Felder Relay Meet
+distance 800r
+csteinbach rcarpenter skelly dwhite 2:18.2 
+*KSC 
+jmoore ecreel hteres rbond 2:04.6 
+*KBB
+tmcconnell wmcrae dhughes pford 2:47.3 
+*THW
+distance 3200r
+triccardi dhughes mbrown jmora 10:08.1 
+*THW
+jriccardi tperrone pford emosure 10:38.7 
+*THW
+csteinbach skelly rcarpenter dwhite 12:49.4 
+*KSC
+jmoore kkelly wborgstede bnicholson 16:55.9 
+*KBB
+triccardi smore tmcconnell wmcrae 13:38.5 
+*THW
+distance 800m
+spanek 3:01.22 
+aupanek 3:06.32 
+rpanek 3:08.39 
+*Run as final event of Indoor Pentathlon
+
+date 2/5/2016 regular
+distance 1500m
+ecreel 5:39.7 
+pmather 5:50.3 
+bwinckelmann 6:18.1 
+vsrinivas 6:30.0 
+
+distance 100m
+ecreel 14.7 
+pmather 14.8 
+bwinckelmann 16.0 
+vsrinivas 17.6 
+rdean 16.8 
+
+distance mile
+pjewell 9:48.8 
+
+date 1/29/2016 regular
+*55m in order of run. 2 at a time
+distance 55m
+drobbins 11.84 
+pjewell 17.54 
+rmay 27.54 
+rhahn 36.94 
+rcleary 9.64 
+rcarpenter 10.24 
+jview 10.64 
+fschlereth 11.64 
+jbrown 9.44 
+ssampere1 9.74 
+dhanlon 33.14 
+msampere1 44.84 
+jdiederich 18.94 
+tcromp 19.14 
+theath 8.34 
+cgriffin 11.74 
+tcoughlin 8.04 
+mdasilva 10.04 
+pdriscoll 8.94 
+tperrone 9.44 
+ehahn 14.94 
+price 14.24 
+acushman 7.94 
+rbond 8.34 
+vsrinivas 9.04 
+kkeenan-kirkpatrick 11.94 
+skelly 8.54 
+kekelly 10.44 
+cdranchek 9.84 
+kcollins 11.34 
+tcoughlin 8.34 
+hteres 8.74 
+tcollins 9.84 
+ehahn 14.04 
+ncoffey 9.84 
+rniezabytowski 15.84 
+rmozo 8.14 
+kvanboden 8.54 
+wmcrae 12.54 
+ehahn 14.34 
+jstauffer 8.64 
+khanlon 9.84 
+skelly 8.44 
+hteres 8.44 
+tcromp 12.54 
+wborgstede 12.74 
+kcollins 11.44 
+ssampere 8.74 
+tcollins 10.04 
+khanlon 9.24 
+bnicholson 9.94 
+tcoughlin 8.34 
+tcollins 10.24 
+asalas 10.34 
+jmartinez 13.24 
+ssampere 8.74 
+bnicholson 9.64 
+pford 11.34 
+dhughes 11.14 
+
+distance 400m
+wborgstede 2:24.5 
+
+distance 100m 
+ehahn 28.4 
+
+date 1/21/2016 regular
+distance 100m
+rmay 55.6 
+
+distance 3k
+mdee 9:34.4 
+rmozo 11:31.0 
+wmcrae 19:14.6 
+jdiederich 28:49.3 
+tcromp 28:49.3 
+
+distance 5k
+acushman 18:25.7 
+mfitzpatrick 19:25.1 
+kwall 20:12.3 
+dwhite 20:17.0 
+pmather 21:44.7 
+rdean 22:21.1 
+skelly 23:14.8 
+bwinckelmann 24:54.8 
+vsrinivas 24:59.9 
+thomeyer 25:18.6 
+triccardi 25:31.0 
+smore 25:42.0 
+rcarpenter 34:59.5 
+ehahn 35:54.6 
+sgraceffo 36:45.0 
+price 40:16.5 
+
+date 01/20/2016 regular
+distance 5k
+tmcconnell 23:58.2 
+*Manley, Timed by P. Ford
+
+date 01/15/2016 informal
+distance 5k
+pford 23:24.4 
+*Manley F.H., timed by Neal Coffey
+
+date 1/8/2016 regular
+distance 200m
+*section 1
+rdean 33.9 
+jsnyder 36.7 
+drobbins 49.3 
+sgraceffo 69.9 
+jdiederich 99.5 
+tcromp 99.7 
+
+*section 2
+tcoughlin 30.6 
+sscott 31.3 
+ssampere1 38.8 
+jbrown 39.8 
+cgriffin 44.6 
+mpiscitelli 50.3 
+
+*section 3
+vsrinivas 34.1 
+bwinckelmann 34.4 
+jsnyder 36.6 
+fschlereth 43.7 
+sgraceffo 68.4 
+
+*section 4
+rdean 32.6 
+rcleary 38.8 
+tkirkland 39.4 
+sleone 40.2 
+jview 40.6 
+vhotaling 42.9 
+wmcrae 52.0 
+
+*section 5
+dwhite 31.4 
+pmather 31.7 
+pdriscoll 32.7 
+ryanai 35.8 
+tmather 40.1 
+mpiscitelli 49.1 
+
+*section 6
+skelly 30.8 
+tperrone 32.2 
+smore 33.5 
+hketcham 35.1 
+price 50.6 
+wborgstede 59.4 
+
+*section 7
+mhonis 27.3 
+rmozo 28.1 
+rbond 29.7 
+mfitzpatrick 31.8 
+triccardi 32.1 
+csteinbach 34.4 
+cdranchek 37.5 
+mpiscitelli 47.8 
+
+*section 8
+tcoughlin 31.3 
+ncoffey 34.4 
+rniezabytowski 35.1 
+kkeenan-kirkpatrick 42.1 
+jlawton 42.7 
+tcromp 58.9 
+
+*section 9
+kwall 31.8 
+khanlon 33.5 
+tkirkland 38.3 
+vhotaling 40.7 
+wmcrae 50.4 
+
+*section 10
+ecreel 29.5 
+rmozo 32.4 
+bnicholson 34.0 
+pford 37.6 
+
+distance 400m
+khanlon 74.9 
+rmozo 76.7 
+ryanai 78.7 
+csteinbach 79.5 
+
+date 1/7/2016 regular
+distance 3k
+bnicholson 15:30.2 
+distance 200m
+jmoore 31.6 
+tcollins 37.1 
+*OCC
+distance 200m
+jriccardi 46.3 
+pmcguane 45.4 
+*Marcellus Track
+
+date 1/3/2016 regular
+*2nd Felder Meet
+distance 3k
+pmcguane 10:14.5 
+jriccardi 10:21.5 
+jmoore 12:01.1 
+skelly 13:58.7 
+smore 14:40.4 
+kkelly 21:19.9 
+
+distance 55m
+rpanek 7.44 
+jriccardi 8.24 
+pmcguane 7.54 
+spanek 9.04 
+alpanek 10.54 
+wborgstede 15.24 
+
+distance 800r
+jriccardi pmcguane rpanek smore 1:53.4 
+bnicholson jmoore kkelly wborgstede 3:02.8 
+
+
+date 12/21/2015 regular
+distance 1500m
+mdee 4:27.5 
+rdean 5:55.7 
+ryanai 6:05.3 
+mdasilva 7:42.9 
+ksyverud 8:54.9 
+pjewell 9:34.3 
+sgraceffo 9:50.2 
+ehahn 10:10.1 
+rhahn 19:06.8 
+
+*section 2
+jhubisz 4:43.1 
+triccardi 5:02.5 
+mfitzpatrick 5:19.4 
+ncoffey 5:23.8 
+ssampere 5:26.6 
+kwall 5:29.5 
+pdriscoll 5:51.8 
+csteinbach 5:54.3 
+kekelly 6:13.3 
+rniezabytowski 6:26.4 
+jbitsko 6:29.0 
+hteres 6:29.7 
+skelly 6:29.9 
+tmcconnell 6:33.6 
+hketcham 6:36.9 
+smore 6:41.2 
+rhiggins 6:44.0 
+mhonis 7:04.8 
+jbrown 7:36.5 
+ssampere1 7:44.3 
+
+*section 3
+kvanboden 5:03.3 
+acushman 5:04.9 
+triccardi 5:20.5 
+rmozo 5:39.6 
+khanlon 5:55.3 
+csteinbach 6:43.0 
+mpiscitelli 7:28.7 
+
+distance mile
+ehahn 10:44.4 
+
+distance 200m
+mdee 26.9 
+acushman 27.9 
+trobertson 32.4 
+skelly 32.8 
+rmozo 35.1 
+rcarpenter 36.5 
+rhiggins 38.1 
+khanlon 38.3 
+jbrown 39.0 
+mdasilva 41.3 
+ssampere1 42.2 
+ehahn 61.5 
+pjewell 77.5 
+
+date 12/20/2015 regular
+*Marcellus Outdoor Track
+distance mile
+jriccardi 7:07.4 
+emosure 7:05.3 
+pmcguane 7:04.4 
+
+date 12/16/2015 regular
+distance 4x2manley
+*section 1
+fschlereth pford sscott ryanai 7:43.5 
+*THW
+tperrone smore jmartinez rhahn 11:59.4 
+*THW
+
+*section 2
+pdriscoll mdee kvanboden skelly 6:27.7 
+*KNS
+hketcham ssampere1 jbrown mwhipps 8:19.4 
+*TCS
+mdasilva ehahn kcollins kkeenan-kirkpatrick 9:40.8 
+*TCS
+sgraceffo mpiscitelli rcarpenter rhiggins 9:57.7 
+*KNS
+
+*section 3
+ssampere mfitzpatrick kwall kkeenan-kirkpatrick 6:43.6 
+*TCS
+tperrone smore triccardi ryanai 6:50.1 
+*THW
+mhonis kvanboden cvecchio skelly 7:40.7 
+*KNS
+
+*section 4
+pdriscoll mdee mhonis kvanboden 6:10.1 
+*KNS
+tmcconnell jmartinez ryanai triccardi 6:53.8 
+*THW
+hketcham ssampere mfitzpatrick kwall 6:53.9 
+*TCS
+rmay rhiggins clundgren mpiscitelli 9:48.5 
+
+
+date 12/12/2015 regular
+*First Indoor Felder Meet, SRC
+distance 55m
+csteinbach 10.04 
+ryanai 10.04 
+kkelly 12.84 
+mdasilva 10.24 
+jriccardi 8.54 
+trobertson 8.64 
+skelly 8.84 
+jmoore 8.44 
+triccardi 9.14 
+orobertson 9.54 
+rcarpenter 10.74 
+smore 9.74 
+aupanek 9.64 
+hteres 9.14 
+
+distance 800r
+ryanai jriccardi jmartinez smore 2:08.8 
+trobertson orobertson tcollins mdasilva 2:27.8 
+
+distance mile
+mhanlon 5:53.0 
+jriccardi 4:56.3 
+bcoffey 5:30 
+jmartinez 5:31.8 
+trobertson 5:43.7 
+skelly 7:18.6 
+jmoore 6:05.2 
+triccardi 5:33.5 
+khanlon 6:11.6 
+kekelly 6:36.9 
+spanek 6:40.6 
+smore 7:11.9 
+hteres 6:57.1 
+rhiggins 7:16.1 
+sscott 5:04.3 
+ryanai 6:42.6 
+ncoffey 5:41.5 
+*rwood 7:42.8
+*Not sure who rwood is. Listed as noontime on results
+orobertson 7:55.8 
+rcarpenter 9:16.8 
+kkelly 10:40.4 
+
+date 12/03/2015 regular
+distance 3k
+*Manley Field House
+
+*section 1
+jhubisz 10:41.3 
+triccardi 11:16.1 
+ncoffey 11:47.7 
+kwall 11:52.2 
+rdean 12:44.1 
+pdriscoll 12:57.7 
+kekelly 13:22.4 
+ryanai 13:36.7 
+cvecchio 13:50.9 
+rniezabytowski 14:33.7 
+smore 14:50.5 
+pmcclure 15:20.2 
+vsrinivas 16:54.5 
+rcarpenter 19:19.7 
+sgraceffo 19:53.6 
+ehahn 20:38.5 
+pjewell 21:38.4 
+rhahn 38:06.3 
+
+*section 2
+mdee 9:41.2 
+dhughes 11:03.4 
+mfitzpatrick 11:09.1 
+jsnyder 11:11.3 
+triccardi 11:25.0 
+tperrone 11:41.9 
+jmartinez 12:06.2 
+csteinbach 12:34.0 
+rhiggins 13:11.0 
+ebriggs 13:40.8 
+cgriffin 16:37.9 
+wmcrae 19:07.0 
+
+distance 1500m
+bnicholson 7:38.8 
+
+date 12/02/2015 regular
+distance 3k
+pford 13:44.4 
+tmcconnell 14:14.6 
+*Manley Field House, Timed by N.Coffey & K.Wall
+
+date 11/19/2015 regular
+distance 400m
+*section 1
+pnoll 1:29.3 
+cgriffin 1:42.1 
+mwhipps 1:44.2 
+sgraceffo 2:19.9 
+pjewell 2:29.7 
+
+*section 2
+trobertson 67.6 
+tperrone 70.5 
+pdriscoll 74.0 
+roneill 77.0 
+kvanboden 77.9 
+ncoffey 78.9 
+dhanlon 7:18.9 
+
+*section 3
+ryanai 1:22.9 
+vsrinivas 84.9 
+jlawton 1:35.9 
+price 2:01.5 
+ehahn 2:14.6 
+sgraceffo 2:19.3 
+rhahn 4:05.1 
+
+*section 4
+rbond 63.6 
+theath 66.5 
+ncoffey 69.8 
+smore 76.4 
+rniezabytowski 76.7 
+kvanboden 78.4 
+sleone 85.2 
+
+distance 200m
+rcleary 39.4 
+distance 400m
+
+*section 5
+triccardi 69.3 
+dhughes 72.5 
+jsnyder 77.4 
+tkirkland 86.0 
+vhotaling 98.4 
+wmcrae 1:53.5 
+
+*section 6
+kvanboden 78.4 
+jdiederich 4:01.0 
+tcromp 4:01.1 
+
+*section 7
+mfitzpatrick 71.2 
+kvanboden 71.6 
+dhughes 79.9 
+theath 86.4 
+tcollins 1:31.4 
+kcollins 1:41.5 
+
+*section 8
+rmozo 62.8 
+hteres 74.3 
+bnicholson 75.5 
+csteinbach 75.9 
+tkirkland 1:30.9 
+vhotaling 1:39.4 
+
+
+date 11/18/2015 regular
+distance 400m
+tmcconnell 80.0 
+pford 87.3 
+kkeenan-kirkpatrick 88.2 
+gscott 77.2 
+ssampere 67.2 
+fschlereth 1:43.3 
+kekelly 83.3 
+
+date 11/12/2015 regular
+distance 8k
+pford 41:44.8 
+*Timed by T. McConnell
+tmcconnell 45:31.2 
+*Timed by P. Ford
+*SRC "track", though more like a room filled with tables
+*Forced to run so wide on W end of track that it was probably
+*about 1/6 mile too long. 
+
+date 11/13/2015 regular
+distance 8k
+tcallahan 28:33.5 
+triccardi 31:27.8 
+mfitzpatrick 32:00.2 
+tperrone 32:11.2 
+jsnyder 32:13.2 
+ncoffey 33:25.8 
+kwall 34:44.4 
+kvanboden 34:49.8 
+*rmozo 35:23.9
+*Bob reported that his counter showed he was a lap short
+rdean 37:00.0 
+pdriscoll 37:16.6 
+tkirkland 38:14.1 
+theath 38:51.2 
+rniezabytowski 39:16.4 
+kekelly 39:17.6 
+rhiggins 39:53.3 
+*theath 40:07.4
+thomeyer 41:41.8 
+hteres 41:49.5 
+cgriffin 45:38.3 
+vhotaling 46:11.3 
+pjewell 51:54.1 
+*pjewell 53:28.8
+ehahn 59:36.8 
+
+distance 5k
+rbond 23:42.7 
+ryanai 24:07.0 
+mhagemann 26:42.4 
+
+distance 1500m
+wmcrae 9:14.5 
+
+
+date 10/28/2015 regular
+distance 800m
+pford 3:14.7 
+tmcconnell 3:16.1 
+*Timed by Cleary, Manley
+
+date 10/29/2015 regular
+distance 400m
+rcleary 1:57.4 
+distance 800m
+*First post draft event - 800m
+*section 1
+pdriscoll 2:54.2 
+rniezabytowski 3:08.8 
+ncoffey 3:09.2 
+gscott 3:26.2 
+jview 3:37.5 
+rcarpenter 3:58.1 
+fschlereth 4:14.2 
+yrothenberg 5:00.0 
+ehahn 5:14.6 
+rhahn 10:01.6 
+
+*section 2
+jhubisz 2:17.9 
+trobertson 2:44.9 
+hketcham 3:11.1 
+rdean 3:11.5 
+skelly 3:19.1 
+mpiscitelli 3:47.1 
+
+*section 3
+mfitzpatrick 2:36.2 
+ncoffey 2:40.9 
+tperrone 2:42.0 
+kvanboden 2:43.1 
+roneill 2:55.1 
+ryanai 2:59.3 
+khanlon 3:08.8 
+smore 3:15.3 
+sleone 3:17.2 
+
+*section 4
+trobertson 2:44.2 
+bnicholson 3:14.3 
+mnguyen 3:17.2 
+mpiscitelli 3:45.5 
+wmcrae 4:49.6 
+tcromp 6:20.4 
+jdiederich 6:21.3 
+
+*section 5
+ssampere 2:35.8 
+dhughes 2:38.0 
+khanlon 2:49.0 
+csteinbach 2:52.5 
+mwhipps 3:25.0 
+
+date 10/23/2015 regular
+*The "Up your Draft Run. (Up your what???) "
+*3k on the new outdoor track (locked at first) 
+*45 degrees, sunny, not much wind
+distance 3k
+kvanboden 10:55.0 
+mfitzpatrick 11:15.2 
+kwall 11:54.6 
+csteinbach 12:53.8 
+pdriscoll 13:05.6 
+sleone 14:02.6 
+mwhipps 14:28.0 
+pnoll 15:14.1 
+jview 17:19.7 
+kcollins 17:29.5 
+drobbins 17:50.0 
+tcollins 17:51.4 
+rmay 18:14.3 
+sgraceffo 20:30.0 
+fschlereth 21:28.9 
+ehahn 22:48.9 
+price 23:41.8 
+
+date 10/22/2015 regular
+distance 3k
+ncoffey 11:54.5 
+*timed by Roxanne Niezabytowski
+
+
+date 10/4/2015 outside
+distance 5k
+mdee 17:07 
+acushman 17:54 
+dhughes 18:24 
+mrybinski 18:27 
+triccardi 18:41 
+rmozo 20:30 
+roneill 21:14 
+ssampere 21:30 
+csteinbach 22:01 
+kwheeler 22:17 
+pdriscoll 22:34 
+ebriggs 23:18 
+rniezabytowski 23:26 
+bnicholson 25:54 
+rmay 32:39 
+ehahn 35:42 
+sgraceffo 35:03 
+*Festival
+
+date 6/6/2015 outside
+distance 5k
+jwood 19:47 
+sleone 24:16 
+rhiggins 26:25 
+*Paiges
+date 10/18/2015 outside
+distance 8k
+sleone 41:06 
+*Eastwood Parks 5 Mile
+*raw time 41:20 converted from 5M by multiplying by .99419192
+ryanai 39:31 
+*raw time 
+sstehman 39:46 
+*raw time 
+mdee 29:30 
+*raw time 
+date 5/16/2015 outside
+distance hmar
+smore 1:49:53 
+*Brooklyn
+date 6/27/2015 outside
+distance 8k
+smore 38:42 
+*Gay Pride (5 mile)
+*raw time 38:59 converted from 5M by multiplying by .99419192
+date 7/3/2015 outside
+distance 5k
+smore 24:14 
+*Oneida shores
+
+date 6/15/2015 regular
+distance 200m
+rbond 28.3 
+distance 800m
+rbond 2:48.68 
+distance 3k
+rpanek 11:27.2 
+khanlon 12:27.7 
+*Summer Felder meet
+date 7/04/2015 outside
+distance 5k
+jstauffer 21:11 
+bcoffey 20:15 
+kwall 20:18 
+dchristensen 23:54 
+distance 10M
+dhughes 1:05:42 
+ssampere 1:15:54 
+ebriggs 1:23:21 
+tcromp 1:45:54 
+*CAZ
+date 7/15/2015 outside
+distance 15k
+mnicholson 57:06 
+ddriscoll 58:07 
+mrybinski 59:21 
+triccardi 62:35 
+jstauffer 1:12:46 
+dwhitmore 63:06 
+jriccardi 64:05 
+jsnyder 1:02:17 
+trobertson 68:20 
+rbond 1:14:14 
+mdasilva 1:36:53 
+rcarpenter 1:53:29 
+rhiggins 1:25:54 
+pmcguane 1:15:29 
+*Boilermaker
+date 1/8/2015 outside
+distance 5k
+gscott 28:35 
+*Wassau
+date 8/30/2015 outside
+distance 3k
+triccardi 10:45.08 
+*Germantown Friends Track
+date 7/24/2015 outside
+distance 400m
+csteinbach 73.3 
+distance 1500m
+csteinbach 5:51.6 
+*USATF National Outdoors, Jacksonville
+date 10/31/2015 outside
+distance hmar
+pmather 1:42:31 
+*Rocknroll
+date 8/8/2015 outside
+distance 5k
+jriccardi 18:04 
+*Muleskinner
+date 6/14/2015 outside
+distance 8k
+jriccardi 31:58 
+*Run for Hope
+date 5/19/2015 outside
+distance mile
+jriccardi 4:57.54 
+*Fulton High School (sectionals) 
+date 5/20/2015 outside
+distance mile
+bcoffey 5:23.63 
+*Fulton High School
+date 9/20/2015 outside
+distance hmar
+theath 1:54:27 
+*Sodus Point Triathlon Leg
+date 10/18/2015 outside
+distance hmar
+tkirkland 1:45:42 
+vhotaling 2:05:20 
+*Empire Half
+date 11/08/2015 outside
+distance 5k
+mhanlon 21:31 
+scraybas 23:40 
+smozo 23:46 
+jmartino 25:45 
+distance 10k
+mdee 37:19 
+dhughes 39:42 
+trobertson 44:06 
+rmozo 47:42 
+scote 48:46 
+bnicholson 52:30 
+*Burn Run
+date 10/04/2015 outside
+distance mar
+jsnyder 3:02:05 
+*Wineglass
+date 8/30/2015 outside
+distance 5k
+sstehman 23:36 
+*Inner Harbor
+date 6/9/2015 outside
+distance 5k
+rcarpenter 37:41 
+*Corporate Challenge (3.5) miles
+date 5/23/2015 outside
+distance 8k
+rcarpenter 50:06 
+*Corning Glass
+date 5/16/2016 outside
+distance 5k 
+rbond 22:17 
+*Race for the cure
+date 9/12/2015 outside
+distance 5k
+ddriscoll 17:14 
+*Arc Race
+date 5/23/2015 outside
+distance 5k
+mpiscitelli 26:41 
+*Sunset House, Irondequoit
+date 7/25/2015 outside
+distance 10k
+mpiscitelli 56:31 
+*Oswego Harborfest
+date 11/14/2015 outside
+distance 5k
+khanlon 21:32 
+*Reindeer run, Long Branch
+date 6/27/2015 outside
+distance 8k
+mrybinski 32:15 
+*Yellow Brick
+date 10/18/2015 outside
+distance 5k
+sscott 17:55 
+*USATF Nationals, Albany
+date 6/6/2015 outside
+distance 400m
+ryanai 82.3 
+*Empire Senior Games
+date 7/4/2015 outside
+distance 5k
+emosure 18:59 
+kvanboden 20:29 
+*Teal there's a cure
+date 11/01/2015 outside
+distance 5k
+theath 24:28 
+kheath 24:51 
+mdasilva 36:08 
+*Cider Cross
+date 7/18/2015 outside
+distance 5k
+jsnyder 19:06 
+date 11/11/2015 outside
+distance mar
+scraybas 4:05:53 
+jmartino 4:10:25 
+*Hudson Mohawk
+date 5/25/2015 outside
+distance 5k
+cvecchio 24:37 
+trobertson 20:45 
+*Camillus
+date 10/25/2015 outside
+distance 10k
+cvecchio 53:05 
+*CMRC Hospital Cortland
+date 6/27/2015 outside
+distance 5k
+mwhipps 24:02 
+*Run and Ride for the Rescue
+date 10/4/2015 outside
+distance hmar
+mwhipps 1:53:54 
+*Wineglass
+date 7/29/2015 outside
+distance mile
+mdee 4:55.9 
+*Chargers Meet at Nottingham
+date 11/26/2015 outside
+distance 5k
+csteinbach 21:52 
+*Corning Pie and Glove
+date 8/15/2015 outside
+distance 5k
+kkeenan-kirkpatrick 22:43 
+*Willow Bay
+date 9/27/2015 outside
+distance 10k
+kkeenan-kirkpatrick 1:09:20 
+*Falling Leaves (14k)
+date 5/23/2015 outside
+distance hmar
+tcromp 2:41:24 
+distance mar
+ssampere 3:57:49 
+*Ottawa
+date 6/21/2015 outside
+distance hmar
+ssampere 2:06:40 
+*Syracuse 70.3
+date 6/13/2015 outside
+distance 5k
+ssampere 22:20 
+tcromp 30:54 
+* Green Lakes Sprint tri
+date 6/17/2015 outside
+distance 10k
+kheath 56:07 
+*Keuka Lake tri
+date 9/20/2015 outside
+distance hmar
+jwood 1:34:11 
+kheath 1:48:35 
+*bread run
+date 7/26/2015 outside
+distance mar
+kheath 5:06:47 
+*Lake placid Ironman
+date 5/31/2015 outside
+distance hmar
+ssampere1 2:18:55 
+*Canandaigua classic
+date 7/4/2015 outside
+distance 5k
+ncoffey 19:36 
+*Plymouth MA
+date 5/31/2015 outside
+distance hmar
+hketcham 1:55:04 
+*Raleigh Ironman
+date 10/25/2015 outside
+distance mar
+hketcham 3:47:12 
+date 11/1/2015 outside
+distance mar
+jwood 3:27:43 
+dwhitmore 4:05:28 
+*NYC
+date 6/27/2015 outside
+distance 5k
+dwhitmore 18:53 
+*Ride/Run for the Rescue
+date 11/29/2015 outside
+distance 5k
+theath 23:04 
+*Ugly Sweater
+date 11/26/2015 outside
+distance 10k
+kvanboden 39:12.6 
+kheath 49:45.8 
+distance 5k
+sscott 17:36 
+ssampere1 31:55.2 
+*Baldwinsville Turkey Trot
+date 12/6/2015 outside
+distance 5k
+jlawton 27:22 
+*St. Nick Shuffle
+date 11/28/2015 outside
+distance 5k
+kheath 23:05 
+*Ugly Sweater
+date 8/8/2015 informal
+distance 5k
+pmcguane 17:58 
+*muleskinner
+date 5/29/2015 outside
+distance 800m
+pmcguane 2:02.68 
+distance mile
+emosure 4:51.54 
+*section 3 championships
+date 11/26/2015 outside
+distance 10k
+emosure 42:32 
+*Cinncinati Thanksgiving Day race
+date 12/12/2015 outside
+distance 5k
+ebriggs 23:45 
+date 11/26/2015 outside
+distance 5k
+mpiscitelli 26:43 
+*Christopher Dailey, Saratoga
+date 1/10/2016 outside
+distance mile
+jhubisz 4:55.0 
+*FLRC indoor meet
+
+date 1/23/2016 outside
+distance mile
+sscott 4:54.55 
+jmora 5:03.76 
+*mrybinski 5:20.18
+triccardi 5:24.5 
+*ncoffey 5:41.5
+tperrone 5:43.98 
+*csteinbach 6:20.08
+*kekelly 6:31.31
+pford 6:47.2 
+*Hartshorne Masters Mile
+date 2/7/2016 outside
+distance 5k
+jniedzialek 17:20 
+jvandish 19:43 
+rmozo 20:11 
+kwheeler 23:06 
+drobbins 31:05 
+*Couch Potato
+date 1/29/2016 outside
+distance 5k
+kvanboden 19:48 
+*Freeze Out, B'ville
+date 2/21/2016 outside
+distance hmar
+jumartinez 80:00 
+jniedzialek 81:36 
+kwhite 1:30:09 
+mnicholson 1:29:03 
+theath 2:01:50 
+mpiscitelli 2:06:38 
+*Syracuse Half
+date 2/22/2016 outside
+distance 800m
+jhubisz 2:07.9 
+distance 1500m
+rbond 6:05.4 
+*FLTC Meet
+date 2/27/2016 outside
+distance 1500m
+sscott 4:27.56 
+distance 400m
+mdee 57.26 
+*USATF Adirondack, Utica
+date 3/20/2016 outside
+distance mile
+jmora 4:57.6 
+*Finger Lakes Meet
+date 4/2/2016 outside
+distance 5k
+ryanai 23:04 
+*Hagley Park, NZ
+

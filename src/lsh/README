@@ -1,0 +1,15 @@
+
+lsh: little shell
+
+This is mainly a demo monitor-based app. When I wrote monitor1.0 and monitor1.1
+they were designed to implement a lightly featured command processor that
+could be easily incorporated into a larger application in need of a command line
+interface. Unfortunately I wrote most of the code in nasm assembly language
+(in order to become more familiar with nasm.) This makes for interesting but
+highly non-portable code - exactly what I didn't want. Accordingly, I set out
+to rewrite all of the monitor in c.  
+
+See the README in the monitor1.3 directory (which should always be included
+in any application based on monitor) for further information.
+
+

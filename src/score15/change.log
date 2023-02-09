@@ -1,0 +1,32 @@
+Changes made during 1.4 -> 1.5
+
+Changed the function AgeGroupNo defined in runner.cpp to compute a
+runner's age on the date of a run rather than on May 15 in order to
+conform with a rules change. This means we have to look at points
+rather than times to determine a best run. 
+
+Numerous changes to allow for the "participation" event implemented
+in Fall 1996. Runners get one point for running in an XC event. No
+times, the run counts as official.
+- added instance variable int special and method void Addspecial(void)
+to class runner
+- implemented AddSpecial in runner.cpp
+- code in load case DISTANCED to handle special return value (-1) from
+parser
+- code in ParseResults to return rinfo.EventIndex = -1 upon a distance
+XC line in results, and to look only for a name field in the following
+list of participants.
+- In runner.cpp changed Printall to report whether runner had
+participated, and changed the runner class extract operator to put a
++ next to names of participating runners in scorall.
+
+We are going back to counting both 100m and 15k, so I commented out
+the code in the AddRun method of runner.cpp that handled this (in case
+it comes back.) 
+
+Changes made during 1.5 -> 1.6
+
+Made parsing of roster file much more failsafe: now if any fields are
+missing we ignore the line and go on.
+
+Extensively revamped gui.cc so it will work pretty well over any terminal.

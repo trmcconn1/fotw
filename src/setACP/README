@@ -1,0 +1,48 @@
+This directory contains source files for the online version of the Syracuse
+University Algebra Competency Test. Each file with the .pg extension defines
+a single problem and is to be used with the Webwork suite developed at the
+University of Rochester. 
+
+The .pg files are written in Perl using macros provided with Webwork. These
+macros assist in generating valid html as well as in generation of forms
+and answer evaluation. Together they form the basis of the "pg" (for problem
+generation) language.
+
+Files with .c extension are C source code files used to prove that multiple
+choice answers in certain questions are unique. Compile them with
+cc foo.c
+and run a.out. If all goes well the program will print "You win!"
+
+Design principles:
+
+1) We have tried to make the test as close in spirit to the original version
+as possible. This is important since the test serves as an advising instrument,
+and placement exam score ranges for various placement advice ought not to
+change.
+
+2) Each question is multiple choice. In most problems, the answers are permuted
+in the different versions in addition to the use of random "magic numbers."
+
+3) No two possible answers can be the same.
+
+4) The numbers appearing in the problem should not get too large. 
+
+5) The display format ought to conform to standard algebraic notation. In 
+particular, one must avoid -1,0, and 1 as coefficients or exponents. Also
+the construction +- should be avoided. 
+
+
+Reminders while creating new problems:
+
+1) Make sure to change the .def file before destroying and rebuilding the
+problem sets.
+
+2) Make sure to chown tmc.ACPTEST the new .pg file
+
+Author:
+
+Terry R. McConnell
+tmc@barnyard.syr.edu
+304B Carnegie
+Syracuse, N.Y. 13244-1150
+(315)443-1491

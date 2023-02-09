@@ -1,0 +1,52 @@
+
+Conventions for logic turing code
+
+The alphabet is B and |. B stands for a blank cell and | for a nonblank cell.
+The files implement basic machines for manipulating the tape contents
+and for calculating arithmetic functions. Arithmetic functions expect to
+find a B separated list of arguments on the tape, each argument being the
+representation of a whole number. We let |||...|, where there are n+1 |'s,
+represent n. The read head should be scanning beginning of the 
+leftmost argument when the machine starts.
+
+We call "subroutines" by putting the prepend directive in the calling
+routine. Thus,
+
+# some instruction enters foo0
+.prepend foo
+.include foo
+.prepend
+
+# some instruction matching foohalt
+
+In particular, all code that can be called from another file should halt
+in a state named "halt" and should start in state 0.
+
+In general, we only require that each machine demonstrate that the
+given arithmetic function is turing computable. Recall that this 
+means the machine is only required to halt with the answer somewhere on
+the tape, and everything else blank. It does not matter where the
+read head is located on the final tape. If the function is not defined for
+a given tape, the machine must either not halt, or it halts on a tape that
+is not of the required form. (We should document in each file what the 
+condition of the final tape is and where the read head ends up.)
+
+A machine STANDARD TURING COMPUTES an arithmetic function of n variables
+x1,x2,...,xn if
+
+(i) the final tape is B x1... B xn B Answer, i.e., the original arguments
+followed by the answer with blanks between.;
+
+(ii) there can be non-blank tape to the left of the initial B, but not
+to the right of the answer;
+
+(iii) the read head is scanning the left end of the answer; and
+
+(iv) nothing to the left of the initial B is ever scanned during the
+operation of the machine.
+
+It can be proved that any function that can be turing computed can also
+be standard turing computed.
+
+One could easily convert all of these into standard versions, but we have
+not done so.

@@ -1,0 +1,12 @@
+This is Terry McConnell's code base (mostly c code)
+
+misc has various things including standalone .c files. The other folders are
+more extended projects (some worthless, some ok). Most folders have their
+own makefile and readme. 
+
+For best results keep the original of this code base as a reporitory on
+github.com and clone for your various machines, but keep synced with the
+repository.
+
+expat, slirp, and mtwist were not written by me, so if you any code from
+them make sure to adhere to the copyright.

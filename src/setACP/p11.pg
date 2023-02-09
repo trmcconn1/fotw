@@ -1,0 +1,117 @@
+# Problem 11 of ACP test. All problems are multiple choice.
+# A problem on simplifying radicals. The students must 
+# simplify sqrt(ab^2x^ny^m)
+# where a and b are small natural numbers, and n and m are small odd
+# exponents with m at least 3.
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 11", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Generate the numbers that will be used in the problem:
+
+@as = (3,5,6,7,10);
+$i = random(0,4,1);
+$a = $as[$i];
+$b = random(2,5,1);
+$f = $b*$b;
+$c = $a*$b*$b;
+$d = random(1,3,1);
+$e = random(1,3,1);
+$g = 2*$e;
+$m = 2*$d+1;
+$n = 2*$e+1;
+$h = $d + 1;
+$k = $e + 1;
+
+# The expression to be simplified is sqrt(c x^m y^n)
+# The choices will be (first is correct)
+#
+# (a) by^e sqrt(ax^m y)
+# (b) b^2y^2e sqrt(ax^m y)
+# (c) (by^e)^2 sqrt(a x^m)
+# (d) bx^(d+1)y^(e+1) sqrt(a x y)
+
+# To see that these are unique note that only the last has different power
+# of x. Of the rest, only a) has b instead of b^2
+# outside. Finally, b is different from c in that it has a different power
+# of y.
+#
+
+# compute correct and incorrect answers to display (correct is first one)
+
+if($e == 1){  # handle unsightly exponent e = 1 
+@ans = ("${b}y\sqrt{${a}x^{$m}y}", 
+"${f}y^{$g}\sqrt{${a}x^{$m}y}",
+"(${b}y)^2\sqrt{${a}x^{$m}}",
+"${b}x^{$h}y^{$k}\sqrt{${a} x y}");
+}
+else {
+@ans = ("${b}y^{$e}\sqrt{${a}x^{$m}y}", 
+"${f}y^{$g}\sqrt{${a}x^{$m}y}",
+"(${b}y^{$e})^2\sqrt{${a}x^{$m}}",
+"${b}x^{$h}y^{$k}\sqrt{${a} x y}");
+}
+
+# get a permutation of 0-3 to shuffle display
+@picks = myshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+\( \sqrt{${c}x^{$m}y^{$n}} \) is equal to: 
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$PAR
+Enter your choice (A,B,C, or D.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

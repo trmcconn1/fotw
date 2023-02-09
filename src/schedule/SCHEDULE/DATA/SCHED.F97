@@ -1,0 +1,533 @@
+# This is the definition of the Fall 1996 schedule
+# It is a script for the schedule program command shell
+
+# This script assumes you have already loaded the f97 schedule data
+
+
+# Create a schedule
+schedule f97 "Fall 1996    Mathematics Department Schedule of Classes"
+#word course followed by number and a name is to signify course supervisor  
+#when no supervisor then start with the word class course is not necessary
+
+# The Basic Algebra Courses                           
+course "Balg" Masingila
+# MAT 111: Decelerated. Being phased out this semester
+ 
+class 111 TBA TBA TBA TBA
+subclass
+# 001 does mods 1 and 2 only
+class 001 C-114 Reynolds mwf11 Balg_Teacher 5
+refno 96531
+#002 does mods 2 and 3 only
+class UC1 P-309 Reynolds mw5 Balg_Teacher
+# UC2 is an off-budget tutor session run by UC
+comment "UC2 Peck 309 Ms.Reynolds MW 7:00-8:20p.m."
+subclass end
+
+assign "Algebra Coord" Dominguez BAlgCoord
+class 112 TBA TBA TBA TBA
+subclass
+class 001 C-222 Masingila mwf8 Balg_Teacher 35
+refno 05962
+class 002 C-220 O'Brien mwf11 Balg_Teacher  33
+refno 15962
+class 003 C-222 Hardin mwf12 Balg_Teacher   31
+refno 18725
+class 004 C-220 Chakrabarty mwf1 Balg_Teacher 26
+refno 35962
+class 005 C-114 Chakrabarty mwf3 Balg_Teacher 30
+refno 28725
+class 006 C-300 Santaguida mwf12 Balg_Teacher 33
+refno 84255
+class 007 C-222 Santaguida mwf1 Balg_Teacher  26
+refno 94255
+class 008 C-114 O'Brien mwf8 Balg_Teacher 30
+refno 18255
+class UC1 P-308 Hardin mw5 Balg_Teacher 10
+refno 74341
+subclass end
+
+# 113: accelerated version: being phased out this year.
+class  113 TBA TBA TBA TBA
+subclass  
+class 001 C-222 Waterhouse m11 Balg_Teacher 23
+refno 66673
+comment "             This is the last time 113 will be offered."
+subclass end
+
+
+# MAT 121: Statistics for the Liberal Arts I
+course 121 Diaz
+class 100 Heroy Diaz tth1 Lecturer 190
+refno 48725
+subclass
+class 101 C-100 Komali m8 Recit_2  27
+refno 58725
+class 102 C-100 Komali f8 Recit_2  25
+refno 68725
+class 103 C-100 Komali m9 Recit_2 25
+refno 78725
+class 104 C-100 Komali f9 Recit_2 26
+refno 88725
+class 105 C-100 Komali m11 Recit_2 25
+refno 98725
+class 106 C-100 Komali f11 Recit_2 27
+refno 09725
+class 107 C-100 Thiel  w10 Recit_2 19
+refno 17825
+class 108 C-100 Thiel w3 Recit_2 15
+refno 27855
+subclass end
+class 200 Heroy Lindberg mwf1 Lecturer 170
+refno 84845
+subclass
+class 201 C-100 Thiel t8 Recit_2 28 
+refno 94845
+class 202 C-100 Thiel th8 Recit_2 27
+refno 05845
+class 203 C-100 Schadler t10 Recit_1 29
+refno 15845
+class 204 C-100 Schadler th10 Recit_1 29
+refno 25845
+class 205 C-100 Thiel t11 Recit_2 29
+refno 35845
+class 206 C-100 Thiel th11 Recit_2 29
+refno 45845
+subclass end
+class UC1 C-100 Schadler mw5 Teacher 24
+refno 93825
+course end
+
+#MAT 122: Statistics for the Liberal Arts II
+course 122 Kim
+class 100 Heroy Kim tth2 Lecturer 64
+refno 55845
+subclass
+class 101 C-100 Hughes m12 Recit_2 14
+refno 65845
+class 102 C-100 Hughes f12 Recit_2 9
+refno 75845
+class 103 C-100 Hughes m1 Recit_2  12
+refno 85845
+class 104 C-100 Hughes f1 Recit_2 7
+refno 95845
+class 105 C-100 Hughes m3 Recit_2 15
+refno 06845
+class 106 C-100 Hughes f3 Recit_2 7
+refno 16845
+subclass end
+
+course 171 "Lardy"
+class 171 H-113 Nichifor mwf1 Teacher 39
+refno 37531
+comment "Only juniors and seniors may register for this course"
+course end
+
+course 172 "Lardy"
+class 172 C-300 Davidenko mwf3 Teacher 26
+refno 29531
+course end
+
+course 183 Lewin
+class 100 Heroy Lewin mwf8 Lecturer 145
+subclass
+class 101 C-114 Crosman t10 Recit_1 25
+refno 80072
+class 102 C-114 Crosman th10 Recit_1 25
+refno 90072
+class 103 C-114 Crosman t11 Recit_1 25
+refno 01072
+class 104 C-114 Reichart th11 Recit_1 25
+refno 11072
+class 105 C-114 Reichart t1 Recit_1 22
+refno 21072
+class 106 C-114 Reichart th1 Recit_1  22
+refno 31072
+subclass end
+class 200 Heroy Lewin mwf9 Lecturer  126
+refno 88320
+subclass
+class 201 C-219 Penner t10 Recit_1 20
+refno 61072
+class 202 C-219 Penner th10 Recit_1 23
+refno 71072
+class 203 C-300 Penner t1 Recit_1  22
+refno 81072
+class 204 C-300 Penner th1 Recit_1 22
+refno 91072
+class 205 C-208 Kreps t4 Recit_1 18
+refno 02072
+class 206 C-208 Kreps th4 Recit_1 22
+refno 12072
+subclass end
+class 300 Heroy Ucci tth8 Lecturer  75
+refno 68082
+subclass
+class 301 H-113 Wheeler m12 Recit_1 26
+refno 24782
+class 302 H-113 Wheeler w12 Recit_1 27
+refno 34782
+class 303 C-222 Wheeler f3 Recit_1  27
+refno 44782
+subclass end
+class UC1 C-219 ADecampo tth5 Teacher 12
+refno 00534
+assign "Calculator Ofc Hrs" Guo 183_Coord
+
+course 194 Doerr
+class 001 C-220 Doerr tth1 Teacher 22
+refno 61945
+class 002 C-313 Fatica tth11 Teacher 29
+refno 77531
+class 003 C-306 Herbstritt mwf12 Teacher 20
+refno 87531
+class 004 C-300 Fatica tth2 Teacher 27
+refno 97531
+class 005 C-219 Herbstritt mwf10 Teacher  23
+refno 08531
+class 006 C-313 Hardin mwf11 Teacher 28
+refno 78531
+class 007 C-311 Hsiang tth4 Teacher  24
+refno 08673
+class 008 C-311 Baruch mwf11 Teacher  26
+refno 90235
+class UC1 C-311 Hsiang tth5 Teacher 8
+refno 05341
+
+course 200 Masingila
+class 200 C-222 Nigam mw3 Teacher 29
+refno 90235
+
+course 221 Watkins
+class 001 C-313 Watkins mwf10 Teacher 23
+refno 93784
+class 002 C-219 Lau mwf11 Teacher 12
+refno 04784
+class 003 C-300 Lau mwf1 Teacher 11
+refno 14784
+class 004 C-313 KFerland tth2 Teacher 13
+refno 24784
+class 005 C-220 Galac mwf9 Teacher  58
+refno 34784
+class 006 C-313 Watkins mwf10 Special 13
+refno 67605
+# This section meets with section 001 
+class 007 C-306 Dudewicz tth2 Teacher 26
+refno 97605
+class 008 C-208 Galac mwf12 Teacher 47
+refno 87605
+class 009 C-316 Aluzzo tth4 Teacher 23
+refno 10825
+class 010 C-316 KFerland tth1 Teacher 12
+refno 20235
+class UC1 C-300 Nojaim tth5 Teacher 3 
+refno 10534
+
+course 222 Chen
+class 001 C-306 Chen tth1 Teacher 26
+refno 08695
+class 002 C-208 Javor tth2 Teacher 27
+refno 18605
+class 003 C-114 Ahmed mwf10 Teacher 29
+refno 28605
+
+course 284 Church
+class 100 Heroy Church tth11 Lecturer 50
+refno 50420
+subclass
+class 101 C-222 Jackson m9 Recit_1 25
+refno 23072
+class 102 C-222 Jackson w9 Recit_1 25
+refno 03534
+subclass end
+class 200 Heroy Kleiner mw4 Lecturer 37
+refno 50825
+subclass
+class 201 C-114 Hayden t4 Recit_1 23
+refno 60825
+class 202 C-114 Hayden th4 Recit_1 14
+refno 70825
+subclass end
+
+course 285 Graver
+attach 100 Heroy Graver f12 Plenary 136
+refno 90825
+attach 200 Heroy Graver f3 Plenary 61
+refno 01825
+class 001 C-222 Myers tth8 Teacher 28
+refno 53534
+class 002 C-222 Bailey tth10 Teacher 25
+refno 63534
+class 003 C-222 Bailey tth11 Teacher 28
+refno 73534
+class 004 C-222 Myers tth1 Teacher 26
+refno 83534
+class 005 C-222 Murray tth2 Teacher 25
+refno 93534
+class 006 C-222 Murray tth4 Teacher 26
+refno 14534
+class 007 C-220 Manns tth11 Teacher 22
+refno 65384
+class 008 C-208 Manns tth1 Teacher 17
+refno 01394
+course end
+
+course 286 Griffin
+class 001 C-114 Luca mwf1 Teacher 14
+refno 76845
+class 003 C-300 Tripp tth11 Teacher 19
+refno 58605
+class 004 C-306 Griffin mwf9 Teacher 19
+refno 11825
+
+course 295 Poletsky
+class 001 C-306 Anderson mwf11 Teacher 17
+refno 71360
+subclass
+class " " C-219 Anderson t4 Special   
+refno " "
+comment "         section 001 is the honors section"
+subclass end
+class 002 C-311 Barth mwf9 Teacher 19
+refno 49060
+subclass
+class " "  C-222 Buchanan w10 Recit_1
+refno " "
+subclass end
+class 003 C-311 Barth mwf1 Teacher  22
+refno 38420
+subclass
+class " " C-306 Tran w3 Recit_1
+refno " "
+subclass end
+class 004 C-313 McConnell mwf3 Teacher 18
+refno 68420
+subclass
+class " " C-219 Tran w4 Recit_1
+refno " "
+subclass end
+class 005 C-300 McConnell mwf10 Teacher 17
+refno 78420
+subclass
+class " " C-219 Buchanan w8 Recit_1
+refno " "
+subclass end
+class 006 C-316 Lardy mwf3 Teacher 17
+refno 88420
+subclass
+class " " C-219 Tran f8 Recit_1
+refno " "
+subclass end
+class 007 C-316 Qazi mwf11 Teacher  23
+refno 04350
+subclass
+class " " C-219 Achmann t8 Recit_1
+refno " "
+subclass end
+class 008 C-300 Duah-Agyeman mwf9 Teacher 19
+refno 65492
+subclass 
+class " " C-222 Buchanan f10 Recit_1
+refno " "
+subclass end
+class 012 C-114 EFerland mwf12 Teacher 22
+refno 07845
+subclass
+class " " C-306 Buchanan f8 Recit_1
+refno " "
+subclass end
+class 013 C-300 EFerland mwf11 Teacher 22
+refno 17845
+subclass
+class " " C-208 Hardikar t10 Recit_1
+refno " "
+subclass end
+class 014 C-208 Qazi mwf10 Teacher     17
+refno 27845
+subclass
+class " " C-114 Bell th2 Recit_1
+refno " "
+subclass end
+class 100 Heroy Poletsky mwf11 Lecturer 122
+refno 14415
+subclass
+class 101 C-306 Bell t11 Recit_1 24
+refno 07415
+class 102 C-306 Achmann th11 Recit_1 23
+refno 17415
+class 103 P-233 Bell w3 Recit_1 20
+refno 27415
+class 104 C-114 Bell w4 Recit_1 15
+refno 37415
+class 105 C-208 Hardikar t11 Recit_1 22
+refno 47415
+class 106 C-208 Hardikar th11 Recit_1 18
+refno 57415
+subclass end
+class UC1 TBA Uva mw5 Teacher 13
+refno 48240
+assign "Clinic_Coord" Guo Clinic_Coord
+
+course 296 Lewis
+class 001 C-208 Howes mwf8 Teacher 26
+refno 33050
+subclass
+class " " C-316 Streltchenko m1 Recit_1
+refno " "
+subclass end
+class 002 C-208 Howes mwf9 Teacher 28
+refno 60520
+subclass
+class " " C-316 Streltchenko w1 Recit_1
+refno " "
+subclass end
+class 003 C-208 Lewis mwf11 Teacher 27
+refno 70520
+subclass
+class " " C-316 Sachs w9 Recit_1
+refno " "
+subclass end
+class 004 C-313 Lewis mwf1 Teacher 25
+refno 61825
+subclass 
+class " " C-316 Sachs f9 Recit_1
+refno " "
+subclass end
+class 006 C-219 Tyler tth1 Teacher  24
+refno 21520
+subclass
+class " " C-316 Peterson t11 Recit_1
+refno " "
+subclass end
+class 007 C-219 Tyler tth2 Teacher  23
+refno 54534
+subclass
+class " " C-316 Peterson th11 Recit_1
+refno " "
+subclass end
+class 008 C-300 Iwaniec tth10 Teacher 23
+refno 77845
+subclass
+class " " C-219 Streltchenko m4 Recit_1
+refno " "
+subclass end
+assign "Clinic Director" Peterson Clinic_Coord
+
+course 331 Deleanu
+class 001 C-313 Deleanu tth1 Teacher 35
+refno 54235
+class 003 C-313 Troutman mwf12 Teacher 31
+refno 97845
+
+course 397 Quinn
+class 001 C-311 Pfaff mwf8 Teacher 30
+refno 24350
+class 002 C-219 Banerjee mwf3 Teacher 32
+refno 92520
+class 003 C-311 Quinn tth11 Teacher 11
+comment "               section 003 is the honors section"
+refno 03520
+class 004 C-306 Cargo mwf4 Teacher 27
+refno 13520
+class 005 C-306 Vogel tth10 Teacher 33
+refno 23520
+class 006 C-219 Pfaff mwf12 Teacher 33
+refno 43520
+class 007 C-219 Banerjee mwf1 Teacher 34
+refno 46335
+
+course 398 Cox
+class 001 C-316 Cox mwf10 Teacher 32
+refno 97050
+class 002 C-219 Luca mwf9 Teacher 21
+refno 25520
+class 003 C-219 Boelkins tth11 Teacher 32
+refno 51945
+
+course 485 Lutoborski
+class 010 C-313 Verchota mwf8 Lecturer 39
+refno 64534
+class 011 C-313 Deleanu tth5 Lecturer 34
+refno 80455
+class UC1 C-306 Lutoborski tth5 Lecturer 17
+refno 98554
+course end
+
+class 511 C-311 Verchota mwf10 Lecturer 8
+refno 86554
+class 512 C-316 Lindberg mw4 Lecturer 8
+refno 23864
+class 514 C-311 Quinn tth8 Lecturer 35
+refno 08520
+class 518 C-311 Troutman mwf3 Lecturer 6
+refno 12104
+
+course 521 TBA
+class 001 C-313 Kim tth10 Lecturer 46
+refno 68520
+class 002 C-313 Watkins mwf9 Lecturer 39
+refno 81825
+course end
+
+class 525 C-306 Dudewicz tth4 Lecturer  8
+refno 88520
+class 531 C-311 Ucci tth10 Lecturer 9
+refno 09520
+class 541 C-306 Cargo mwf1 Lecturer  7
+refno 32104
+class 545 P-233 Graver tth2 Lecturer 9
+refno 98605
+class 605 C-306 Vogel tth8 Lecturer 9
+refno 22620
+class 625 P-233 Chen tth10 Lecturer 14
+refno 35191
+class 635 H-113 Kleiner mw3 Lecturer 11
+refno 52620
+class 661 C-311 Church tth2 Lecturer  7
+refno 76234
+class 683 C-311 Lutoborski tth1 Lecturer 16
+refno 18845
+class 706 C-306 Griffin mwf10 Lecturer 11
+refno 64912
+class 721 C-312 Cox mwf9 Lecturer 3
+refno 17654
+class 735 C-312 Lewin mwf12 Lecturer 4
+refno 39333
+class 738 C-312 Diaz tth10 Lecturer  3
+refno 38845
+class 808 C-312 Poletsky mwf10 Lecturer  5
+refno 48845
+class 817 C-312 Iwaniec tth1 Lecturer 4
+refno 58845
+class end
+
+#The following are a list of reservations such as review, seminar, and outside usage
+#these are all weekly (for the semester).
+
+course 999 TBA
+class 991 C-100 Doerr w3 Review 
+class 992 C-312 Church m11 Seminar
+class 993 C-114 Nobody mwf9 Non-math
+class end
+course end
+
+
+# Department Assignments (i.e., not attached to a course )
+
+assign "HEOP Tutor" Dashinsky Heop_Tutor
+assign "System Administrator" Hu Sysadmin
+assign "15 hours: grading" Ma Grader_1
+comment "      485-Verchota 5 hours, 511-Verchota 3 hours, 531-Ucci 5 hours"
+assign "15 hours: grading" Cao Grader_1
+comment "      183-Lewin 2 hours, 521-kim 8 hours, 525-Dudewicz 5 hours"
+assign "10 hours: grading" Xu Grader_2
+comment "      221-all 5 hours, 521-Watkins 5 hours, assist JL at exams"
+
+
+
+# end of schedule
+
+# This turns prompting back on
+end ECHO ON
+
+

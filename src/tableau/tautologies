@@ -1,0 +1,10 @@
+# Tautology examples
+
+~ ~ A  <-> A
+A AND ( A -> B ) -> B
+( ~ A AND ~ B ) <-> ~ ( A OR B ) 
+~ ( A AND B ) <-> ( ~ A OR ~ B )
+~ ( P -> Q ) <-> ( P AND ~ Q )
+P -> (  ~ P -> Q )
+( P -> Q ) -> ( ( Q -> R ) -> ( P -> R ) )
+( P -> Q ) ^ ( Q -> P ) <-> ( P <-> Q )

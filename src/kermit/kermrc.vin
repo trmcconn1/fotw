@@ -1,0 +1,52 @@
+set dial speed-matching off
+set modem hayes
+set file type bin
+set file bytesize 8
+set file name lit
+set file display fullscreen
+set buffers 280000 280000
+set receive packet 9000
+set send packet 1000
+set control unprefixed all
+set control prefixed 0 1 3 13 141
+set terminal bytesize 8
+set terminal apc on
+set command bytesize 8
+set carrier off
+set window 31
+set prompt \27[32m[\27[0m\v(dir)\27[32m] CK-Linux>\27[0m 
+
+define cua2 set port /dev/cua2, set speed 57600, set flow rts/cts,-
+  echo /dev/cua2 is active.
+
+define cua0 set port /dev/cua0, set speed 38400, set flow rts/cts,-
+  echo /dev/cua0 is active.
+
+define cls echo \27[2J\27[0;0H
+
+define dial output atdt\%1\13,-
+    echo Please wait...,-
+    input 60 \10,-
+    input 60 \10,-
+    if failure end 1,-
+    reinput 0 CONNECT,-
+    if success end 0,-
+    reinput 0 CARRIER,-
+    if failure end 1,-
+    end 0
+
+define s2dial cua2, take \$(HOME)/Comm/sudial
+define s0dial cua0, take \$(HOME)/Comm/sudial
+
+define tn set flow none,-
+    set net tcp,-
+    set control prefix 13 141 255,-
+    set send pack 2000,-
+    set rec pack 2000,-
+    set host \%1,-
+    set window 10,-
+    input 30 login:,-
+    output vefatica\13,-
+    input 30 Password:,-
+    output password\13,-
+    connect

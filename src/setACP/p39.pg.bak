@@ -1,0 +1,135 @@
+##################################################################
+##########Date:: 11-7-103, 15:56:12################
+
+
+# Problem 39 of ACP test. 
+#
+# Definite integral
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 39", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Returns a permutation of 0-4 as a list. Many problems on the second half
+# of the ACP test have 5 choices.
+
+sub mybigshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	my $d = random(0,4,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+
+	if( $d == 0 ){ return ( 4, $a,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 1 ){ return ( $a, 4,  $b, $c, 6 - $a - $b - $c); }
+	if( $d == 2 ){ return ( $a, $b, 4,  $c, 6 - $a - $b - $c); }
+	if( $d == 3 ){ return ( $a, $b, $c, 4,  6 - $a - $b - $c); }
+	if( $d == 4 ){ return ( $a, $b, $c, 6 - $a - $b - $c,  4); }
+
+}
+
+# We ask for the integral from a to b of 2x^2 + dx + c. It is important
+# that both b-a and b^3-a^3 not be divisible by 3 so that the fractions
+# will be in lowest terms. Also, d should be even and e odd. Uniqueness
+# must be checked by running unique39.c
+@as = (0,-1,-1,0,-2);
+@bs = (1,0,1,2,2);
+$i = random(0,4,1);
+$a = $as[$i];
+$b = $bs[$i]; #NB: same index for b and a.
+@ds = (-2,4); # must be even
+$i = random(0,1,1);
+$d = $ds[$i];
+@es = (1,7);  # must be odd
+$i = random(0,1,1);
+$e = $es[$i];
+$dabs = abs $d;
+if($d < 0){$dsign = "-"; }
+else {$dsign = "+";}
+
+$numc = 2*($b**3 - $a**3) + 3*$d*($b**2-$a**2)/2 + 3*($b-$a); # correct answer
+                                                              # numerator
+
+$numi = 2*($b-$a)**3 + 3*$d*($b-$a)**2/2 + 3*($b-$a);     #incorrect numerator
+
+# other incorrect answers:
+$inc1 = 4*($b-$a)+$d;  #even
+$inc2 = 2*($b**2-$a**2)+$e;  #odd
+$inc3 = ($b**3-$a**3)+$d*($b**2-$a**2)+$e*($b-$a);
+
+# Correct and incorrect answers to display. Correct is the first one:
+@ans = ("\frac{$numc}{3}", "\frac{$numi}{3}","$inc1",
+"$inc2","$inc3"); # typesetting the last 3 (integers) is wasteful
+ 
+
+
+# get a permutation of 0-3 to shuffle display
+@picks = mybigshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+$ansE = $ans[$picks[4]]; 
+
+
+# display problem
+
+BEGIN_TEXT
+\( \int_{$a}^{$b} 2x^2 $dsign $dabs x + $e = \)
+$PAR
+A) \( $ansA \)
+$BR
+B) \( $ansB \)
+$BR
+C) \( $ansC \)
+$BR
+D) \( $ansD \)
+$BR
+E) \( $ansE \)
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+$letter = "E" if $picks[4] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

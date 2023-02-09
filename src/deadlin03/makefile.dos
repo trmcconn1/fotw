@@ -1,0 +1,28 @@
+#########################################################################
+#   Deadlin makefile for MSDOS                                          #
+#   Included for completeness -- its kind of silly to make an edlin     #
+#   clone for DOS!                                                      #
+#                                                                       #
+#   This works with Borland Turbo C 4.5                                 #
+#   By Terry R. McConnell                                               #
+#########################################################################
+CC = bcc
+CFLAGS = -D_MSDOS -mc -O1
+LIBS = CC.LIB
+########################################################################
+######### Microsoft C ##################################################
+#CC = cl
+#CFLAGS = -D_MSDOS -D_MICROSOFT_C
+#LIBS =
+########################################################################
+OBJECTS =  main.obj dos.obj readline.obj parse.obj
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+deadlin: $(OBJECTS)
+        TLINK C0C.obj $(OBJECTS), DEADLIN,, $(LIBS),, 
+   
+
+clean:
+        del *.obj
+

@@ -1,0 +1,429 @@
+                    Monitor 1.2, by Terry R. McConnell
+
+Contents
+----------
+1. Introduction
+2. Command Details
+3. Script Flow Keywords
+4. External Command API
+5. Scripting API
+6. Command Line Processing
+7. Building the Package
+
+----------------------------------------------------------------------------
+
+1. Introduction
+
+Monitor is a very minimally featured command processor written in nasm 
+assembly language. It presents the user with a prompt on the terminal and
+then interprets what the user types as a command, together with arguments. 
+Commands are of three types: internal commands, which are built into monitor
+itself, external commands, which may be implemented by the user in a file
+named external.c, and scripts, which are commands that can be created on
+the fly. (Scripts are really just environment variables whose values can
+be interpreted as lists of monitor commands.)  
+
+Monitor is intended to provide a generic command line user interface for 
+larger applications, although it can be built to run on its own. 
+The commands provided by the user in external.c give access to features of
+the target application.  
+
+To incorporate monitor in an application use the monitor's main.c
+program as a starting point. Edit it appropriately for the needs of the 
+application (help strings, option processing, command line processing ...),
+and do not change the part that launches the monitor (clearly marked in
+the source of main.c). 
+
+The internal.c file has examples that show how to add "external" commands
+that invoke routines in the application. Add the files main.c, monitor.asm,
+internal.asm, macros.asm, external.c and lib.asm to the source modules for the 
+target application. (These source files would most likely implement
+routines called from external.c.) Then create and edit a suitable make file.
+(The one for monitor itself could be adapted.) Also see section 4 below.
+
+The usage information for monitor built to run as an application is:
+
+Shell> monitor -h
+
+monitor [-v -h -e -q] [file]
+command monitor with startup file
+-v: print version number and exit
+-h: print this helpful information and exit
+-e: include OS environment in program environment
+-q: quiet(er) operation
+
+The optional (rc) file is a list of monitor commands that are processed at
+startup. (This feature is not available in the standalone version.) An example
+an rc file is provided with the source. 
+
+When monitor starts it stores its command line arguments as internal
+environment variables $0, $1, ... $9 so they are available to the user. The
+startup file may want to store these variables under more permanent names
+since these positional parameter environment variables may be overwritten
+when a script is invoked.
+
+The monitor routine returns a value in the ecx register when it exits. 
+
+In its bare form, Monitor has only 9 internal commands: set, help, echo, shift, 
+status, read, exit, exec and cd. In addition, two external commands, info, 
+and save, are provided in the generic external.c. Monitor breaks user input
+into words separated by whitespace (space or tab characters.) The newline
+character initiates a read of user input and thus provides the command
+separator. This assumes the user's terminal is set to behave like
+ the unix terminal in canonical mode. (The special meaning of whitespace
+and newline can be cancelled using an escape character. See the section
+on processing of command line arguments below for more details.) 
+
+If the first word on a line matches the name of an internal or external command,
+or of a script then that command is run with the remaining words of the line as
+arguments. Otherwise, a helpful message is printed and the prompt returns.
+
+The dosmon directory contains a port of the monitor to 16 bit dos. See the
+readme in that directory for more information. The dosmon directory has
+a subdirectory called bootmon that contains an implementation of a boot
+monitor form of the monitor. It includes suitable boot blocks for booting
+the boot monitor from a floppy or hard drive, as well as a program for
+installing the boot blocks and the monitor on either a floppy drive, a
+hard drive partition, or in the hidden sectors of a hard drive. 
+
+Built as a .exe, the DOS version should be functionally the same as the
+linux version, except that the default escape character is ^ rather than \
+to ease references to paths. (To change this, edit the macros.asm file).
+
+At present, the exec command does not work when monitor is built as
+bootmon.com. (This is because DOS gives a .com all available memory and
+there is none left to launch a child program. A monitor.com would have
+to do some more sophisticated memory management in order to fix this 
+problem.)
+
+------------------------------------------------------------------------------
+
+2. Command Details
+
+-----------------------------
+set - manage the environment
+-----------------------------
+
+Usage: set [FOO] [BAR]
+
+With no arguments set lists all current environment strings. (At startup, 
+monitor makes its own copy of all environment strings provided by the OS.)  
+With one argument, set searches for an environment string
+of the form FOO=BAR amd removes it from the environment, if found. 
+
+With two arguments, set creates a new environment string FOO=BAR if there is
+no current FOO= environment string, otherwise it replaces that string with
+FOO=BAR.
+
+Monitor cannot change the OS environment, only its own copy of it.  
+
+-------------------------------------------------
+help - give information about available commands
+-------------------------------------------------
+
+Usage: help [name]
+
+With no arguments, help lists the names of all available commands, internal and
+external, and scripts. 
+
+With one argument, help gives usage information and a description of what the
+named command does. (These are to be provided in external.c for external
+commands. For scripts, the entire text of the script is printed.)  
+
+---------------------------------------------------
+exec - ask the OS to execute a file (unix only)
+---------------------------------------------------
+
+Usage: exec file [args ...]
+
+Run the program in the named file with any given args as its commmand line.
+The monitor program waits until the program exits and then continues. 
+
+For example, if $SHELL is set to /bin/sh in the current environment,
+the command
+
+exec $SHELL
+
+will present the user with the prompt of the system shell (usually $). Upon
+exit from the shell, the monitor prompt returns. 
+
+----------------------------------------------------
+cd - change the working directory
+----------------------------------------------------
+
+Usage: cd dir_name
+
+As unix to change the working directory for the monitor program. dir_name
+can be a folder name in the current working directory, an absolute path name
+for a directory, or a relative path name for a directory
+
+----------------------------------------------------
+status - give information about program memory usage
+----------------------------------------------------
+
+Usage: status    (Status takes no arguments.)
+
+What status actually does will probably change with program versions and not
+be described here. It is mainly of debugging interest.
+
+------------------------------------
+echo - print a message on the screen
+------------------------------------
+
+Usage: echo [stuff ...]
+
+Echo prints all of its arguments to the terminal, followed by a newline 
+character. Unless extra space characters are imbedded in arguments using the
+escape character the line printed will be single spaced. 
+
+-----------------------
+shift - reparse command 
+-----------------------
+
+Usage: shift [args ...]
+
+Shift attempts to run the command line that results when args are 
+processed by escaping and variable substitution. Thus, for example
+
+Monitor>shift help $CMD 
+
+would execute help shift if CMD=shift is currently in the environment. This
+allows for some exotic scripting possibilities. 
+
+------------------------------------
+read - get a line of input from user
+------------------------------------
+
+Usage: read name  
+
+Read prints a message on the terminal that prompts the user to provide a 
+line of input. The entire content of that lane, less the newline at the end,
+is stored as the value of an environment variable having the given name. (The
+variable is created if it does not already exist, otherwise its value is
+changed.) 
+
+--------------------------------------------------
+info - print information about the Monitor program
+--------------------------------------------------
+
+Usage: info
+
+Prints a line of information about me and the program.
+
+---------------------------------------------------
+save - save program state (= environment) in a file
+---------------------------------------------------
+
+Usage: save file
+
+Writes monitor commands needed to recreate the current environment to the
+named file. If this file were used as startup file, then monitor would start
+up with the same environment it had when the save command was given. This
+would be useful, for example, when experimenting with new script definitions.
+
+-----------------------------------
+exit - immediately exit the program 
+-----------------------------------
+
+Usage: exit [n]
+
+Exit does exactly what it says. Return the value 0, (or n, if given) to the
+program that called monitor. (From the command line another way to exit is to
+enter EOF - usually ^D. When reading from a script, EOF returns command to the
+command line.) When the monitor is exited by ^D then 1 is returned to the
+calling program.
+
+-----------------------------------------------------------------------------
+
+3. Script Flow Keywords
+
+Two additional command names are reserved as flow control keywords: if, and
+goto. These are only recognized when input to monitor is not from the 
+terminal, i.e., they are only useful in scripts. Together, they provide 
+the minimal scripting capability needed to implement basic interactive menus.
+(See the example provided in the generic startup script, monitor.rc.)
+
+------------------------------------
+if - conditionally execute a command
+------------------------------------
+
+Usage:  if foo bar name [args ...]
+
+If foo=bar is in the environment, then name is run with any arguments provided. 
+Otherwise the line has no effect.
+
+Trick: if foo $foo name [args ...] will run name [args ...] if and only
+if the variable foo is set to some value in the environment
+
+------------------------------------------------
+goto - branch to a label somewhere in the script
+------------------------------------------------
+
+Usage: goto label
+
+Control is passed to the first occurrence of :label, when it occurs at
+the beginning of a line. If there is no such occurrence in the script, then
+the line has no effect. (Labels are ignored, other than serving as targets
+for goto statements. Indeed, everything that might follow the label on a 
+goto line is treated as a comment. Backwards jumps are allowed.)  
+
+------------------------------------------------------------------------------
+
+4. External Command API
+
+The entry points of external commands are called by monitor the same way main
+is called by the C runtime. If the user provides an external command
+named do_it, its prototype in external.c must be
+
+int do_it(int argc, char **argv, char **envp)
+
+If the user then types at the monitor prompt
+
+Monitor> do_it A B C
+
+then monitor calls do_it with argc = 4, argv equal to an array of 4 pointers
+to the strings "do_it", "A", "B", "C", and envp equal to a pointer to an array
+of pointers to the monitor environment strings. 
+
+At present, Monitor doesn't do anything with the return value. 
+
+-------------------------------------------------------------------------------
+
+5. Scripting API
+
+Scripts are just values of environment variables that can be run by giving the
+name of the environment variable on the monitor command line. Thus, for
+example:
+
+Monitor> set foo echo\ boo\ hoo\ hoo
+
+will create the environment string foo=echo boo hoo hoo
+
+Then:
+
+Monitor> foo
+boo hoo hoo
+
+The set command expects at most two arguments, and thus all whitespace must
+be escaped when a script is defined. Scripts can be defined over multiple lines
+by escaping the newline at the end of each line. Indeed, it is good monitor
+form to begin every script with a comment. Thus,
+
+Monitor> set foo \#\ foo:\ wail\ a\ little\
+echo\ boo\ hoo\ hoo
+
+will create the environment string foo=# foo: wail a little
+echo boo hoo hoo
+
+Running foo has the same effect as before, but the comment provides 
+documentation through the help command. More importantly, help recognizes 
+an environment variable as being a script by whether or not the value begins
+with #. The second version of sript foo would be listed by the help command,
+while the first version would not. 
+
+Monitor assumes that any enviroment variable name typed at the prompt is the
+name of a script, and it will attempt to run the value of the variable, 
+regardless of its contents. Thus, one should avoid typing names of environment
+variables that are not scripts at the prompt. 
+
+Scripts can access their own name and up to 9 additional command line 
+arguments as the values of the environment variables $0 $1 ... $9. These
+variables remain set after the script exits unless the script uses the
+set command to remove them on its own. BUG: at present a script has no way to
+determine how many arguments were on its command line.  
+
+---------------------------------------------------------------------------- 
+
+6. Command Line Processing
+
+Lines which begin with # are treated as comments and ignored. Content after
+a # which is not escaped is ignored until the end of the line.
+
+The part of the command line that follows the command name is subject to 
+processing that allows for substitution of values of environment strings. Any
+string of non-whitespace characters that begins with $ is replaced by the
+value of the corresponding environment variable, or by nothing if there is
+no such environment variable. Thus, for example
+
+Monitor>echo $FOO
+
+produces the output BAR if FOO=BAR is in the environment. 
+
+The \ character removes any special meaning of any character that follows it.
+Thus
+
+Monitor>echo $FOO is \$FOO and \\$BAR
+
+produces the output: BAR is $FOO and \
+
+assuming BAR is not set in the environment. Whitespace (i.e., any ascii
+character whose code is 0x20 or less) separates arguments on command lines, but
+an escaped whitespace character is incorporated as part of an argument. 
+
+The newline character at the end of line can also be escaped. This incorporates
+the newline character into the current command line argument. The cursor
+moves to the next line and monitor waits for further user input, which is
+treated as if there had been no newline.
+Thus,
+
+Monitor> set FOO BAR\
+FLY
+
+will cause environment variable FOO to have the value BAR^JFLY.   
+
+If the escape character preceeds a character that has no special meaning to
+monitor, it is simply ignored. (Though \\ will introduce a \ into the 
+current argument that does not change the meaning of the character that follows
+it.) 
+
+One should be aware that terminal settings may affect what input is actually
+transmitted to monitor.  For example, for the Unix terminal in canonical mode,
+the sequence ^V^J will insert the newline character (^J) on a line without
+completing a read of the terminal. (^V may have to be changed here to the LNEXT 
+character if is has been changed from its default value.) On such systems,
+this provides a second way to continue a line of input.  
+
+To keep things simple, monitor lacks the capability to escape groups of 
+characters at once. Thus, it does not at present use characters like " and '
+for quoting, as does the Unix Bourne shell. 
+
+-----------------------------------------------------------------------------
+
+7. Building the Package
+
+Edit the Makefile for your system and say make all. If all goes well, that
+will create an executable named monitor, which can then be moved whereever
+the user wants. As it stands, the assembly language used in all .a extension
+files is compatible with nasm, the Netwide Assembler, running on a 32 bit intel
+platform. If you have nasm installed on a typical 2012-ish Linux system it 
+may well build out of the box. The executable is 32 bit elf format. 
+
+On 64 bit boxes you have to use a special compiler flag to build 32 bit
+code. (Or adapt the source code to 64 bit!)
+
+Hopefully, the source code is well enough documented to allow easy ports
+to other systems, assemblers, and executable formats. Most Linux system calls
+are isolated in macros in the file macros.a, so any port to a different OS 
+would require suitable versions of those macros. 
+
+As it stands, monitor can be built in one of two configurations. make monitor,
+or make all will build the version of monitor described so far. The other
+option is to say make standalone. This will produce a version that should
+operate exactly the same, only without any external commands. The difference
+is that standalone is not linked against the standard C-library (as is the 
+normal version) and does use the C start up mechanism. Accordingly, it has
+no main routine. The entry point is simply the label monitor:
+
+External commands could be implemented in assembler. To indicate this 
+possiblility, the standalone build assembles a file called _external.a, but
+this files does nothing. At present, the standalone version does not allow
+for a start up script on the command line.
+
+To build the DOS version, change to the dosmon directory, edit the makefile
+there if needed, and say make all.  
+
+----------------------------------------------------------------------------
+Terry R. McConnell
+trmcconn@syr.edu
+http://barnyard.syr.edu/~mcconnel
+

@@ -1,0 +1,37 @@
+				Queen 1.0
+			   By Terry R. McConnell
+
+
+Queen is a suite of command line programs for doing number theoretic
+calculations. The name is of course inspired by the old saw that mathematics
+is the queen of science and number theory is the queen of mathematics.
+Writing these programs is a learning exercise: at present the package is
+small and not very sophisticated, but hopefully both of those shortcomings
+will go away over time. 
+
+All programs respond to command line options -h, which prints usage information,
+and -v, which prints the verion number. Hopefully this makes them self
+documenting.
+
+Following is a list of programs currently in the package and what they do:
+
+eratosthenes: list primes numbers using the eponymous sieve.
+euclid:       find lcd and related things.
+factor:       factor integers.
+farey:        generate farey sequences.
+happy:        identify "happy" numbers.
+linear:       solve linear congruences.
+quadratic:    solve quadratic congruences.
+totient:      calculate the Euler phi function.
+
+To build the package on a Unix compatible system say make all at the
+command line while in the current directory. If all goes well that should
+do it. If all does not go well you're on your own.
+
+Enjoy.
+
+Terry R. McConnell
+2458 Swift Road
+Lafayette, NY 13084
+trmcconn@syr.edu
+http://barnyard.syr.edu

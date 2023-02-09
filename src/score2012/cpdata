@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# refresh data files from the ones in the web directory
+WD="$HOME/public_html"
+
+RESULTS_ORIG="$WD/results.asc"
+ROSTER_ORIG="$WD/roster.asc"
+RESULTS_NEW="results/results_16.txt"
+ROSTER_NEW="rosters/roster_16.txt"
+
+echo converting $RESULTS_ORIG to $RESULTS_NEW
+sed -e 's/=.*//' $RESULTS_ORIG | dos2unix > $RESULTS_NEW
+
+echo converting $ROSTER_ORIG to $ROSTER_NEW
+dos2unix < $ROSTER_ORIG > $ROSTER_NEW
+
+echo done
+
+
+exit 0
+
+

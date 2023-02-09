@@ -1,0 +1,104 @@
+<HTML>
+<HEAD>
+<TITLE> Explanation and Examples
+</TITLE>
+</HEAD>
+<BODY BGCOLOR=cyan>
+<H2> Square Root and Cube Root Procedures </H2>
+<HR>
+<H3> Square Roots </H3>
+<P>
+The square root of a positive number may be extracted by hand using the 
+following procedure:
+<P>
+<OL TYPE=1>
+<LI> Group the digits to the left of the decimal in pairs with possibly a
+first incomplete pair.
+<LI> Similarly pair digits to the right of the decimal point. Complete any
+last incomplete pair with a zero.
+<LI> Append additional zero pairs so that the total number of pairs is
+equal to the desired number of digits in the answer.
+<LI> Estimate the (1 digit) square root of the leftmost pair. This is the
+first digit of the result.
+<LI> Form the first <strong> partial.</strong> (The partials are listed along
+the left margin in the example below.)
+<LI> Double the answer digits obtained so far: these are the most significant
+digits of the the next partial. The least significant digit is obtained by
+estimation. (It is shown with an underscore.)
+<LI> The estimated digit is the largest such that its product with the
+completed partial is less than or equal to the current radicand.
+<LI> The largest such product is the next subtrahend. It is written underneath
+the current radicand.
+<LI> Subtracting the subtrahend produces the next radicand.
+<LI> Repeat until the desired number of digits are generated.
+</OL>
+<P>
+<H3> Example </H3>
+<P>
+<PRE>
+            1. 4  1
+           ___________________________
+          /
+       \/   2.00 00   <------------- radicand
+     1       
+     _      1
+            -------
+	    1 00      <------------- next radicand
+    24        96      <------------- subtrahend      
+     -      ____
+	       4 00
+   281         2 81
+     -  
+            -------
+    ^
+    |
+ Partials (Estimated digit is underscored)
+</PRE>
+<P>
+<H3>Cube Roots </H3>
+<P>
+One begins by grouping the radicand digits to the left of the decimal
+point in threes (with the most significant digits possibly forming a partial
+group of 1 or 2.) The mechanics are similar in outline to those of
+the square root algorithm (see above) except for the formation of
+the partials. Each (total) partial is the sum of a major and a minor partial.
+The major is gotten by multiplying the <STRONG> square </STRONG> of the current result digits
+by 300.  The minor partial is the product of
+the next result digit and the minor factor. The minor factor is gotten by
+multiplying the current result digits by 30, where the trailing zero is to
+be replaced by the next result digit. Finally, the next result digit is
+the largest possible digit such that its product with the resulting total
+partial will not exceed the current radicand.
+<P>
+<PRE>
+             2.  1   5   4
+           ___________________________
+        3 /
+       \/   10.000 000   <------------- radicand
+             8
+	    ----------
+       	     2 000       <------------- second radicand
+ 1200 
+  (61) 
+    -
+   61
+   --
+ 1261        1 261       <------------ subtrahend
+            ------
+ 132300        739 000
+   (635)
+      -                 ( Underscores denote digits filled in after
+   3175                    estimation. )
+   ----
+ 135500        677 500 
+               -------
+ 13867500               <-------------- major partial
+    (6454)              <-------------- (minor factor)
+        -
+    25816               <-------------- minor partial
+    -----
+ 13893370               <-------------- total partial
+
+</PRE>
+</BODY>
+</HTML>

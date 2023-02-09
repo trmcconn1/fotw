@@ -1,0 +1,100 @@
+# Problem 33 of ACP test. 
+#
+# Identifying a conic from the equation
+# This problem does not shuffle the answers
+# 
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 33", $EBOLD, $BR);
+
+# We will present the equation ay^2 + by + cx^2 + dx +/- e  =  0 and ask what it
+# represents. a and c will be nonzero so we never get a parabola (cf prob 31.)
+# The sign of e is chosen so that the solution set is always nonempty.
+
+@as = (-4,-3,-2,2,3,4);
+@cs = (-4,-3,-2,2,3,4);
+$i = random(0,5,1);
+$a = $as[$i];
+$j = random(0,5,1);
+$c = $cs[$j];
+$cabs = abs $c;
+$babs = random(2,7,1);
+$dabs = random(2,7,1);
+$dsign = "+";
+$bsign = "+";
+$k = random(0,1,1);
+if($k == 0){
+	$d = -$dabs;
+	$dsign = "-";
+}
+$l = random(0,1,1);
+if($l == 0){
+	$b = -$babs;
+	$bsign = "-";
+}
+$e = random(100,200,1); # big enough so we don't have to worry about degeneracy
+
+if($c < 0){
+	$csign = "-";
+}
+else {
+	$csign = "+";
+}
+
+if(($a < 0)&&($c < 0)){
+	$esign = "+";
+}
+else {
+	$esign = "-";
+}
+
+
+# Properly format equation to be displayed 
+$equation = "$a y^2"." $bsign"." $babs y"." $csign"." $cabs x^2"." $dsign"." $dabs x"."$esign $e = 0";
+
+
+# Determine the correct answer letter
+if($a == $c){$letter = "B";}
+else {
+	if($a*$c > 0){
+		$letter = "C";
+	}
+	else {
+		$letter = "D";
+	}
+}
+
+# Display problem
+
+BEGIN_TEXT
+The graph of the equation \( $equation \) represents
+$PAR
+A) a pair of intersecting lines. 
+$BR
+B) a circle.
+$BR
+C) an ellipse.
+$BR
+D) an hyperbola.
+$BR
+E) none of the above.
+$PAR
+Enter your choice (A,B,C,D, or E.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

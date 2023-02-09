@@ -1,0 +1,31 @@
+#############################################################################
+# DOS Makefile for Schedule Program by Terry McConnell                    #
+############################################################################
+.SUFFIXES : .c .obj
+
+OBJS = main.obj shell.obj ui.obj compare.obj qsort.obj  dialogs.obj
+CFLAGS = -ml  -I..\..\Include  
+CC = bcc
+
+.c.o: 
+	 $(CC) $(CFLAGS) -c $<
+
+newsmstr : $(OBJS)
+	 tlink   @&&|
+  /Tde /c /d +
+C:\BC45\LIB\c0l.obj+
+main.obj+
+shell.obj+
+ui.obj+
+compare.obj+
+qsort.obj+
+dialogs.obj
+$<,$*
+C:\BC45\LIB\fp87.lib+
+C:\BC45\LIB\mathl.lib+
+C:\BC45\LIB\cl.lib
+
+|
+
+clean:
+	del *.obj

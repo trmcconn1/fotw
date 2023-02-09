@@ -1,0 +1,84 @@
+.TH HARVEST 1
+.SH NAME
+
+harvest \- remove uuencoded blocks from a terminal script file
+.SH SYNOPSIS
+.B harvest [ -hv ] scriptfile
+.SH OPTIONS
+	-v: Print version number and exit 
+.br
+	-h: Print this helpful message and exit
+.br
+.SH DESCRIPTION
+
+.I Harvest
+opens and reads the file indicated on the command line, searching for blocks that start with lines of the form
+
+.br
+begin [0-9][0-9][0-9] filename
+
+.br
+and end with a line of the form
+
+.br
+end
+.br
+
+The presumption is that such blocks were produced by uuencode(1), with the second word on the begin line as permissions and
+with filename as the desired name when the file is restored by uudecode(1). However, 
+.I harvest
+doesn't really care what lies between the begin and end lines. Any blocks found, including the two delimiting lines,
+will be written to a file with the indicated filename in the current directory.  
+
+.I Harvest
+provides an admittedly crude, but effective, method for downloading any file(s) from a remote host within a terminal session
+in conjunction with script(1). Filenames are echoed to stdout for use by a shell script that would process the resulting
+files in order to restore them to their original form. 
+
+Note that terminal output processing typically introduces an extraneous ^M character at the end of every text line of the
+script file, which must be removed by a suitable filter before uudecode(1) can restore the original file.
+
+.SH EXAMPLE
+localhost:$ script
+.br
+localhost:$ ssh remotehost
+.br
+
+[ login on remotehost ]
+
+.br
+remotehost:$ cd somefolder
+.br
+remotehost:$ uuencode goodstuff.tgz goodstuff.tgz
+.br
+
+[ a lot of garbage flashes by on the screen and is captured in scriptfile ]
+
+.br
+remotehost:$ logout
+.br
+localhost:$ ^D
+.br
+localhost:$ harvest scriptfile
+.br
+localhost:$ dos2unix goodstuff.tgz
+.br
+localhost:$ uudecode goodstuff.tgz
+
+.SH "SEE ALSO"
+.I script(1), uuencode(1), uudecode(1), dos2unix(1), stty(1)
+.SH BUGS
+There are compiled-in limits on various things, including lengths of lines in the scriptfile and the number of allowed blocks. One could always recompile with larger limits (64 blocks is the default limit) or break a terminal download session into smaller
+pieces. 
+
+Any terminal output translation other than the usual onlcr will cause problems.
+
+.SH AUTHOR
+
+Terry R. McConnell
+.br
+2458 Swift Road
+.br
+Lafayette, NY 13084
+.br
+trmcconn@syr.edu

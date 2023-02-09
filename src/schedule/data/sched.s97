@@ -1,0 +1,297 @@
+set MISSINGDATA "TBA"
+# This is the definition of the Fall 1996 schedule
+# It is a script for the schedule program command shell
+
+
+# load in the data
+# -u causes update only, if data has been loaded from fall.
+# force semester to be spring 97. Remove this flag after Fall Semester.
+#load  -u -sem s97
+
+# Create a schedule
+schedule "s97" "Spring 1997    Mathematics Department Schedule of Classes"
+
+# The Basic Algebra Courses
+course "Basic Algebra" "TBA"
+# MAT 111: Decelerated. Being phased out this semester
+#
+class "111" "TBA" "TBA" "TBA" "TBA"
+subclass
+# 001 does mod 3 only
+class "001" C-208 TBA mwf11 "Balg_Teacher"
+class "UC1" "TBA" "TBA" mw5 "Balg_Teacher"
+# UC2 is an off-budget tutor session run by UC
+class "UC2" "TBA" "TBA" mw7 "Heop_Tutor"
+subclass end
+
+assign "Algebra Coord" "TBA" "BAlgCoord"
+class "112" "TBA" "TBA" "TBA" "TBA"
+subclass
+class "001" C-114 TBA mwf8 "Balg_Teacher"
+refno 05962
+class "002" C-114 "TBA" mwf11 "Balg_Teacher"
+refno 15962
+class "UC1" "TBA" "TBA" mw5 "Balg_Teacher"
+subclass end
+
+course "121" Deleanu
+class "100" Heroy Deleanu tth11 "Lecturer"
+subclass
+class "101" C-100 "TBA" m8 "Recit_2"
+class "102" C-100 "TBA" f8 "Recit_2"
+class "103" C-100 "TBA" m10 "Recit_2"
+class "104" C-100  "TBA" f10 "Recit_2"
+class "105" C-100 "TBA" m12 "Recit_2"
+class "106" C-100 "TBA" f12 "Recit_2"
+class "107" C-100 "TBA" m3 "Recit_2"
+class "108" C-100 "TBA" f3 "Recit_2"
+class "109" C-100 "TBA" f4 "Recit_2"
+
+
+subclass end
+
+
+# MAT 122: Statistics for the Liberal Arts I
+course "122" Diaz
+class "100" Heroy Diaz tth2 "Lecturer"
+subclass
+class "101" C-100 "TBA" m9 "Recit_2"
+class "102" C-100 "TBA" f9 "Recit_2"
+class "103" C-100 "TBA" m11 "Recit_2"
+class "104" C-100 "TBA" f11 "Recit_2"
+class "105" C-100 "TBA" m1 "Recit_2"
+class "106" C-100 "TBA" f1 "Recit_2"
+subclass end
+class "200" Heroy Lindberg mw3 "Lecturer"
+subclass
+class "201" C-100 "TBA" t8 "Recit_2"
+class "202" C-100 "TBA" th8 "Recit_2"
+class "203" C-100 "TBA" t1 "Recit_2"
+class "204" C-100 "TBA" th1 "Recit_2"
+class "205" C-100 "TBA" t2 "Recit_2"
+class "206" C-100 "TBA" th2 "Recit_2"
+subclass end
+class "UC1" "TBA" "TBA" "TBA" "Teacher"
+
+
+course "end"
+class "171" C-313 "TBA" mwf12 "Teacher"
+class "172" C-311 "TBA" tth10 "Teacher"
+
+course "183"  Hsiang
+class "100" Heroy Hsiang tth1 "Lecturer"
+subclass
+class "101" C-220 "TBA" m8 "Recit_1"
+class "102" C-220 "TBA" f8 "Recit_1"
+class "103" C-220 "TBA" m10 "Recit_1"
+class "104" C-220 "TBA" f10 "Recit_1"
+class "105" C-220 "TBA" m12 "Recit_1"
+class "106" C-220 "TBA" f12 "Recit_1"
+subclass end
+class "UC1" "TBA" "TBA" "TBA" "Teacher"
+
+course "end"
+class "200" C-222 Masingila mw3 "Teacher"
+
+course "194" Doerr
+class "001" C-219 "TBA" mwf9 "Teacher"
+class "002" C-222 "TBA" mwf11 "Teacher"
+class "003" C-219 "TBA" "TBA" "Teacher"
+class "004" C-219 "TBA" tth1 "Teacher"
+class "005" C-114 "TBA" tth11 "Teacher"
+class "006" "TBA" "TBA" "TBA" "Teacher" N
+
+course "221" "Griffin"
+class "001" "C-313" Griffin "mwf9" "Teacher"
+class "002" "C-313" TBA "mwf8" "Teacher"
+class "003" "C-114" TBA "mwf10" "Teacher"
+class "004" "C-208" TBA "mwf12" "Teacher"
+class "005" "C-114" TBA "mwf3"  "Teacher"
+class "006" "C-208" TBA "tth11" "Teacher"
+class "007" "C-114" TBA  tth4 "Teacher"
+class "008" "TBA" "TBA" "TBA" "Teacher" N
+
+course "222" "Kim"
+class "001" "C-114" TBA "mwf9"  "Teacher"
+class "002" "C-300" TBA "mwf11" "Teacher"
+class "003" "C-313" TBA "mwf1"  "Teacher"     
+class "004" "C-306" "Dudewicz" "tth4" "Teacher"
+class UC1 TBA TBA TBA Teacher
+
+course "end"
+class "275" "C-313" Iwaniec "tth11" "Teacher"
+
+course "284" "Vogel"
+class "100" "Heroy" "Fatica" mwf9 "Lecturer"
+subclass
+class "101" "C-114" TBA "t1" "Recit_1"
+class "102" "C-114" TBA "th1" "Recit_1"
+class "103" "C-114" TBA "t2" "Recit_1"
+class "104" C-114 TBA th2 Recit_1
+subclass end
+class "200" Heroy Vogel tth8 Lecturer  
+subclass
+class "201" C-220 TBA m9 Recit_1   
+class "202" C-220 TBA f9 Recit_1
+class 203 C-220 TBA m11  Recit_1
+class 204 C-220 TBA f11  Recit_1
+subclass end
+class UC1 C-300 Fatica mw5 Teacher
+
+course "285" Graver
+class "100" Heroy Graver m11 Plenary
+class "200" Heroy Graver m1  Plenary
+class "001" C-220 TBA tth8 Teacher
+class "002" C-220 TBA tth10 Teacher
+class "003" C-220 TBA tth11 Teacher
+class "004" C-220 TBA tth1  Teacher
+class "005" C-220 TBA tth2  Teacher
+class "006" "TBA" "TBA" "TBA" "Teacher" N
+
+
+course "286" Graver
+class "001" C-222 TBA tth8 "Teacher"
+class "002" C-222 TBA tth10 "Teacher"
+class "003" C-222 TBA tth11 "Teacher"
+class "004" C-222 TBA tth1  "Teacher"
+class "005" C-222 TBA tth2  "Teacher"
+class "006" TBA TBA TBA Teacher
+class 100 Heroy Graver w11 Plenary 
+class 110 Heroy Graver w1 Plenary
+
+course "295" "Verchota"
+class "Honors" C-311 Verchota mwf10 Teacher
+subclass
+class "091" C-208 TBA t10 Recit_1
+subclass end
+class "002" C-300 TBA mwf8 "Teacher"
+subclass
+class "092" C-208 TBA th10 "Recit_1"
+subclass end
+class "003" C-316 TBA mwf11 "Teacher"
+subclass
+class "093" C-208 TBA t1 "Recit_1"
+subclass end
+class "004" C-208 TBA mwf10 "Teacher"
+subclass
+class "094" C-208 TBA th1 "Recit_1"
+subclass end
+class "005" C-316 TBA mwf12 "Teacher"
+subclass
+class "095" C-208 TBA t2 "Recit_1"
+subclass end
+class "006" C-311 TBA mwf1 "Teacher"
+subclass
+class "096" C-208 TBA th2 "Recit_1"
+subclass end
+assign "Clinic Director" TBA Clinic_Coord
+
+course "296" "TBA"
+class "001" C-300 Troutman mwf12 "Teacher"
+subclass
+class "091" C-219 TBA t8 "Recit_1"
+subclass end
+class "002" C-306 TBA mwf1 "Teacher"
+subclass
+class "092" C-219 TBA th8 "Recit_1"
+subclass end
+class "003" C-208 TBA mwf3 "Teacher"
+subclass
+class "093" C-219 TBA t10 "Recit_1"
+subclass end
+class Honors C-316 Quinn mwf9 "Teacher"
+subclass 
+class "094" C-219 TBA th10 "Recit_1"
+subclass end
+class "005" C-313 TBA mwf11 "Teacher"
+subclass
+class "095" C-300 TBA t1 "Recit_1"
+subclass end
+class "006" C-208 TBA mwf9 "Teacher"
+subclass
+class "096" C-300 TBA th1 "Recit_1"
+subclass end
+class "007" C-208 Duah-Agyeman mwf4 Teacher
+subclass
+class "097" C-300 TBA t2 "Recit_1"
+subclass end
+class 100 Heroy Poletsky mwf12 Lecturer
+subclass
+class 101 C-306 TBA m8 Recit_1
+class 102 C-306 TBA w8 Recit_1
+class 103 C-306 TBA t1 Recit_1
+class 104 C-306 TBA th1 Recit_1
+class 105 C-219 TBA m11 Recit_1
+class 106 C-219 TBA w11 Recit_1
+subclass end
+assign "Clinic Director" "TBA" "Clinic_Coord"
+
+
+course end
+class 331 C-313 Kleiner mwf12 "Teacher"
+
+
+course "397" "Cargo"
+class "001" C-306 Church mwf12 Teacher
+class "002" C-306 Cargo mwf10 Teacher
+class "003" C-306 TBA mwf11 Teacher    
+class "004" C-300 TBA mwf1 Teacher     
+class "005" C-316 TBA tth11 Teacher 
+class "006" C-311 TBA tth1 Teacher     
+
+course "398" Lewis
+class "001" C-311 Lewis mwf12 Teacher 
+class Honors C-306 Cox mwf9 Teacher
+class 003 C-311 TBA mwf9 Teacher   
+class 004 C-311 TBA mwf11 Teacher      
+class 005 C-219 TBA tth11 Teacher
+class 006 C-300 TBA tth4 Teacher
+
+course end        
+class 412 C-316 Lindberg mw5  "Lecturer"
+class 485 C-313 Banerjee tth1 "Lecturer"
+class 513 C-311 Cargo mwf8 "Lecturer"
+class 514 C-313 Troutman mwf3 Lecturer
+class 517 C-316 Hsiang tth2 Lecturer
+
+course "521" "Church"
+class 010 C-313 McConnell mwf10 Lecturer
+class UC1 C-313 Church mw5 Lecturer 
+
+course "end"
+
+class 526 C-300 McConnell mwf9 Lecturer 
+class 531 C-300 Griffin mwf10 Lecturer 
+class 534 C-300 Diaz tth11 Lecturer   
+class 551 P-233 Lewin tth10 Lecturer
+class 562 C-311 Deleanu tth4 Lecturer   
+class 572 C-311 Barth mw3 Lecturer
+class 581 C-219 Lardy mwf12 Lecturer   
+class 591 C-100 Lutoborski th10 Lecturer
+class 606 C-300 Vogel tth10 Lecturer   
+class 621 C-306 Dudewicz tth2 Lecturer
+class 626 C-306 Chen tth11 Lecturer   
+class 627 C-311 Kim tth8 Lecturer       
+class 636 C-316 Quinn mwf10 Lecturer
+class 645 C-306 Watkins mw3 Lecturer    
+class 664 C-306 Ucci tth8 Lecturer      
+class 682 C-316 Banerjee tth10 Lecturer
+class 684 C-316 Lutoborski tth1 Lecturer
+class 703 C-311 Iwaniec tth2 Lecturer
+class 708 C-219 Cox mwf10 Lecturer
+class 736 C-312 Kleiner tth8 Lecturer
+class 815 P-233 Verchota mwf8 Lecturer
+class 860 P-233 Lewis mwf3 Lecturer
+
+# Department Assignments (i.e., not attached to a course )
+
+assign "HEOP Tutor" "TBA" "Heop_Tutor"
+assign "System Administrator" "Hu" "Sysadmin"
+assign "485 Grader" "TBA" "Grader_1"
+assign "514 Grader" "TBA" "Grader_1"
+
+# end of schedule
+
+# This turns prompting back on
+end ECHO ON
+

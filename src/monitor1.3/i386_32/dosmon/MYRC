@@ -1,0 +1,38 @@
+# This is a sample start up file for monitor
+set RCFILE monitor.rc
+echo Monitor 1.2 by Terry R. McConnell
+echo Chicken Haven Software (2018)
+help   # display list of available commands at startup
+
+# save command line 
+set argv[0] $0
+set 0
+set argv[1] $1
+set 1
+set argv[2] $2
+set 2
+set argv[3] $3
+set 3
+set argv[4] $4
+set 4
+set argv[5] $5
+set 5
+set argv[6] $6
+set 6
+set argv[7] $7
+set 7
+set argv[8] $8
+set 8
+set argv[9] $9
+set 9
+
+set vi ^#vi:^ run^ the^ vi^ editor^
+exec^ c:\bin\vi.exe^ ^$1
+
+set shell ^#shell:^ run^ the^ system^ shell^
+exec^ c:\command.com^ ^$1^ ^$2^ ^$3
+
+set dir ^#dir:^ directory^ listing^
+exec^ c:\bin\dir.exe
+
+

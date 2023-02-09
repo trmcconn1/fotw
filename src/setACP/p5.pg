@@ -1,0 +1,89 @@
+# Problem 5 of ACP test. All problems are multiple choice.
+# This is a problem on multiplying and dividing fractions. Students
+# must calculate (a/2b)x(1/2a)/(b/a)
+
+# Boilerplate: every webwork problem starts with the following two macros 
+
+DOCUMENT();
+
+
+loadMacros(
+	"PG.pl",
+	"PGbasicmacros.pl",
+	"PGanswermacros.pl",
+	"PGchoicemacros.pl",
+	"PGauxiliaryFunctions.pl"
+);
+
+TEXT(beginproblem(), $BR, $BBOLD, "Problem 5", $EBOLD, $BR);
+
+
+# returns a permutation of 0-3 as a list. Used below to randomize
+# multiple choice
+
+sub myshuffle {
+
+	my $a = random(0,3,1);
+	my $b = ($a + random(1,3,1)) % 4;
+	my $c = random(0,3,1);
+	while (  $c == $a || $c == $b ) {
+		 $c = random(0,3,1);
+	}
+	return ($a, $b, $c, 6 - $a - $b - $c);
+}
+
+# Generate the numbers that will be used in the problem:
+# The trick here is to ensure that the 4 possible answers generated below
+# are unique. We need to ensure that the following are all different:
+# (i) a/(4b^2) (ii) a/(2b)  (iii) 1/(2a^2) (iv) ab/(3a+2b)
+#
+# It is enough to have b > 1, a odd, and a > b. (i)=(ii) iff 2ba = 4ab^2 or
+# 2b = 1, which is impossible by b>1. (i)=(iii) iff 2a^3 = 4b^2 which cannot
+# hold since a is odd. (i)=(iv) iff 3a^2 + 2ba = 4ab^3 which is impossible
+# since a is odd. (ii)=(iii) iff 2a^3 = 2b which is impossible if a > b >  1.
+# (ii)=(iv) iff 3a^2 + 2ab = 2ab^2 which is impossible if a is odd. (iii) =
+# (iv) iff 3a + 2b = 2a^2b which is impossible if a is odd.
+
+$b = random(2,15,1);
+$a = 2*$b - 1;
+
+# compute correct and incorrect answers to display (correct is first one)
+@num = ($a,$a,1,$a*$b);                   # numerators
+@den = (4*$b*$b,2*$b,2*$a*$a,3*$a+2*$b);  # denominators
+@ans = ($num[0]."/".$den[0],$num[1]."/".$den[1],
+	$num[2]."/".$den[2], $num[3]."/".$den[3]);
+
+# get a permutation of 0-3 to shuffle display
+@picks = myshuffle;
+ 
+$ansA = $ans[$picks[0]]; 
+$ansB = $ans[$picks[1]]; 
+$ansC = $ans[$picks[2]]; 
+$ansD = $ans[$picks[3]]; 
+
+# OL pg macro formats list argument as html ordered list counting with A,B...
+$answers = OL($ansA, $ansB, $ansC, $ansD);
+
+# display problem
+$c = 4*$b*$b;
+$d = 2*$b;
+$e = 2*$a;
+
+BEGIN_TEXT
+\( \frac{$a}{$d}\times\frac1{$e}\div\frac{$b}{$a} \)   is equal to: 
+$answers
+$PAR
+Enter your choice (A,B,C, or D.): \{ ans_rule(10) \}
+$PAR
+END_TEXT
+
+# figure out which letter choice is correct
+
+$letter = "A" if $picks[0] == 0;
+$letter = "B" if $picks[1] == 0;
+$letter = "C" if $picks[2] == 0;
+$letter = "D" if $picks[3] == 0;
+
+ANS( str_cmp( $letter ) );
+
+ENDDOCUMENT();

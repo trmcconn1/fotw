@@ -1,0 +1,152 @@
+          			GPXPOLY 1.0
+	        	   by Terry R. McConnell
+
+Gpxpoly creates files in gpx format (defined by the Garmin Corporation) that
+contain tracks connecting specified nodes. A node is just a latitude/longitude
+pair. I've used it to draw property lines based on a small set of measured
+"corners" (just 4 in case the property is rectangular). The resulting track
+could be imported into mapping software such as Basecamp (tm) to get a nice
+picture of the property boundary superimposed on a topographical or other type
+of map. I've also used it to visualize the triangulation grid of NGS survey 
+marks near where I live. (I attempt to recover these marks as a hobby.)
+
+Nodes can be specified either interactively (using the -i or -I options of
+the program) or listed in one or more input files named on the command line.
+
+(Dirty little secret: a gpx file is just xml in plain text format. You can
+look at one with a text editor.)
+
+Usage
+
+gpxpoly [-hvdi] [-I file] [-f file] if1 [if2 ...]
+-h: print this helpful message
+-v: print version number and exit
+-d: turn on debug mode
+-f: write gpx to file instead of stdout 
+-i: start interactive dialog to enter track information
+-I: same as i but dialog result also saved in file 
+Create gpx file containing a polygonal track
+according to specification in input file(s)
+
+GPX files can contain multiple tracks. Each input file defines one track,
+in addition to one that may have been specified interactively. If no input
+files are named, and neither -i or -I is invoked, the program produces no
+output.
+
+Input File Format
+
+The input file contains lines that each give the latitude and longitude of
+points that will be connected to form a polygonal gpx track. The latitude and
+longitude strings must be separated by a semicolon character (;) or appear on 
+separate lines.
+
+Latitude and Longitude strings can be given in one of three formats.
+
+Format 1: degrees, minutes, seconds and fractions of second as a decimal. For
+example 35 18' 36.7" N
+
+Format 2: degrees, minutes and fractions of minute as a decimal. For example
+W 67 39.56773'
+
+Format 3: degrees and fractions of a degree, - for south latitude or w long.
+For example
+-76.01325
+
+Whitespace within a coordinate is ignored except for the whitespace that
+separates the degrees and minutes fields. (Multiple whitespace characters are
+ignored here as well.) The letters N,S,E,W can be either uppercase or 
+lowercase and can appear anywhere within the coordinate, although typical
+usage has them appearing either at the beginning or the end. The " character
+indicating the end of the seconds can be given variantly as a pair of single
+quotes. (In fact, in many cases you can get away with omitting ' and " 
+altogether.)
+
+If directional letters are not included, the first coordinate of a pair
+is interpreted as a latitude and the second as a longitude.
+
+The # character introduces a comment: it and all following characters on the
+same line are ignored.
+
+The only other valid lines contain keywords and their arguments separated by
+whitespace. At present, the program only recognizes 7 keywords (not case
+sensitive):
+
+Name  [ ... ]
+
+The rest of the line is taken to be the name of the gpx track. 
+Since the input file defines a single track, each input file should have
+exactly one naming line and it makes sense for it to be near the top.
+
+Points  n
+
+Change the default number of interpolated points from 100 to n from this
+point onward
+
+Method  [G,S,L]
+
+From this point onward, change the default method for connecting nodes
+to G(reat Circle), S(imple) or L(oxodrome). Any letters written after G, S, or 
+L (which could also be lowercase) are ignored. (If no method is given, the
+method is taken to be Great Circle.)
+
+Heading
+
+The next pair of coordinates should be interpreted as a heading angle 
+(azimuth) and distance. Instead of connecting the previous point to 
+the current node, the track will be a rhumb line (loxodrome) from the
+previous point to a node created by the program at the given distance. 
+(If the current method is not Loxodrome then only the initial heading
+will be equal to the given angle.) Subsequent nodes are treated as usual,
+unless another heading keyword is given, i.e., the heading keyword only
+applies for a single track segment.
+
+The following keywords change the distance unit default from meters. It 
+is effective until the next such directive
+
+Miles
+Feet
+Kilometers
+Meters
+
+Example Input File
+
+# Connect Station Morgan to Station Fabius 2 with a great circle
+# and Fabius 2 to its Azimuth mark with a Rhumb Line
+
+Name Demo gpxpoly Input File 
+Points  250   # use 250 points on each connector
+Method Great Circle
+
+# Station Morgan:
+N 42 46' 04.26224" ; 075 59' 51.16503 W
+
+# Station Fabius 2
+N 42 48' 41.38126" N; 076 01' 13.57767 W 
+
+Method Loxodrome
+
+# Fabius 2 AZ mark (guesstimated from datasheet description)  
+42.800434N; -76.016446
+
+----- (end of example input file) ------------
+
+Building the package
+
+After unpacking the source code (e.g., tar zxvf gpxpoly.tgz) just give 
+the command make in the source code folder and hope for the best. I developed
+the program at the unix command line of a MacBook Air, so you should have
+no problems at all on that platform. You should be able to port to another
+platform with little more than editing the makefile appropriately. 
+
+Source code is written in Ansi C.
+
+Disclaimer: the program writes some boilerplate xml at the top of the file
+that I copied from an example gpx file I had lying around. Not being a
+lawyer, I'm unsure whether I should have asked Garmin for permission. 
+I don't ever intend to make a penny from this program so probably this is ok,
+but if YOU use this code as the basis for something commercial, YOU might get
+in trouble. So don't.
+
+Terry R. McConnell
+trmcconn@syr.edu
+http://barnyard.syr.edu

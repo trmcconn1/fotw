@@ -1,0 +1,33 @@
+#################################################################
+#            debruijn                                           #
+#        By Terry McConnell                                     #
+#        April 2013                                             #
+#################################################################
+
+VERSION = 1.0
+#MAX_LEVEL = 16
+#MAX_STRING = 65536
+FLAGS =  -O2   
+INSTALL_DIR = /usr/local/bin
+PERMS = 555
+HOME_DIR = /home/mcconnel
+CCOBJ = main.obj
+CCSRC = main.cpp 
+CSRC  = debruijn.c EM.c linear.c fixedpoint.c util.c helix.c readfile.c
+COBJ = debruijn.obj EM.obj linear.obj fixedpoint.obj util.obj helix.obj readfile.obj
+TXT = 
+DIR = $(HOME)/src/debruijn1.0   # source
+
+
+debruijn: ${CCOBJ} ${COBJ} 
+	${CC}  ${FLAGS} -o debruijn ${CCOBJ} ${COBJ}  
+
+install: 
+	cp debruijn ${INSTALL_DIR}
+	chmod ${PERMS} ${INSTALL_DIR}/debruijn
+
+clean:
+	cd ${DIR}; rm -f *.obj
+
+
+backup:

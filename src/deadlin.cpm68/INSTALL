@@ -1,0 +1,39 @@
+                                 DEADLIN
+                        INSTALLATION INSTRUCTIONS
+
+The only file that contains any non-portable code is unix.c, which initializes
+the terminal. 
+
+Check the makefile -- select your system at the top of the file and 
+uncomment the relevant section. If you don't find your system, use the
+given entries as a model -- you shouldn't need to change much. 
+If you are unable to make any of the choices work you will need to make
+a port. Look at the file unix.c and make any changes you need to make
+for your system. I would appreciate hearing from you so that I can 
+incorporate these changes into the code.
+
+The code used to backspace the terminal assumes that this is done by means
+of the ^H character. (The sequence needed to move the cursor one space to the
+left on a terminal is given by the le= entry in /etc/termcap.) This is correct
+for almost every terminal in common use. If you have a very unusual terminal
+you might need to edit the definition of the BackSpace[] array in the
+DoBackspace() routine in unix.c
+
+To compile the package type 'make'. 
+
+Move the executable deadlin whereever you want it. Move the man page edlin.1
+to whereever you want it. 
+
+Note that deadlin "out of the box" uses control characters to do many of the
+things done by function keys in DOS. (Consult the man page for details.)
+You can make deadlin act much more like the real edlin by creating 
+and installing an appropriate keymap. Several keymaps are provided in
+the keymaps directory. In any case, be sure to read the README file in
+the keymaps directory. An example shell script edlin.sh installs the
+keymap for Linux on the fly. You could rename this edlin and put it in
+a standard executable directory. (You will need to edit the script to
+change some paths, of course.)
+
+=========================================================
+Terry R. McConnell
+trmcconn@syr.edu

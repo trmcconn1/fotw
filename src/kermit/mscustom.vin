@@ -1,0 +1,84 @@
+echo Customizations...
+set com3 \x03E8 5
+set terminal vt220
+set terminal wrap on
+set terminal apc on
+set window 2
+set receive packet-length 1024
+set carrier on
+set control unprefixed all
+set control prefixed 0 1 3 13 141
+set exit warning off
+set tcp primary-nameserver 128.230.12.5
+set tcp address \$(myip)
+set key \4434 \20         ;insert key = ^T (insert mode toggle in tcsh)
+set key \4424 \27OA       ;cursor up
+set key \4432 \27OB       ;cursor down
+set key \4429 \27OC       ;cursor right
+set key \4427 \27OD       ;cursor left
+set key \4435 \27OC\127   ;delete = cursor right + backspace
+set key \5491 \27b        ;ctrl-lfarr = back word
+set key \5492 \27f        ;ctrl-rtarr = forward word
+set key \4423 \1          ;home = start-of-line
+set key \4431 \5          ;end  = end-of-line
+set key \315 vefatica\13
+set key \316 PASSWORD\13
+set key \317 anonymous\13
+set key \318 vefatica@mailbox.syr.edu\13
+set key \319 \63\13
+set key \321 {\Kbusy}
+set key \323 \Kexit
+set key \324 exit\13
+set file type binary      ;my default
+set terminal display 8-bit        ;a la Rodan
+
+define sudial take c:\ker\sudial.scr
+if equal \$(SYSTEM) LINUX define sudial take d:\c\ker\sudial.scr
+
+define dial output atdt\%1\13,-
+    echo Please wait...,-
+    input 60 \10,-
+    input 60 \10,-
+    if failure end 1,-
+    reinput 0 CONNECT,-
+    if success end 0,-
+    reinput 0 CARRIER,-
+    if failure end 1,-
+    end 0
+
+define busy :loop,-
+    cls,-
+    output ?\13,-
+    echo Keeping SUnix busy...\13\10,-
+    pause 300,-
+    if success goto loop,-
+    connect
+
+define com3 set port 3,-
+    set speed 57600,-
+    set flow rts/cts,-
+    echo Com3 is active.
+
+define com1 set port com1,-
+    set speed 57600,-
+    set flow rts/cts,-
+    echo Com1 is active.
+
+define gamera set port tcp 128.230.1.14,-
+    connect
+
+set prompt \27[32m[\v(dir)] MS-Kermit>\27[0m
+echo
+
+set file collision rename       ; Don't overwrite existing files
+set transfer character-set transparent ; For compatibility with old versions
+set attributes on               ; Use file-attribute packets
+set mode-line off
+set input timeout proceed       ; Allow IF SUCCESS/FAILURE to work
+set input echo on               ; Display port input on screen
+set input case ignore           ; Ignore alphabet case for input matching
+
+if exist c:\ker\mscustom.ini take c:\ker\mscustom.ini
+if exist d:\c\ker\mscustom.ini take d:\c\ker\mscustom.ini
+if equal \$(SYSTEM) LINUX set prompt MS-Kermit>
+

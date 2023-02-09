@@ -1,0 +1,59 @@
+# Default startup file
+# Normally this would be moved to .ephemeris2.rc
+# in the user's home directory 
+echo Ephemeris (2.1) by Terry R. McConnell
+echo Answer help at prompt for list of commands
+echo help <command> gives more information about a command
+set RCFILE ~/.ephemeris2.rc
+# This is a script to ease testing double ports: change a set
+# a set of elements to initial conditions and then change back
+# the two should be identical
+set testit \#testit:\ test\ port\ and\ port\ back\
+echo\ enter\ orbit\ number\ to\ test\
+read\ NUMBER\
+port\ \$NUMBER\
+port\ -i\
+dump\
+dump\ \$NUMBER\
+drop\ -i\
+drop\
+set\ NUMBER
+
+# save command line 
+set argv[0] $0
+set 0
+set argv[1] $1
+set 1
+set argv[2] $2
+set 2
+set argv[3] $3
+set 3
+set argv[4] $4
+set 4
+set argv[5] $5
+set 5
+set argv[6] $6
+set 6
+set argv[7] $7
+set 7
+set argv[8] $8
+set 8
+set argv[9] $9
+set 9
+
+# define some useful scripts
+
+set SHELL /bin/sh
+set VI /usr/bin/vi
+
+set vi \#vi\ file\ run\ the\ vi\ editor\ on\ file\
+pop\ exec\ /usr/bin/vi\ \$1
+
+set sh \#sh\ run\ /bin/sh\
+exec\ /bin/sh
+
+set ls \#ls\ dir:\ run\ /bin/ls\ with\ arg\
+pop\ exec\ /usr/bin/ls\ \$1\ \$2
+
+set exit quit
+
