@@ -8,5 +8,10 @@ For best results keep the original of this code base as a reporitory on
 github.com and clone for your various machines, but keep synced with the
 repository.
 
-expat, slirp, and mtwist were not written by me, so if you any code from
-them make sure to adhere to the copyright.
+This is all my own code except for the Mersenne twistor code in mtwist-1.2.
+This code is covered under the GPL so make sure to include the entire source
+files with license header with any source or binary package that uses it.
+I've only used it in two minor projects so far (dally and hash). Probably
+best to avoid using in the future unless absolutely necessary. (Most unix-like
+systems now include their own entropy generator so the existing rngs are
+most likely good enough for practical purposes.) 
