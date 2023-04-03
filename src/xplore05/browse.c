@@ -107,6 +107,7 @@ void UpdateSelected();
 int my_getch();
 int my_chdir(char *);
 int compare_alpha(char **, char **);
+extern void fatal(char *);
 
 int
 browse(void *path, char *title)
@@ -118,6 +119,7 @@ browse(void *path, char *title)
 	int rval;
 	int CurPane = NLEFT_PANEL;
 	char *p;
+
 
 	clear();  /* clear crap off screen */
 	AnchorOn = 0; /* make sure multiple selection is turned off */
@@ -148,6 +150,8 @@ browse(void *path, char *title)
 
 	RightSelected = -1;  /* Highlight nothing in right pane */
 	LeftSelected = 1;    /* Highlight second entry (..) in left pane */
+	VLeftTop = 0;        /* Start from "top" of directory contents */
+	VRightLeft = 0;
 
 	/* Create the enclosing windows and outline them. This has
            no visible effect if colors are being used. */
@@ -175,7 +179,7 @@ browse(void *path, char *title)
 		FreeRight();
 
 #ifdef NCURSES 
-	keypad(stdscr,TRUE);
+	keypad(stdscr,FALSE); /* We interpret escape sequences */
 	/* fill panels with blanks so colors will have effect */
 	if(has_colors()){
 		wattron(box_left,COLOR_PAIR(LEFT_PAIR));
@@ -259,6 +263,7 @@ browse(void *path, char *title)
 #endif
 
 				case 'j':
+				case '2':
 				case DOWN_CODE:  /* Move selection down */
 				case '\t':
 					if(LeftSelected < LeftNStrings - 1){
@@ -273,22 +278,29 @@ browse(void *path, char *title)
 					}
 					continue;
 				case 'k':
+				case '8':
 				case UP_CODE:  /* Move selection up */
 				case '':
 				case '\x7F':
 					/* If at visible top and below actual
                                            top, scroll up */
-					if(LeftSelected <= VLeftTop)
-						if(VLeftTop > 0)VLeftTop--;
-						else {
-							beep();
-							wrefresh(left_pane);
-							break;
+					if(LeftSelected <= VLeftTop){
+						if(VLeftTop > 0){
+								VLeftTop--;
+								LeftSelected--;
 						}
-					LeftSelected--;
+						else {
+							beep(); 
+							flash();
+							wrefresh(left_pane);
+						}
+					}
+					else
+					  LeftSelected--;
 					DisplayLeft();
 					continue;
 				case 'l':
+				case '6':
 				case RIGHT_CODE: /* Move into right pane.
                                          Store current selection in left
                                          pane so it can be restored when
@@ -324,7 +336,7 @@ browse(void *path, char *title)
 			CLEAN
 			return rval;
 		}
-		else 
+		else /* Current panel = Right Panel */ 
 			switch(c) {
 
 				case UNUSED_CHAR:
@@ -386,6 +398,7 @@ browse(void *path, char *title)
 					DisplayLeft();
 					break;
 				case 'j':
+				case '2':
 				case DOWN_CODE: /* move selection down */
 				case '\t': /* scroll right if necessary */
 					if(RightSelected < RightNStrings - 1){
@@ -402,19 +415,22 @@ browse(void *path, char *title)
 					break;
 				case 'k':
 				case UP_CODE:
+				case '8':
 				case '':   /* move selection up. scroll */
 				case '\x7F': /* left if necessary */
-					if(RightSelected <= VRightLeft*(BOT_DY-2))
+					if(RightSelected <= VRightLeft*(BOT_DY-2)){
 					   if(VRightLeft > 0)VRightLeft--;
 					   else {
 						beep();
 						wrefresh(right_pane);
 						break;
 					   }
+					}
 					RightSelected--;
 					DisplayRight();
 					break;
 				case 'h':
+				case '4':
 				case LEFT_CODE: /* move left a whole column */
 					        /* scroll left if necessary */
 					if(RightSelected < (VRightLeft+1)*(BOT_DY-2)){
@@ -437,6 +453,7 @@ browse(void *path, char *title)
 					DisplayRight();
 					break;	
 				case 'l':
+				case '6':
 				case RIGHT_CODE: /* move right a whole column */
 					if(RightSelected +BOT_DY-2 < RightNStrings - 1){
 						RightSelected += (BOT_DY-2);
@@ -523,7 +540,7 @@ char ** LoadStrings(char *path,int flag,int *nstrings,int panel)
 
 	if((my_dir = opendir(path))==NULL)return NULL;
 
-	while(my_dirent = readdir(my_dir)){
+	while((my_dirent = readdir(my_dir))!=0){
 			if(stat(my_dirent->d_name,&my_stat)==-1)continue;
 			if(flag&my_stat.st_mode)count++;
 	}
@@ -548,7 +565,7 @@ char ** LoadStrings(char *path,int flag,int *nstrings,int panel)
 	
 	rewinddir(my_dir);
 	count = 0;
-	while(my_dirent = readdir(my_dir)){
+	while((my_dirent = readdir(my_dir))!=0){
 #ifdef S_ISLNK
 		if(lstat(my_dirent->d_name,&my_stat)==-1)continue;
 #else
@@ -727,7 +744,7 @@ DisplayTop(char *txt)
 			waddch(top_pane,' ');
 	}
 
-	wmove(top_pane,0,1);
+	wmove(top_pane,0,0);
 	waddstr(top_pane,txt);
 	touchwin(top_pane);
 	wrefresh(top_pane);
@@ -758,7 +775,7 @@ FreeRight(void)
 
 /* This routine tries to interpret ANSI escape sequences produced
    by cursor movement keys. Basically, if a character is an escape
-   character, then the routine snarfs up all remaining characters in
+   character the routine snarfs up all remaining characters in
    non-blocking mode. It then interprets the input as an escape sequence.
 */ 
    
@@ -776,7 +793,7 @@ int my_getch()
 
 	c = getch();
 
-#ifdef NCURSES
+
 
 		/* This method has the disadvantage of introducing a
                    big delay if only escape is pressed. */
@@ -790,9 +807,10 @@ int my_getch()
 			case KEY_LEFT:
 				return LEFT_CODE;
 			default:
-				return c;
+				break;
+				/* return c; */
 		}
-#else
+
 	if(c ==''){
 
 	/* Save current state of stdin flags 
@@ -825,30 +843,29 @@ try_again:
 				goto try_again;
 			}
 			fcntl(0,F_SETFL,fl);
-			return c;
+			return c; /* We just got escape char */
 		}
 		/* Bug: We rely on escape sequences being 3 characters long
                    here */
 		if(read(0,p++,1)!=1){
 			fcntl(0,F_SETFL,fl);
-			return c;
+			return UNUSED_CHAR;  /* shrug */
 		}
 		*p = '\0';
-#endif
 
-		if(strcmp(buffer,UP_ARROW)==0) c = UP_CODE;
+#endif
+		if((strcmp(buffer,UP_ARROW)==0)||(strcmp(buffer,UP_ARROW_AP)==0)) c = UP_CODE;
 		else
-		  if(strcmp(buffer,DOWN_ARROW)==0) c = DOWN_CODE;
+		  if((strcmp(buffer,DOWN_ARROW)==0)||(strcmp(buffer,DOWN_ARROW_AP)==0)) c = DOWN_CODE;
 		  else
-		    if(strcmp(buffer,RIGHT_ARROW)==0) c = RIGHT_CODE;
+		    if((strcmp(buffer,RIGHT_ARROW)==0)||(strcmp(buffer,RIGHT_ARROW_AP)==0)) c = RIGHT_CODE;
 		    else
-			if(strcmp(buffer,LEFT_ARROW)==0) c = LEFT_CODE;
+			if((strcmp(buffer,LEFT_ARROW)==0)||(strcmp(buffer,LEFT_ARROW_AP)==0)) c = LEFT_CODE;
 			else c = UNUSED_CHAR;
  
 		fcntl(0,F_SETFL,fl);
 	}
 	return c;
-#endif
 }
 
 /* kludged strcmp for qsort */

@@ -42,9 +42,8 @@ that file is executed and control returns to the browser upon completion.
 command line arguments in the top pane. After entering any command line
 arguments, striking return will run the executable. The user can also
 browse for command line arguments at any point during editing in the
-top pane by entering ^B. Only very primitive editing is implemented in
-the top pane: characters can be added or deleted at the end, but there
-is no insertion or cursor movement.)
+top pane by entering ^B. Only basic editing is implemented in
+the top pane, including a set of vi-like cursor movements.
 If it is a directory then the program changes to that directory and the
 browser begins afresh there. If the user has established
 an association (see below) for the selected file's extension or
@@ -107,7 +106,40 @@ Toggles anchoring for multiple selection in the manner of Lotus 123. When
 anchoring is on, everything in the right pane between the anchor location
 and the current cursor location is selected and highlighted.
 .PP
-The following keystrokes are recognized when the top pane has focus:
+The top pane displays a path selected for execution in a different color and
+allows the user to edit the command line before submitting the command. The
+line editor has two modes: insert mode and command mode. Immediately after
+selecting an executable in the right pane the line editor in the top pane
+is in insert mode. The user may build a command line by entering characters
+and using the delete key to erase characters. The visible scrolls left or
+right as needed to keep the insertion point in view when the command line
+is too wide for the display. Entering return while in insert mode submits
+the command for processing. Entering the escape character (^[) switches to
+vi command mode.
+.PP
+In vi command mode, the user may move the cursor in various ways similar to
+vi. The q character or
+escape character will return to the right pane without executing the command.
+.PP
+The following keystrokes are recognized when the top pane is in vi mode.
+.IP i
+Enter insert mode
+.IP ZZ
+Submit command for processing directly from vi mode
+.IP x
+Erase the character under the cursor
+.IP r
+Replace character under the cursor with the next character typed
+.IP k
+Move cursor to the right
+.IP h
+Move cursor to the left
+.IP $
+Move cursor to the end of the line
+.IP ^
+Move cursor to the beginning of the line.
+.PP
+The following keystroke is recognized when the top pane is in insert mode:
 .IP ^B
 Browse for arguments rather than typing them in
 by hand. Selecting directories from the left pane allows the user to 
@@ -196,7 +228,7 @@ environment of the browser itself.
 .SH AUTHOR
 Terry R. McConnell 
 .br
-trmcconn@syr.edu
+trmcconn.tm@gmail.com
 .SH BUGS
 .br
 If the terminal lacks the vi, vs, ve capabilities then the cursor cannot
@@ -205,5 +237,12 @@ be made invisible. (This is true, e.g., of the Minix terminal.)
 .br
 There may be up to a one second delay if the escape key is used to exit
 from a pane or from the program. On most platforms this is unavoidable
-due to the possibility of confusing a singe escape key with the 
+due to the possibility of confusing a single escape key with the 
 beginning of an ANSI escape sequence.
+.br
+.br
+Not exactly a bug, but escape sequences sent by keys can vary. For
+example, the keypad keys send different escape sequences when in 
+application mode than do the cursor movement keys. In order to try to make
+the keypad behave as expected when num lock is on we have even - in 
+desperation - made the digits 4,8,6,and 2 behave as cursor movement keys. (Dirty little secret.)

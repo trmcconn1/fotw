@@ -61,3 +61,18 @@ Changes .01 --> .02
            in xplore.c. Something accidentally deleted earlier?
 
 	9) Added loop over multiple selections in xplore.c
+
+.04 --> .05
+
+	1) Fixed up arrow bug that crashed on up from top of left pane
+
+	2) Added additional escape sequence detection in mygetch to allow
+           for a keypad that is in application moded. Also added numbers
+           for up/down/right/left in case the keypad is in num-lock. 
+
+	3) Fixed bug: when folder is first displayed it should put file 
+	   number 0 in top left corner.
+
+	4) Improved the line editor so that we can move around in it
+	   and insert using "vi" commands.
+

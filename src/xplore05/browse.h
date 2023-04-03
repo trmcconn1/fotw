@@ -1,8 +1,8 @@
 #define TOP_DY 3 /* these include box chars */
 #define BOT_DY 18
-#define TOP_DX 78
+#define TOP_DX 80    /* Should be a multiple of 8 */
 #define LEFT_DX 17   /* these two must add up to TOP_DX */
-#define RIGHT_DX 61  
+#define RIGHT_DX 63  
 #define TOP_X 0
 #define TOP_Y 3
 #define RIGHT_COLS 3   /* number of columns in right pane display */
@@ -21,13 +21,22 @@
 #define TOP_PAIR 1
 #define LEFT_PAIR 2
 #define RIGHT_PAIR 3
+#define EDIT_PAIR 4
 #endif
 
-/* ANSI escape sequences */
+/* ANSI escape sequences w/o leading ^[ */
 #define UP_ARROW "[A"
 #define DOWN_ARROW "[B"
 #define LEFT_ARROW "[D"
 #define RIGHT_ARROW "[C"
+
+/* These escape sequences seem to be sent by my keypad */
+/* This is called alternate keypad mode or keypad application mode */
+/* Note that those are Oh's not zeros */
+#define UP_ARROW_AP "Ox"
+#define RIGHT_ARROW_AP "Ov"
+#define DOWN_ARROW_AP "Or"
+#define LEFT_ARROW_AP "Ot"
 
 /* Numerical codes that stand for these */
 #define UP_CODE 1000

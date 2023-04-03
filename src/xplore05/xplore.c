@@ -2,8 +2,9 @@
 
 	By Terry R. McConnell
 */
-#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #ifdef NO_STRDUP
 char *strdup(char *);
 #endif
@@ -46,6 +47,8 @@ edit if necessary. */
 #define MORE "/usr/bin/more"
 #endif
 
+#define DO_NOTHING  "/usr/bin/false"
+
 /* The following stuff concerns our implementation of file associations.
    There are three types:
 	1) File extension associations, which tell which application to
@@ -84,10 +87,10 @@ static char *getfile(char *);
 
 static char arg_buf[MAX_NAME];
 static char tmp_buf[L_tmpnam];
-static char default_editor[MAX_PATH]="vi";  /* Sorry, Emacs lovers. */
+static char default_editor[MAX_NAME]="vi";  /* Sorry, Emacs lovers. */
 
 
-main( int argc, char *argv[])
+int main( int argc, char *argv[])
 {
 	int i=0,j,c;
 	char *path = NULL,*p;
@@ -125,7 +128,7 @@ main( int argc, char *argv[])
 	if((p=(char *)getenv("HOME")))
 		strcpy(buffer,p);
 	strcat(buffer,"/.xplorerc");
-	if(rcfile = fopen(buffer,"r")){
+	if((rcfile = fopen(buffer,"r"))!=0){
 		while(fgets(buffer,MAXLINE,rcfile)!=NULL){
 
 			/* Each line may contain an association which
@@ -223,9 +226,10 @@ main( int argc, char *argv[])
 	initscr();
 #ifdef NCURSES
 	start_color();
-	init_pair(TOP_PAIR,COLOR_BLACK,COLOR_RED);
+	init_pair(TOP_PAIR,COLOR_RED,COLOR_BLACK);
 	init_pair(LEFT_PAIR,COLOR_MAGENTA,COLOR_CYAN);
-	init_pair(RIGHT_PAIR,COLOR_GREEN,COLOR_WHITE);
+	init_pair(RIGHT_PAIR,COLOR_YELLOW,COLOR_BLUE);
+	init_pair(EDIT_PAIR,COLOR_WHITE,COLOR_RED);
 #endif
 
 
@@ -241,9 +245,8 @@ main( int argc, char *argv[])
 	n_hist = 0;
 	cur_hist = 0;
 	getcwd(buffer,256); 
-	add_to_history(strdup(buffer));
+	add_to_history(strdup(buffer)); 
 	/* See history.c and history.h */
-
 	while(1){
 
 		do_once = -1;
@@ -255,7 +258,7 @@ main( int argc, char *argv[])
                    of strings terminated by NULL. The latter only
                    happens if the return value is BROWSER_MULTIPLE */
 
-		browser_rval=browse((void *)buffer,buffer);
+		browser_rval=browse(buffer,buffer);
 		if(browser_rval == BROWSER_EXIT)break;
 		switch(browser_rval){
 
@@ -387,14 +390,20 @@ main( int argc, char *argv[])
 #else
 			leaveok(stdscr,FALSE); /* restore cursor */
 #endif
-			editwin = newwin(1,TOP_DX-2,TOP_Y+1,TOP_X+1);
+			editwin = newwin(2,TOP_DX,TOP_Y+1,TOP_X);
+#ifdef NCURSES
+			wattron(editwin,COLOR_PAIR(EDIT_PAIR));
+#endif
 			if(!editwin)fatal("Could not create window");
 			strcpy(arg_buf,path);
 			while(TRUE){
-			  i=line_edit(editwin,TOP_DX-2,arg_buf);
+			  i=line_edit(editwin,TOP_DX,arg_buf);
 			  switch(i){
 				char *p;
 
+				case '':  /* back out */
+					strcpy(buffer,DO_NOTHING);
+					break;
 				case '\n':
 				case '\r':
 					break;
@@ -488,10 +497,13 @@ main( int argc, char *argv[])
 					strcpy(tmp_buf,assocs[i].value);
 					tmp_ptr = strchr(tmp_buf,'%');
 					*tmp_ptr = '\0';
-					editwin = newwin(1,TOP_DX-2,TOP_Y+1,TOP_X+1);
+					editwin = newwin(2,TOP_DX,TOP_Y+1,TOP_X+1);
+#ifdef NCURSES
+					wattron(editwin,COLOR_PAIR(EDIT_PAIR));
+#endif
 					if(!editwin)fatal("Could not create window");
 					while(TRUE){
-			  			switch(line_edit(editwin,TOP_DX-2,tmp_buf)){
+			  			switch(line_edit(editwin,TOP_DX,tmp_buf)){
 							char *p;
 
 							case '\n':
@@ -508,7 +520,8 @@ main( int argc, char *argv[])
 							*/
 								getcwd(p,256);
 								rv = browse(p,tmp_buf);	
-								if(rv == BROWSER_EXIT);
+								if(rv == BROWSER_EXIT)
+;
 								if(rv == BROWSER_ERROR)break;
 								if(rv == BROWSER_RSEL)break;
 								if((stat(p,&my_stat)==-1)||
@@ -682,7 +695,7 @@ main( int argc, char *argv[])
 int die()
 {
 /*      ignore interupts so we can get this done  */
-	signal(SIGINT,SIG_IGN);
+	signal(SIGINT,(__sighandler_t )1);
 /*      make terminal the way it was */
 	endwin();
 	exit(0);          /* exit with exit status 0  */
