@@ -31,6 +31,8 @@ is no associated application, the file is opened in an editor.
 As of version .03 the browser also supports a forward/back mechanism.
 As of version .04 the browser supports multiple selection and browsing
 for arguments of executables.
+As of version .05 the line editor in the upper pane supports vi-like cursor
+movement and other improvements.
 
 It's sort of a poor man's explorer.
 
@@ -40,6 +42,9 @@ It should be noted that the browser itself is implemented in a self-contained
 source file (browse.c, also browse.h). It could easily be used as a
 "widget" in some other application. See the source file browse.c, which is
 intended to be reasonably self-documenting.
+
+The line editor for the top pane is implemented in edit.c/edit.h, which
+could be incorporated more or less as-is in another application.
 
 Notably missing from xplore is any facility for manipulating the filesystem
 directly. For example, you can't highlight a bunch of files in the right
@@ -135,4 +140,4 @@ your psyche caused by use and misuse of this software.
 Terry R. McConnell
 2458 Swift Road
 Lafayette, NY 13084
-trmcconn@syr.edu
+trmcconn.tm@gmail.com

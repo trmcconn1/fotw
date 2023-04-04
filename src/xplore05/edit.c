@@ -1,5 +1,5 @@
 
-/* Implement a simple line editor for storing user input in the
+/* Implement a simple curses line editor for storing user input in the
    given moving window into the given array. Returns \t, \n,  or EOF
    if they are typed. Other chars are added to the array or have other
    purposes depending on the mode (vi cmd or insert).
@@ -29,9 +29,17 @@
    edited and the second displays the mode (command or insert) and a
    few helpful reminders. 
 
+	API: this routine could be included as-is to fulfill the duties
+   of a line editor. Include edit.h when compiling. 
+
+	int line_edit(WINDOW *mywin, char *my_chars, int limit)
+
+    mywin and my_chars should be allocated by the calling applications.
+    Returns meaningful values depending on what happened during the edit.
+    Needs to have edit.h to compile.
+
 */
 
-#include "browse.h"
 #include "edit.h"
 #include <string.h>
 #include <sys/types.h>
@@ -46,11 +54,21 @@ static char insert_mode[] =
 "Insert mode (^[ = esc for cmd or cursor movement mode)                          ";
 
 int my_wgetch(WINDOW *);
-static int nscrolls; /* ++ for left, -- for right, should be >= 0  */
-static int vx,cx;
+static int nscrolls; /* ++ for left, -- for right, stays >= 0  */
 static char *p,*q;  /* p is pointer to where next char will go, q is handy */
 
-void scroll_left(WINDOW *mywin, int limit, char *mychars){
+/* These are state variables that track the location of the cursor from
+the visible left side vx, and the number location of the last character in 
+the visible window. The value of cx is only useful when characters don't
+extend beyond the visible window. Otherwise, it sticks at the visible width
+of the window. */ 
+
+static int vx,cx;
+
+/* Routine to perform and track left scrolls, followed below by one
+for right scrolls. */
+
+void scroll_left(WINDOW *mywin,  char *mychars, int limit){
 
 	int i,j;
 
@@ -69,7 +87,7 @@ void scroll_left(WINDOW *mywin, int limit, char *mychars){
 	wmove(mywin,0,vx);
 }
 
-void scroll_right(WINDOW *mywin,int limit, char *mychars){
+void scroll_right(WINDOW *mywin, char *mychars, int limit){
 
 	int i;
 
@@ -207,7 +225,7 @@ line_edit(WINDOW *mywin, int limit, char *mychars)
 				case LEFT_CODE:
 				case 'h':   /* left */
 					if( (vx <= 0) && (nscrolls > 0)){
-						scroll_right(mywin,limit,mychars);	
+						scroll_right(mywin,mychars,limit);	
 					}
 					if(vx)wmove(mywin,0,--vx);
 					if(p>mychars)p--;
@@ -216,7 +234,7 @@ line_edit(WINDOW *mywin, int limit, char *mychars)
 				case RIGHT_CODE:
 				case 'k':   /* right */
 					if(vx == limit - 2){
-						scroll_left(mywin,limit,mychars);	
+						scroll_left(mywin,mychars,limit);	
 					}
 					if(p-mychars < strlen(mychars)){
 						 p++;
@@ -278,7 +296,7 @@ line_edit(WINDOW *mywin, int limit, char *mychars)
 						break;
 					}
 					else {
-						scroll_right(mywin,limit,mychars);	
+						scroll_right(mywin,mychars,limit);	
 					}
 				}
 				j = strlen(mychars);
@@ -317,7 +335,7 @@ line_edit(WINDOW *mywin, int limit, char *mychars)
 				}
 				if((c >= ' ')&&(c <= 127)){
 					if(vx == limit - 2){
-						scroll_left(mywin,limit,mychars);	
+						scroll_left(mywin,mychars,limit);	
 					}
 					if(vx < cx){
 				/* Make room for inserted char */

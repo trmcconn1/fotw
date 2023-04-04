@@ -111,15 +111,18 @@ allows the user to edit the command line before submitting the command. The
 line editor has two modes: insert mode and command mode. Immediately after
 selecting an executable in the right pane the line editor in the top pane
 is in insert mode. The user may build a command line by entering characters
-and using the delete key to erase characters. The visible scrolls left or
+and using the delete key to erase characters. The visible text scrolls left or
 right as needed to keep the insertion point in view when the command line
 is too wide for the display. Entering return while in insert mode submits
 the command for processing. Entering the escape character (^[) switches to
-vi command mode.
+vi command mode. (Entering ^D also switches to vi mode.)
 .PP
 In vi command mode, the user may move the cursor in various ways similar to
 vi. The q character or
 escape character will return to the right pane without executing the command.
+Characters not explicitly listed are ignored in command mode. In particular,
+carriage return is ignored, but the finished command line can be submitted
+in processing from command mode as described below.
 .PP
 The following keystrokes are recognized when the top pane is in vi mode.
 .IP i
@@ -138,6 +141,10 @@ Move cursor to the left
 Move cursor to the end of the line
 .IP ^
 Move cursor to the beginning of the line.
+.IP :  
+To better comform with instinctual vi behavior, the colon followed by
+q has the same effect as q alone, and followed by w, it has the same
+effect as ZZ. 
 .PP
 The following keystroke is recognized when the top pane is in insert mode:
 .IP ^B
@@ -246,3 +253,11 @@ example, the keypad keys send different escape sequences when in
 application mode than do the cursor movement keys. In order to try to make
 the keypad behave as expected when num lock is on we have even - in 
 desperation - made the digits 4,8,6,and 2 behave as cursor movement keys. (Dirty little secret.)
+.br
+.br
+It xplore starts with no colors (windows are outlined in crude dashes) it 
+means your terminal's capabilities do not support color. Most modern 
+consoles do support color in spite of what the installed default terminal
+type actually is. For example, the OpenBsd console is vt220 by default,
+but export TERM=wsvt25 makes OpenBsd think it has a color capable terminal.
+ 

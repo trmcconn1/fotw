@@ -3,9 +3,9 @@
 # Use these settings with NCURSES
 CFLAGS =  -DNCURSES  -DXPLORE 
 # Use these settings for Minix
-#CFLAGS =  -DXPLORE -D_MINIX -DNO_STRDUP -DLPR=\"lp\" -wo
+#CFLAGS =  -DXPLORE  -D_MINIX -DNO_STRDUP -DLPR=\"lp\" -wo
 # if your more program is not in /usr/bin then also include
-# -DMORE=\"path\" where path is a path to more
+#-DMORE=\"path\" where path is a path to more
 LIBS = -lncurses
 #LIBS = -lcurses
 CC=cc

@@ -12,6 +12,8 @@
 #define FILESELECT 0
 #define DIRSELECT 1
 
+#include "edit.h"
+
 /* The maximum length of filenames displayed in the the right pane */
 #define RIGHT_MAXLEN (RIGHT_DX-2)/RIGHT_COLS - 1
 
@@ -23,26 +25,6 @@
 #define RIGHT_PAIR 3
 #define EDIT_PAIR 4
 #endif
-
-/* ANSI escape sequences w/o leading ^[ */
-#define UP_ARROW "[A"
-#define DOWN_ARROW "[B"
-#define LEFT_ARROW "[D"
-#define RIGHT_ARROW "[C"
-
-/* These escape sequences seem to be sent by my keypad */
-/* This is called alternate keypad mode or keypad application mode */
-/* Note that those are Oh's not zeros */
-#define UP_ARROW_AP "Ox"
-#define RIGHT_ARROW_AP "Ov"
-#define DOWN_ARROW_AP "Or"
-#define LEFT_ARROW_AP "Ot"
-
-/* Numerical codes that stand for these */
-#define UP_CODE 1000
-#define DOWN_CODE 1001
-#define LEFT_CODE 1002
-#define RIGHT_CODE 1003
 
 #define UNUSED_CHAR ''      /* This should be a char that has no meaning
                                  to the browser */
