@@ -76,3 +76,6 @@ Changes .01 --> .02
 	4) Improved the line editor so that we can move around in it
 	   and insert using "vi" commands.
 
+	5) Fixed failure to count the same way in the two passes 
+           LoadStrings that resulted in a double free fault in Linux.
+

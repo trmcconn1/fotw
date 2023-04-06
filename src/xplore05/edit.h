@@ -15,7 +15,7 @@ extern int line_edit(WINDOW *,int,char *);
 #define UNUSED_CHAR ''
 
 #ifndef MAX_NAME
-#define MAX_NAME 1024
+#define MAX_NAME 2048
 #endif
 
 /* ANSI escape sequences w/o leading ^[ */
