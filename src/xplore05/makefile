@@ -6,8 +6,8 @@ CFLAGS =  -DNCURSES  -DXPLORE
 #CFLAGS =  -DXPLORE  -D_MINIX -DNO_STRDUP -DLPR=\"lp\" -wo
 # if your more program is not in /usr/bin then also include
 #-DMORE=\"path\" where path is a path to more
-LIBS = -lncurses
-#LIBS = -lcurses
+#LIBS = -lncurses
+LIBS = -lcurses
 CC=cc
 SRC = xplore.c browse.c edit.c history.c
 
