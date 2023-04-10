@@ -252,7 +252,8 @@ Not exactly a bug, but escape sequences sent by keys can vary. For
 example, the keypad keys send different escape sequences when in 
 application mode than do the cursor movement keys. In order to try to make
 the keypad behave as expected when num lock is on we have even - in 
-desperation - made the digits 4,8,6,and 2 behave as cursor movement keys. (Dirty little secret.)
+desperation - made the digits 4,8,6,and 2 behave as cursor movement keys. (Dirty little secret.) If arrow keys don't work as expected, try compiling without
+the KEYPAD define.
 .br
 .br
 It xplore starts with no colors (windows are outlined in crude dashes) it 

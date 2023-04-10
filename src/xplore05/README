@@ -74,6 +74,11 @@ MAX_NAME (1024)  Controls how much space is allocated for the top pane
                  string that can be built. There is no guarantee that the OS
                  will actually allow strings of this length. 
 _DEBUG (no value)Enables whatever debugging code is included at present.
+KEYPAD 		 Allow curses to intercept arrow key escape sequences and
+                 interpret them. This is probably the correct setting on most
+                 platforms. Without this setting, xplore tries to interpret
+                 arrow key escapes on its own. Try compiling without this
+                 macro if arrow keys do not work as expected.
 
 3. Installation
 
