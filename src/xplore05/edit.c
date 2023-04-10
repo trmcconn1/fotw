@@ -115,6 +115,13 @@ line_edit(WINDOW *mywin, int limit, char *mychars)
 	int c,cy,i,j;
 	int commandmode = 0; /* toggle */ 
 
+	curs_set(1);
+
+#ifdef KEYPAD
+	keypad(mywin,TRUE);
+#else
+	keypad(mywin,FALSE);
+#endif
 	/* first, clear the window */
 
 	wmove(mywin,0,0);   
@@ -384,10 +391,6 @@ int my_wgetch(WINDOW *mywin)
 
 	c = wgetch(mywin);
 
-
-
-		/* This method has the disadvantage of introducing a
-                   big delay if only escape is pressed. */
 		switch(c){
 			case KEY_UP:
 				return UP_CODE;
@@ -401,6 +404,9 @@ int my_wgetch(WINDOW *mywin)
 				break;
 				/* return c; */
 		}
+
+		/* This method has the disadvantage of introducing a
+                   big delay if only escape is pressed. */
 
 	if(c ==''){
 

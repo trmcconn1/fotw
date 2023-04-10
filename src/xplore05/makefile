@@ -1,7 +1,7 @@
 # Makefile for xplore
 
 # Use these settings with NCURSES
-CFLAGS =  -DNCURSES  -DXPLORE 
+CFLAGS =  -DNCURSES  -DXPLORE -DKEYPAD 
 # Use these settings for Minix
 #CFLAGS =  -DXPLORE  -D_MINIX -DNO_STRDUP -DLPR=\"lp\" -wo
 # if your more program is not in /usr/bin then also include

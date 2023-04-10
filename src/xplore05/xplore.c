@@ -40,11 +40,11 @@ edit if necessary. */
 #define ARG_MAX 256
 #endif
 #ifndef MAXLINE
-#define MAXLINE 256
+#define MAXLINE 1024 
 #endif
 
 #ifndef MORE
-#define MORE "/usr/bin/more"
+#define MORE "/usr/bin/less"
 #endif
 
 #define DO_NOTHING  "/usr/bin/false"
@@ -85,10 +85,17 @@ void fatal(char *);
 static char *gettext(char *);
 static char *getfile(char *);
 
-static char arg_buf[MAX_NAME];
-static char tmp_buf[L_tmpnam];
-static char default_editor[MAX_NAME]="vi";  /* Sorry, Emacs lovers. */
+static char arg_buf[MAX_NAME+MAX_PATH+MAXLINE+1];
+static char tmp_name[] = "/tmp/xplore05XXXXXX";   
+static char tmp_buf[MAXLINE]; 
+static char default_editor[MAX_NAME]="vi";  
+#ifdef _DEBUG
+void debug_msg(char *msg,int i);
+static char logname[]="./xplore_log";
+static	FILE *logfile;
+#endif
 
+static char buffer[MAX_PATH+MAXLINE + 1];	
 
 int main( int argc, char *argv[])
 {
@@ -97,7 +104,6 @@ int main( int argc, char *argv[])
 	char *pptr;
 	int browser_rval;
 	struct stat my_stat;
-	char buffer[MAXLINE];	
 	WINDOW *editwin;
 	char *new_argv[ARG_MAX];
 	char *token;
@@ -120,6 +126,7 @@ int main( int argc, char *argv[])
 	int rv;
 #ifdef _DEBUG
 	FILE *history_out;
+	logfile = fopen(logname,"a+");
 #endif
 
 	/* Open and process rc file */
@@ -257,7 +264,6 @@ int main( int argc, char *argv[])
                    the buffer will hold either a string or an array
                    of strings terminated by NULL. The latter only
                    happens if the return value is BROWSER_MULTIPLE */
-
 		browser_rval=browse(buffer,buffer);
 		if(browser_rval == BROWSER_EXIT)break;
 		switch(browser_rval){
@@ -447,11 +453,10 @@ int main( int argc, char *argv[])
 					break;
 			  } /* end switch */
 			  break;
-			}
+			}  /* end line_edit while true */
 			delwin(editwin);
-			if(rv == BROWSER_EXIT)break;
-		   }
-		   else if(browser_rval != BROWSER_EDIT) {  
+		   }  /* End if file is executable */
+		   else  if(browser_rval != BROWSER_EDIT) {  
 			     /* file is not executable. Determine whether
                               we have an association for this file */
 
@@ -570,7 +575,6 @@ int main( int argc, char *argv[])
 			if(i==nassocs)
 			   	sprintf(arg_buf,"%s %s",default_editor,path);
 		   }
-
 		   else {  /* Forced edit */
 			   use_execvp = 1;
 			   sprintf(arg_buf,"%s %s",default_editor,path);
@@ -622,12 +626,13 @@ int main( int argc, char *argv[])
 			/* output from program is going to collected in a
                            temporary file and later piped through more */
 
-			sprintf(tmp_buf,"%s",tmpnam(NULL));
+			close(mkstemp(tmp_name));  
 		  }
 
 		  if((child_pid = fork())==-1) fatal("Fork error"); 
 
 		  if(child_pid){ /* we are parent */
+
 
 				wait(&child_status); 
 
@@ -636,9 +641,9 @@ int main( int argc, char *argv[])
                                    selected */
 
 				if(browser_rval == BROWSER_MORE){
-					sprintf(arg_buf,"%s %s",MORE,tmp_buf);
+					sprintf(arg_buf,"%s %s",MORE,tmp_name);
 					system(arg_buf);
-					remove(tmp_buf);
+					remove(tmp_name); 
 				}
 				
 				/* clean up */
@@ -656,10 +661,10 @@ int main( int argc, char *argv[])
 				/* Code that runs in child process */
 
 				/* switch output to temporary file name
-                                   stored in arg_buf */
+                                   stored in tmp_name */
 				if(browser_rval == BROWSER_MORE){
-					freopen(tmp_buf,"a+",stdout);
-					freopen(tmp_buf,"a+",stderr);
+					if(freopen(tmp_name,"a+",stdout) == NULL)fatal("Could not open temp file for stdout");;
+					if(freopen(tmp_name,"a+",stderr) == NULL)fatal("Could not open temp file for stderr");
 				}
 
 				if(use_execvp)
@@ -701,11 +706,15 @@ int die()
 	exit(0);          /* exit with exit status 0  */
 }
 
-void debug_msg(char *msg)
+/* Prints messages to external file because no reliable
+way to do it with windows in place */
+
+#ifdef _DEBUG
+void debug_msg(char *msg,int i)
 {
-	addstr(msg);
-	refresh();
+	fprintf(logfile,"%s %i\n",msg,i);
 }
+#endif
 
 
 #ifndef _MINIX  /* Minix lcurses already defines this */

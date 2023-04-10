@@ -134,6 +134,17 @@ browse(void *path, char *title)
 	leaveok(stdscr,TRUE); /* Get rid of cursor. I don't understand why
                                  it works, but it seems to. */
 #endif
+
+	curs_set(0);
+
+/* If keypad and or numpad don't work try recompiling without KEYPAD */
+
+#ifdef KEYPAD
+ 	keypad(stdscr,TRUE);
+#else
+	keypad(stdscr,FALSE);
+#endif
+
 	strcpy(CurrentPath,(char *)path);
 
         /* Normalize initial path so it ends in /. */ 
@@ -179,7 +190,6 @@ browse(void *path, char *title)
 		FreeRight();
 
 #ifdef NCURSES 
-	keypad(stdscr,FALSE); /* We interpret escape sequences */
 	/* fill panels with blanks so colors will have effect */
 	if(has_colors()){
 		wattron(box_left,COLOR_PAIR(LEFT_PAIR));
@@ -234,6 +244,7 @@ browse(void *path, char *title)
 				case 'q':
 				case '':
 				case '':
+
 					/* return original empty string to
                                            caller. User cancels. */
 					rval = BROWSER_EXIT;
@@ -376,7 +387,7 @@ browse(void *path, char *title)
 						else
 						 	rval = BROWSER_RSEL;
 					}
-					CLEAN
+					CLEAN 
 					return rval;
 				case 'e':
 				case 'E':
@@ -534,6 +545,7 @@ char ** LoadStrings(char *path,int flag,int *nstrings,int panel)
 	struct stat my_stat;
 	char buffer[MAX_PATH];
 	char **parray;
+	int count_orig = 0;
 	int count = 0;
 
 	if(chdir(path)==-1)return NULL;
@@ -541,7 +553,11 @@ char ** LoadStrings(char *path,int flag,int *nstrings,int panel)
 	if((my_dir = opendir(path))==NULL)return NULL;
 
 	while((my_dirent = readdir(my_dir))!=0){
-			if(stat(my_dirent->d_name,&my_stat)==-1)continue;
+#ifdef S_ISLNK
+		if(lstat(my_dirent->d_name,&my_stat)==-1)continue;
+#else
+		if(stat(my_dirent->d_name,&my_stat)==-1)continue;
+#endif
 			if(flag&my_stat.st_mode)count++;
 	}
 
@@ -562,6 +578,7 @@ char ** LoadStrings(char *path,int flag,int *nstrings,int panel)
 		return NULL;
 	}
 
+	count_orig = count;
 	
 	rewinddir(my_dir);
 	count = 0;
@@ -593,6 +610,7 @@ char ** LoadStrings(char *path,int flag,int *nstrings,int panel)
 		if(IS_SPECIAL(my_stat.st_mode))parray[count][0] = SPECIAL_TAG;
 		else
 		if(IS_FIFO(my_stat.st_mode))parray[count][0] = FIFO_TAG;
+		if(count >= count_orig)break; /* In case a new file got created */
 		count++;
 	}
 
@@ -795,8 +813,6 @@ int my_getch()
 
 
 
-		/* This method has the disadvantage of introducing a
-                   big delay if only escape is pressed. */
 		switch(c){
 			case KEY_UP:
 				return UP_CODE;
@@ -810,6 +826,9 @@ int my_getch()
 				break;
 				/* return c; */
 		}
+
+		/* This method has the disadvantage of introducing a
+                   big delay if only escape is pressed. */
 
 	if(c ==''){
 
@@ -848,7 +867,7 @@ try_again:
 		/* Bug: We rely on escape sequences being 3 characters long
                    here */
 		if(read(0,p++,1)!=1){
-			fcntl(0,F_SETFL,fl);
+			fcntl(0,F_SETFL,fl); 
 			return UNUSED_CHAR;  /* shrug */
 		}
 		*p = '\0';

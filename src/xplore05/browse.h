@@ -17,7 +17,7 @@
 /* The maximum length of filenames displayed in the the right pane */
 #define RIGHT_MAXLEN (RIGHT_DX-2)/RIGHT_COLS - 1
 
-#define MAX_PATH 256
+#define MAX_PATH 2048
 
 #ifdef NCURSES  /* ncurses can handle colors */
 #define TOP_PAIR 1
