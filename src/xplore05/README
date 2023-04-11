@@ -78,7 +78,10 @@ KEYPAD 		 Allow curses to intercept arrow key escape sequences and
                  interpret them. This is probably the correct setting on most
                  platforms. Without this setting, xplore tries to interpret
                  arrow key escapes on its own. Try compiling without this
-                 macro if arrow keys do not work as expected.
+                 macro if arrow keys do not work as expected. (It appears
+                 that the arrow keys in an xterm will not work with the
+                 KEYPAD setting. The xterm num pad sends a different set
+                 of escape sequences in application mode than other terms.)
 
 3. Installation
 

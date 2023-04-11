@@ -7,3 +7,4 @@ Planned changes for .05 --> 1.0:
 
 1) Implement cut, copy, and paste from the right window
 2) Intra word jumps in vi mode
+3) Include an option to support numpad escape sequences in xterm

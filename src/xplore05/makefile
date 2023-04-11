@@ -2,11 +2,14 @@
 
 # Use these settings with NCURSES
 CFLAGS =  -DNCURSES  -DXPLORE -DKEYPAD 
+# Use these setting for TERM=xterm
+CFLAGS =  -DNCURSES  -DXPLORE 
 # Use these settings for Minix
 #CFLAGS =  -DXPLORE  -D_MINIX -DNO_STRDUP -DLPR=\"lp\" -wo
 # if your more program is not in /usr/bin then also include
 #-DMORE=\"path\" where path is a path to more
 #LIBS = -lncurses
+# Many installations now have libcurses sym-linked to libncurses
 LIBS = -lcurses
 CC=cc
 SRC = xplore.c browse.c edit.c history.c
