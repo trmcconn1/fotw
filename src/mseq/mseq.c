@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 	/* Include one of the following or something else from util.c
            in order to generate useful reports. */
 
- 	print_mseq(0L,999L);  
+ 	print_mseq(0L,max_n);  
 /*
 	print_match_strings((int)o_param); 
 	match_order_report((int)o_param); 

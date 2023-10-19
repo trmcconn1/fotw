@@ -1,6 +1,6 @@
-/* tree_fill.c: Generate tree filling sequence starting with a given 
-         node, with all shorter nodes filled. */
-
+/* I think this is an obsolete earlier verstion of the program implemented
+in tree_fill.c. No harm in keeping it.
+*/
 
 /* Head/tail terminolgy motivated by basic biology:  Digits come in at the 
 head and out at the tail. */ 

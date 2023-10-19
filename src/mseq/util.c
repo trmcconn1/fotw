@@ -9,6 +9,7 @@
 #include "mseq.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Does what it says: returns 2^n */
 

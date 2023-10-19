@@ -326,15 +326,15 @@ unsigned long Tail(unsigned long pattern)
      time */
 
 /* "Trivial one that always returns 1 */
+/*
 int TieBreaker(int index)
 {
 	return 1;
 }
-
-/* Tie Breaker function that returns 0 and 1 alternately 
+*/
+/* Tie Breaker function that returns 1 and 0 alternately 
 
 */
-/*
 int TieBreaker(int index)
 {
 	static parity = 0;
@@ -343,7 +343,6 @@ int TieBreaker(int index)
 	else parity = 1;
 	return parity;
 }
-*/
 /* Returns 110 repeatedly */
 
 /*
