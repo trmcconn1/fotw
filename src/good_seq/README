@@ -1,0 +1,46 @@
+From tree_fill.c:
+
+/* tree_fill.c: Generate filled nodes of a tree filling sequence */
+/* See T.R. McConnell, Laws of Large Numbers for Some Non-repetitive
+   Sequences, unpublished manuscript  section 2 for background on
+   tree-filling sequences. 
+*/
+
+/* By Terry R. McConnell */
+
+/* This program does essentially the same thing as mseq/misc/filling.c,
+   but I think this one has a better approach. The following is taken
+   from filling.c:
+
+   Start with a binary tree with all nodes empty, then proceed to fill
+   exactly one node on each turn. Call the node just filled the current
+   node, and the tail of that node the current tail. Here tail(abcd) = 
+   bcd. The rules are the following:
+
+	1) If both children of the current tail are filled, choose a child
+           of the current node according to the tie-breaking function, and
+           fill it.
+
+	2) If exactly one child of the current tail is filled, fill the
+           other child.
+
+	3) If both children of the current tail are unfilled, choose one
+           according to the tie-breaking function, and fill it.
+
+    Note that, in 1 it is a child of the current node that is filled, while
+    in 2 and 3 it is a child of the current tail.
+
+    In order to prevent "holes" from developing in the filled set, we
+    adopt a special rule if the current tail itself is unfilled: keep
+    taking tails of the currrent tail until a filled node is obtained. Then
+    apply the above rules with that node in place of current tail.
+
+
+BUILDING: Edit the makefile. Note that the program name as built is tf, not
+tree_fill. Do make or make install.
+
+Contents:
+README = This file
+tree_fill.c - C source for program
+data - folder for keeping redirected output
+cycle.c - older version of the program. Toss if you want.
